@@ -262,6 +262,19 @@
   .brandbar{display:flex;align-items:center;gap:9px;padding:16px 2px 2px}
   .logo-mini{width:34px;height:34px;border-radius:9px;object-fit:contain;display:block}
   .brandbar .bn{font-weight:800;font-size:16px;letter-spacing:.3px}
+
+  /* ตารางเงินสดย้อนหลัง (บันทึกล่าสุด) */
+  .cash-tb{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(3,18,50,.18)}
+  .cash-tb th{background:var(--bg2);color:var(--muted);font-weight:700;padding:8px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  .cash-tb th:first-child,.cash-tb th.l{text-align:left}
+  .cash-tb td{padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  .cash-tb tr:last-child td{border-bottom:none}
+  .cash-tb tr:last-child td{background:rgba(47,106,216,.06)}
+  .cash-tb td.d{font-weight:700;white-space:nowrap}
+  .cash-tb td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .cash-tb td.tot{text-align:right;font-weight:800;color:var(--accent2);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .cash-tb td.it{color:var(--muted);line-height:1.35;min-width:78px}
+  .cash-tb td.sg{font-size:11.5px;color:var(--muted);max-width:52px;word-break:break-word}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -470,7 +483,7 @@
       <button class="btn" id="cash-send" onclick="sendCash()">บันทึกเงินสด</button>
       <div class="msg" id="cash-msg"></div>
     </div>
-    <div class="sect-title">บันทึกล่าสุด</div>
+    <div class="sect-title">บันทึกล่าสุด (ย้อนหลัง 10 วัน)</div>
     <div id="cash-history"></div>
   </section>
 
@@ -1052,6 +1065,7 @@ function openCash(){
   show('cash');
 }
 function todayISO(){ var d=new Date(),p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function cashDMY(d){ var p=String(d||'').split('-'); return p.length===3 ? ((+p[2])+'/'+(+p[1])) : String(d||''); }   // 2026-06-22 → 22/6
 function carryForDate(dateStr){   // ยอดยกมา = ยอด "รวม" ของวันล่าสุดที่ก่อนวันนี้
   var best=null;
   (CASH_ROWS||[]).forEach(function(r){ if(r.date < dateStr && (!best || r.date > best.date)) best=r; });
@@ -1115,15 +1129,20 @@ async function loadCashList(){
   CASH_ROWS=r.rows||[];
   var c=document.getElementById('cash-carry'); if(c && c.dataset.touched!=='1') cashOnDate();
   if(!CASH_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
-  box.innerHTML=CASH_ROWS.map(function(x){
-    var pl=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
-    return '<div class="emp"><div class="top"><div>'+
-      '<div class="nm">'+esc(x.date)+' · รวม '+Number(x.total||0).toLocaleString('en-US')+'</div>'+
-      '<div class="meta">ยอดขาย '+Number(x.sales||0).toLocaleString('en-US')+' · รายจ่าย '+Number(x.payout_total||0).toLocaleString('en-US')+(x.sign?(' · เซ็น '+esc(x.sign)):'')+'</div>'+
-      (pl?('<div class="meta">🧾 '+pl+'</div>'):'')+
-      (x.note?('<div class="meta">📝 '+esc(x.note)+'</div>'):'')+
-      '</div><span class="chip staff">'+esc(x.by||'')+'</span></div></div>';
+  var rows10=CASH_ROWS.slice(0,10).reverse();   // 10 วันล่าสุด เรียงเก่า→ใหม่ (ล่าสุดอยู่ล่าง เหมือนกระดาษ)
+  var body=rows10.map(function(x){
+    var items=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
+    if(!items) items='-';
+    if(x.note) items+=' <span style="opacity:.65">· '+esc(x.note)+'</span>';
+    return '<tr>'+
+      '<td class="d">'+esc(cashDMY(x.date))+'</td>'+
+      '<td class="num">'+Number(x.sales||0).toLocaleString('en-US')+'</td>'+
+      '<td class="it">'+items+'</td>'+
+      '<td class="tot">'+Number(x.total||0).toLocaleString('en-US')+'</td>'+
+      '<td class="sg">'+esc(x.sign||'')+'</td>'+
+    '</tr>';
   }).join('');
+  box.innerHTML='<table class="cash-tb"><thead><tr><th>วันที่</th><th>ยอดขาย</th><th class="l">รายการ</th><th>รวม</th><th>เซ็น</th></tr></thead><tbody>'+body+'</tbody></table>';
 }
 
 /* ---------- ADMIN: list ---------- */
