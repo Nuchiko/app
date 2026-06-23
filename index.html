@@ -283,7 +283,7 @@
       <label>เบอร์มือถือ</label>
       <input id="li-phone" type="tel" inputmode="numeric" autocomplete="username" placeholder="08x-xxx-xxxx" maxlength="15">
       <label>PIN</label>
-      <input id="li-pin" class="pin-input" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" maxlength="6">
+      <input id="li-pin" class="pin-input" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••••" maxlength="6">
       <button class="btn" id="li-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
       <div class="msg err" id="li-msg"></div>
     </div>
@@ -321,10 +321,10 @@
           </select>
         </div>
       </div>
-      <label>ตั้ง PIN (4–6 หลัก)</label>
-      <input id="rg-pin" class="pin-input" type="password" inputmode="numeric" placeholder="••••" maxlength="6">
+      <label>ตั้ง PIN (6 หลัก)</label>
+      <input id="rg-pin" class="pin-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
       <label>ยืนยัน PIN</label>
-      <input id="rg-pin2" class="pin-input" type="password" inputmode="numeric" placeholder="••••" maxlength="6">
+      <input id="rg-pin2" class="pin-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
       <button class="btn" id="rg-btn" onclick="doRegister()">ลงทะเบียน</button>
       <div class="msg" id="rg-msg"></div>
     </div>
@@ -525,8 +525,8 @@
         </select>
       </div>
     </div>
-    <label id="m-pin-label">ตั้ง PIN (4–6 หลัก)</label>
-    <input id="m-pin" class="pin-input" type="text" inputmode="numeric" placeholder="••••" maxlength="6">
+    <label id="m-pin-label">ตั้ง PIN (6 หลัก)</label>
+    <input id="m-pin" class="pin-input" type="text" inputmode="numeric" placeholder="••••••" maxlength="6">
     <button class="btn" id="m-save" onclick="saveEmp()">บันทึก</button>
     <button class="btn ghost" onclick="closeModal()">ยกเลิก</button>
     <div class="msg err" id="m-msg"></div>
@@ -538,11 +538,11 @@
   <div class="sheet">
     <h3>เปลี่ยน PIN ของฉัน</h3>
     <label>PIN เดิม</label>
-    <input id="cp-old" class="pin-input" type="password" inputmode="numeric" placeholder="••••" maxlength="6">
+    <input id="cp-old" class="pin-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
     <label>PIN ใหม่</label>
-    <input id="cp-new" class="pin-input" type="password" inputmode="numeric" placeholder="••••" maxlength="6">
+    <input id="cp-new" class="pin-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
     <label>ยืนยัน PIN ใหม่</label>
-    <input id="cp-new2" class="pin-input" type="password" inputmode="numeric" placeholder="••••" maxlength="6">
+    <input id="cp-new2" class="pin-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
     <button class="btn" id="cp-save" onclick="saveChangePin()">บันทึก</button>
     <button class="btn ghost" onclick="closePinModal()">ยกเลิก</button>
     <div class="msg" id="cp-msg"></div>
@@ -666,7 +666,7 @@ async function doRegister(){
   if(phone.length<9){ msg(m,'เบอร์ไม่ถูกต้อง'); return; }
   if(!team){ msg(m,'กรุณาเลือกทีม'); return; }
   if(!emp_type){ msg(m,'กรุณาเลือกสถานะ'); return; }
-  if(pin.length<4){ msg(m,'PIN ต้องอย่างน้อย 4 หลัก'); return; }
+  if(!/^\d{6}$/.test(pin)){ msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
   if(pin!==pin2){ msg(m,'PIN สองช่องไม่ตรงกัน'); return; }
   const btn=document.getElementById('rg-btn'); busy(btn,true);
   const r=await api('register',{name,nickname:nick,phone,team,emp_type,pin});
@@ -1162,7 +1162,7 @@ function openEmpModal(id){
   document.getElementById('m-active').value = e ? (e.active?'1':'0') : '1';
   document.getElementById('m-active-wrap').classList.toggle('hidden', !e);
   document.getElementById('m-pin').value = '';
-  document.getElementById('m-pin-label').textContent = e ? 'รีเซ็ต PIN (เว้นว่าง = ไม่เปลี่ยน)' : 'ตั้ง PIN (4–6 หลัก)';
+  document.getElementById('m-pin-label').textContent = e ? 'รีเซ็ต PIN (เว้นว่าง = ไม่เปลี่ยน)' : 'ตั้ง PIN (6 หลัก)';
   document.getElementById('m-phone').disabled = !!e;  // ไม่ให้แก้เบอร์ตอนแก้ไข (เป็นตัวระบุตัวตน)
   clearMsg(document.getElementById('m-msg'));
   document.getElementById('modal').classList.remove('hidden');
@@ -1184,13 +1184,14 @@ async function saveEmp(){
   let r;
   busy(btn,true);
   if(editingId){
+    if(pin && !/^\d{6}$/.test(pin)){ busy(btn,false,'บันทึก'); msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
     const active = document.getElementById('m-active').value;
     const payload = {emp_id:editingId, name, nickname:nick, role, team, emp_type, active:active==='1'};
     if(pin) payload.newPin = pin;
     r = await api('updateEmployee', payload);
   }else{
     if(phone.length<9){ busy(btn,false,'บันทึก'); msg(m,'เบอร์ไม่ถูกต้อง'); return; }
-    if(pin.length<4){ busy(btn,false,'บันทึก'); msg(m,'PIN ต้องอย่างน้อย 4 หลัก'); return; }
+    if(!/^\d{6}$/.test(pin)){ busy(btn,false,'บันทึก'); msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
     r = await api('addEmployee', {name, nickname:nick, phone, role, team, emp_type, pin});
   }
   busy(btn,false,'บันทึก');
@@ -1222,7 +1223,7 @@ async function saveChangePin(){
   const oldPin = document.getElementById('cp-old').value;
   const newPin = document.getElementById('cp-new').value;
   const new2   = document.getElementById('cp-new2').value;
-  if(newPin.length<4){ msg(m,'PIN ใหม่ต้องอย่างน้อย 4 หลัก'); return; }
+  if(!/^\d{6}$/.test(newPin)){ msg(m,'PIN ใหม่ต้องเป็นตัวเลข 6 หลัก'); return; }
   if(newPin!==new2){ msg(m,'PIN ใหม่ทั้งสองช่องไม่ตรงกัน'); return; }
   const btn = document.getElementById('cp-save'); busy(btn,true);
   const r = await api('changePin', {oldPin, newPin});
