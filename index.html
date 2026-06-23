@@ -1141,6 +1141,7 @@ function renderEmployees(){
       </div>
       <div class="acts">
         <button class="btn ghost sm" onclick='openEmpModal(${JSON.stringify(e.emp_id)})'>แก้ไข</button>
+        ${(ME && e.emp_id===ME.emp_id) ? '' : `<button class="btn ghost sm" style="color:var(--danger);border-color:rgba(216,69,63,.45)" onclick='delEmp(${JSON.stringify(e.emp_id)})'>ลบ</button>`}
       </div>
     </div>`;
   }).join('');
@@ -1195,6 +1196,16 @@ async function saveEmp(){
   busy(btn,false,'บันทึก');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
   closeModal();
+  openAdmin();
+}
+
+async function delEmp(id){
+  const e = EMP_CACHE.find(x=>x.emp_id===id);
+  if(!e) return;
+  const nm = e.nickname || e.name || 'บัญชีนี้';
+  if(!confirm('ลบ "'+nm+'" ออกจากระบบถาวร?\nลบแล้วกู้คืนไม่ได้')) return;
+  const r = await api('deleteEmployee', {emp_id:id});
+  if(!r.ok){ alert(r.error || 'ลบไม่สำเร็จ'); return; }
   openAdmin();
 }
 
