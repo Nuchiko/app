@@ -448,27 +448,24 @@
     <div class="page-label" id="cash-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
     <div class="card">
       <label>วันที่</label>
-      <input id="cash-date" type="date">
-      <label>ยอดขายเงินสด (บาท)</label>
+      <input id="cash-date" type="date" onchange="cashOnDate()">
+      <label>ยอดขาย (บาท)</label>
       <input id="cash-sales" type="number" inputmode="decimal" min="0" placeholder="0" oninput="cashCalc()">
-      <label>รายการจ่ายออก</label>
+      <label>รายการ (รายจ่ายเงินสด)</label>
       <div id="cash-payouts"></div>
-      <button class="btn ghost sm" type="button" onclick="cashAddLine()" style="margin-top:8px">+ เพิ่มรายการจ่าย</button>
-      <div class="row2" style="margin-top:4px">
-        <div>
-          <label>เบิก (บาท)</label>
-          <input id="cash-withdraw" type="number" inputmode="decimal" min="0" placeholder="0" oninput="cashCalc()">
-        </div>
-        <div>
-          <label>เงินสดคงเหลือ (บาท)</label>
-          <input id="cash-cash" type="number" inputmode="decimal" min="0" placeholder="0" oninput="cashCalc()">
-        </div>
-      </div>
+      <button class="btn ghost sm" type="button" onclick="cashAddLine()" style="margin-top:8px">+ เพิ่มรายการ</button>
+      <label style="margin-top:14px">เซ็น (เวลามีคนเอาเงินออก/ค้างเซ็น)</label>
+      <input id="cash-sign" type="text" placeholder="เช่น ชื่อคน หรือ เซ็นแล้ว — ไม่มีเว้นว่าง">
       <div class="card" style="margin:14px 0 0;padding:14px;background:var(--bg2)">
-        <div style="display:flex;justify-content:space-between"><span class="muted">รวมจ่ายออก</span><b id="cash-ptotal">0</b></div>
-        <div style="display:flex;justify-content:space-between;margin-top:7px"><span class="muted">สุทธิ (ขาย − จ่าย − เบิก)</span><b id="cash-net">0</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="muted">ยอดยกมา (จากวันก่อน)</span>
+          <input id="cash-carry" type="number" inputmode="decimal" placeholder="0" oninput="cashCarryEdited()" style="width:130px;padding:8px 10px;text-align:right;font-size:16px;margin:0">
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">+ ยอดขาย</span><b id="cash-sales-d">0</b></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">− รายจ่าย</span><b id="cash-ptotal">0</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><b>= รวม (ยอดสะสม)</b><b id="cash-total" style="font-size:22px;color:var(--accent2)">0</b></div>
       </div>
-      <label style="margin-top:14px">หมายเหตุ</label>
+      <label style="margin-top:14px">หมายเหตุ (ถ้ามี)</label>
       <textarea id="cash-note" rows="2" placeholder="(ถ้ามี)"></textarea>
       <button class="btn" id="cash-send" onclick="sendCash()">บันทึกเงินสด</button>
       <div class="msg" id="cash-msg"></div>
@@ -1040,20 +1037,35 @@ async function openReport(){
   </div>`).join('');
 }
 
-/* ---------- เงินสด (Service + ผู้ดูแล) ---------- */
+/* ---------- เงินสด (Service + ผู้ดูแล) — ตรงตารางร้าน: วันที่ | ยอดขาย | รายการ | รวม | เซ็น ---------- */
+let CASH_ROWS = [];   // บันทึกล่าสุด (ไว้คิด "ยอดยกมา" = รวมของวันก่อน)
 function openCash(){
   if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
   document.getElementById('cash-datelabel').textContent=thaiDateNow();
   var di=document.getElementById('cash-date'); if(!di.value) di.value=todayISO();
-  if(!document.querySelector('#cash-payouts .cash-line')) cashAddLine();
-  cashCalc();
+  ['cash-sales','cash-sign','cash-note'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('cash-payouts').innerHTML=''; cashAddLine();
+  var c=document.getElementById('cash-carry'); c.value=''; c.dataset.touched='';
+  clearMsg(document.getElementById('cash-msg'));
+  cashOnDate();
   loadCashList();
   show('cash');
 }
 function todayISO(){ var d=new Date(),p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function carryForDate(dateStr){   // ยอดยกมา = ยอด "รวม" ของวันล่าสุดที่ก่อนวันนี้
+  var best=null;
+  (CASH_ROWS||[]).forEach(function(r){ if(r.date < dateStr && (!best || r.date > best.date)) best=r; });
+  return best ? best.total : 0;
+}
+function cashOnDate(){   // เลือกวันใหม่ → เติม "ยอดยกมา" ให้อัตโนมัติ (ถ้ายังไม่ถูกแก้เอง) แล้วคิดรวม
+  var c=document.getElementById('cash-carry');
+  if(c.dataset.touched!=='1') c.value=carryForDate(document.getElementById('cash-date').value);
+  cashCalc();
+}
+function cashCarryEdited(){ document.getElementById('cash-carry').dataset.touched='1'; cashCalc(); }
 function cashLineHtml(note,amt){
   return '<div class="cash-line" style="display:flex;gap:8px;margin-bottom:8px">'+
-    '<input type="text" class="cash-pnote" placeholder="รายการ เช่น ซื้อผัก" value="'+esc(note||'')+'" style="flex:1;min-width:0">'+
+    '<input type="text" class="cash-pnote" placeholder="รายการ เช่น ค่ามะเขือ" value="'+esc(note||'')+'" style="flex:1;min-width:0">'+
     '<input type="number" inputmode="decimal" class="cash-pamt" placeholder="0" value="'+(amt!=null&&amt!==''?esc(amt):'')+'" oninput="cashCalc()" style="width:92px;flex:0 0 auto">'+
     '<button type="button" class="btn ghost sm" title="ลบ" onclick="this.parentNode.remove();cashCalc()" style="flex:0 0 auto;padding:9px 12px">✕</button>'+
   '</div>';
@@ -1071,9 +1083,10 @@ function cashCollect(){
 function cashCalc(){
   var pt=cashCollect().reduce(function(s,x){return s+(x.amt||0);},0);
   var sales=parseFloat(document.getElementById('cash-sales').value)||0;
-  var wd=parseFloat(document.getElementById('cash-withdraw').value)||0;
+  var carry=parseFloat(document.getElementById('cash-carry').value)||0;
+  document.getElementById('cash-sales-d').textContent=sales.toLocaleString('en-US');
   document.getElementById('cash-ptotal').textContent=pt.toLocaleString('en-US');
-  document.getElementById('cash-net').textContent=(sales-pt-wd).toLocaleString('en-US');
+  document.getElementById('cash-total').textContent=(carry+sales-pt).toLocaleString('en-US');
 }
 async function sendCash(){
   var m=document.getElementById('cash-msg'); clearMsg(m);
@@ -1082,28 +1095,31 @@ async function sendCash(){
   var btn=document.getElementById('cash-send'); busy(btn,true);
   var r=await api('cashSave',{
     date:date,
-    cash_sales:parseFloat(document.getElementById('cash-sales').value)||0,
+    sales:parseFloat(document.getElementById('cash-sales').value)||0,
     payouts:cashCollect(),
-    withdraw:parseFloat(document.getElementById('cash-withdraw').value)||0,
-    cash:parseFloat(document.getElementById('cash-cash').value)||0,
+    carry:parseFloat(document.getElementById('cash-carry').value)||0,
+    sign:document.getElementById('cash-sign').value,
     note:document.getElementById('cash-note').value
   });
   busy(btn,false,'บันทึกเงินสด');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
-  msg(m,'✅ บันทึกเงินสดวันที่ '+r.date+' เรียบร้อย'+(r.updated?' (อัปเดตของเดิม)':''),'ok');
+  msg(m,'✅ บันทึกวันที่ '+r.date+' แล้ว · รวม '+Number(r.total||0).toLocaleString('en-US')+(r.updated?' (อัปเดตของเดิม)':''),'ok');
+  document.getElementById('cash-carry').dataset.touched='';   // รอบถัดไปให้คิดยอดยกมาให้ใหม่
   loadCashList();
 }
 async function loadCashList(){
   var box=document.getElementById('cash-history');
   box.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>';
-  var r=await api('cashList',{limit:20});
+  var r=await api('cashList',{limit:30});
   if(!r.ok){ box.innerHTML='<div class="card center muted">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
-  if(!r.rows||!r.rows.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
-  box.innerHTML=r.rows.map(function(x){
+  CASH_ROWS=r.rows||[];
+  var c=document.getElementById('cash-carry'); if(c && c.dataset.touched!=='1') cashOnDate();
+  if(!CASH_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
+  box.innerHTML=CASH_ROWS.map(function(x){
     var pl=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
     return '<div class="emp"><div class="top"><div>'+
-      '<div class="nm">'+esc(x.date)+'</div>'+
-      '<div class="meta">ขายเงินสด '+Number(x.cash_sales||0).toLocaleString('en-US')+' · จ่ายออก '+Number(x.payout_total||0).toLocaleString('en-US')+' · เบิก '+Number(x.withdraw||0).toLocaleString('en-US')+'</div>'+
+      '<div class="nm">'+esc(x.date)+' · รวม '+Number(x.total||0).toLocaleString('en-US')+'</div>'+
+      '<div class="meta">ยอดขาย '+Number(x.sales||0).toLocaleString('en-US')+' · รายจ่าย '+Number(x.payout_total||0).toLocaleString('en-US')+(x.sign?(' · เซ็น '+esc(x.sign)):'')+'</div>'+
       (pl?('<div class="meta">🧾 '+pl+'</div>'):'')+
       (x.note?('<div class="meta">📝 '+esc(x.note)+'</div>'):'')+
       '</div><span class="chip staff">'+esc(x.by||'')+'</span></div></div>';
