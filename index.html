@@ -103,6 +103,16 @@
   .sheet h3{margin:0 0 4px;font-size:19px}
   .sheet .hint{font-size:13px;color:var(--muted);margin-bottom:8px}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  /* ฟอร์มลงทะเบียน — หัวข้อย่อย + กล่องรูปบัตร */
+  .reg-sec{font-weight:800;font-size:14px;color:var(--accent2);margin:22px 2px 2px;padding-top:14px;border-top:1px solid var(--line)}
+  .reg-sec small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px}
+  .iddoc-box{border:1.5px dashed var(--line);border-radius:12px;padding:16px;text-align:center;color:var(--muted);
+    font-size:13px;background:var(--bg2);min-height:54px;display:flex;align-items:center;justify-content:center}
+  .iddoc-box img{width:100%;border-radius:10px;display:block}
+  .lock-note{font-size:12px;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:5px}
+  #lightbox{align-items:center;background:rgba(0,0,0,.92)}
+  #lightbox img{max-width:96%;max-height:92vh;border-radius:10px}
+  #lightbox .lb-close{position:fixed;top:14px;right:16px;color:#fff;font-size:30px;font-weight:300;cursor:pointer;line-height:1}
 
   .center{text-align:center}
   .muted{color:var(--muted)}
@@ -334,6 +344,65 @@
           </select>
         </div>
       </div>
+
+      <div class="reg-sec">บัตรประจำตัว<small>เก็บเป็นความลับ เห็นเฉพาะเจ้าของ/ผู้จัดการ</small></div>
+      <div class="row2">
+        <div>
+          <label>ประเภทเอกสาร</label>
+          <select id="rg-idtype">
+            <option value="idcard">บัตรประชาชน</option>
+            <option value="passport">พาสปอร์ต</option>
+          </select>
+        </div>
+        <div>
+          <label>วันเกิด</label>
+          <input id="rg-birth" type="date">
+        </div>
+      </div>
+      <label>เลขบัตรประชาชน / พาสปอร์ต</label>
+      <input id="rg-idnum" type="text" inputmode="numeric" placeholder="เลขบนบัตร">
+      <label>รูปบัตรประชาชน / พาสปอร์ต</label>
+      <div class="iddoc-box" id="rg-iddoc-prev">ยังไม่ได้แนบรูป</div>
+      <button type="button" class="btn ghost" style="margin-top:10px" onclick="pickIdDoc('rg')">📷 ถ่าย / เลือกรูปบัตร</button>
+      <div class="lock-note">🔒 รูปบัตรจะถูกเก็บแบบส่วนตัว ไม่เปิดให้คนอื่นเห็น</div>
+
+      <div class="reg-sec">ที่อยู่ &amp; ผู้ติดต่อฉุกเฉิน</div>
+      <label>ที่อยู่ปัจจุบัน</label>
+      <textarea id="rg-address" rows="2" placeholder="บ้านเลขที่ / ถนน / ตำบล / อำเภอ / จังหวัด / รหัสไปรษณีย์"></textarea>
+      <div class="row2">
+        <div>
+          <label>ชื่อผู้ติดต่อฉุกเฉิน</label>
+          <input id="rg-emc-name" type="text" placeholder="เช่น แม่ / พี่สาว">
+        </div>
+        <div>
+          <label>เบอร์ผู้ติดต่อฉุกเฉิน</label>
+          <input id="rg-emc-phone" type="tel" inputmode="numeric" placeholder="08x-xxx-xxxx" maxlength="15">
+        </div>
+      </div>
+
+      <div class="reg-sec">ข้อมูลงาน</div>
+      <div class="row2">
+        <div>
+          <label>วันเริ่มงาน</label>
+          <input id="rg-start" type="date">
+        </div>
+        <div>
+          <label>ตำแหน่ง / หน้าที่</label>
+          <input id="rg-position" type="text" placeholder="เช่น เสิร์ฟ, กุ๊ก">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>ธนาคาร</label>
+          <input id="rg-bank" type="text" placeholder="เช่น กสิกร, ไทยพาณิชย์">
+        </div>
+        <div>
+          <label>เลขบัญชี</label>
+          <input id="rg-acct" type="text" inputmode="numeric" placeholder="เลขบัญชีเงินเดือน">
+        </div>
+      </div>
+
+      <div class="reg-sec">ตั้งรหัส PIN</div>
       <label>ตั้ง PIN (6 หลัก)</label>
       <input id="rg-pin" class="pin-input" type="password" inputmode="numeric" placeholder="••••••" maxlength="6">
       <label>ยืนยัน PIN</label>
@@ -535,6 +604,63 @@
         </select>
       </div>
     </div>
+
+    <div class="reg-sec">บัตรประจำตัว &amp; ข้อมูลส่วนตัว</div>
+    <div class="row2">
+      <div>
+        <label>ประเภทเอกสาร</label>
+        <select id="m-idtype">
+          <option value="">—</option>
+          <option value="idcard">บัตรประชาชน</option>
+          <option value="passport">พาสปอร์ต</option>
+        </select>
+      </div>
+      <div>
+        <label>วันเกิด</label>
+        <input id="m-birth" type="date">
+      </div>
+    </div>
+    <label>เลขบัตร / พาสปอร์ต</label>
+    <input id="m-idnum" type="text" inputmode="numeric" placeholder="เลขบนบัตร">
+    <label>รูปบัตร / พาสปอร์ต</label>
+    <div class="iddoc-box" id="m-iddoc-prev">—</div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button type="button" class="btn ghost sm" id="m-iddoc-view" onclick="viewEmpDoc()" style="flex:1">👁 ดูรูปบัตร</button>
+      <button type="button" class="btn ghost sm" onclick="pickIdDoc('m')" style="flex:1">📷 เปลี่ยนรูป</button>
+    </div>
+    <label>ที่อยู่</label>
+    <textarea id="m-address" rows="2" placeholder="ที่อยู่ปัจจุบัน"></textarea>
+    <div class="row2">
+      <div>
+        <label>ผู้ติดต่อฉุกเฉิน</label>
+        <input id="m-emc-name" type="text" placeholder="ชื่อ">
+      </div>
+      <div>
+        <label>เบอร์ฉุกเฉิน</label>
+        <input id="m-emc-phone" type="tel" inputmode="numeric" maxlength="15" placeholder="08x-xxx-xxxx">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>วันเริ่มงาน</label>
+        <input id="m-start" type="date">
+      </div>
+      <div>
+        <label>ตำแหน่ง</label>
+        <input id="m-position" type="text" placeholder="เช่น เสิร์ฟ, กุ๊ก">
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>ธนาคาร</label>
+        <input id="m-bank" type="text" placeholder="เช่น กสิกร">
+      </div>
+      <div>
+        <label>เลขบัญชี</label>
+        <input id="m-acct" type="text" inputmode="numeric" placeholder="เลขบัญชี">
+      </div>
+    </div>
+
     <label id="m-pin-label">ตั้ง PIN (6 หลัก)</label>
     <input id="m-pin" class="pin-input" type="text" inputmode="numeric" placeholder="••••••" maxlength="6">
     <button class="btn" id="m-save" onclick="saveEmp()">บันทึก</button>
@@ -557,6 +683,15 @@
     <button class="btn ghost" onclick="closePinModal()">ยกเลิก</button>
     <div class="msg" id="cp-msg"></div>
   </div>
+</div>
+
+<!-- input ถ่าย/เลือกรูปบัตร (ใช้ร่วมกันหน้าลงทะเบียน + modal แอดมิน) -->
+<input type="file" id="iddoc-file" accept="image/*" capture="environment" style="display:none" onchange="onIdDocFile(this)">
+
+<!-- ดูรูปบัตรเต็มจอ -->
+<div id="lightbox" class="overlay hidden" onclick="closeLightbox()">
+  <span class="lb-close">×</span>
+  <img id="lightbox-img" alt="รูปบัตร">
 </div>
 
 <!-- ซ่อนไว้: ใช้สร้างรูปสรุป Stock ส่งเข้า LINE -->
@@ -658,32 +793,97 @@ function logout(){
 
 /* ---------- REGISTER (ลงทะเบียนตัวเอง) ---------- */
 function openRegister(){
-  ['rg-name','rg-nick','rg-phone','rg-pin','rg-pin2'].forEach(id=>document.getElementById(id).value='');
+  ['rg-name','rg-nick','rg-phone','rg-pin','rg-pin2','rg-birth','rg-idnum','rg-address',
+   'rg-emc-name','rg-emc-phone','rg-start','rg-position','rg-bank','rg-acct']
+    .forEach(id=>{ var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('rg-team').value=''; document.getElementById('rg-emptype').value='';
+  document.getElementById('rg-idtype').value='idcard';
+  RG_ID=null;
+  var prev=document.getElementById('rg-iddoc-prev'); prev.innerHTML='ยังไม่ได้แนบรูป';
   clearMsg(document.getElementById('rg-msg'));
   show('register');
 }
 async function doRegister(){
   const m=document.getElementById('rg-msg'); clearMsg(m);
-  const name=document.getElementById('rg-name').value.trim();
-  const nick=document.getElementById('rg-nick').value.trim();
-  const phone=document.getElementById('rg-phone').value.replace(/\D/g,'');
-  const team=document.getElementById('rg-team').value;
-  const emp_type=document.getElementById('rg-emptype').value;
-  const pin=document.getElementById('rg-pin').value;
-  const pin2=document.getElementById('rg-pin2').value;
+  const v=id=>document.getElementById(id).value;
+  const name=v('rg-name').trim();
+  const nick=v('rg-nick').trim();
+  const phone=v('rg-phone').replace(/\D/g,'');
+  const team=v('rg-team');
+  const emp_type=v('rg-emptype');
+  const idnum=v('rg-idnum').trim();
+  const pin=v('rg-pin');
+  const pin2=v('rg-pin2');
   if(!name){ msg(m,'กรุณากรอกชื่อ'); return; }
   if(phone.length<9){ msg(m,'เบอร์ไม่ถูกต้อง'); return; }
   if(!team){ msg(m,'กรุณาเลือกทีม'); return; }
   if(!emp_type){ msg(m,'กรุณาเลือกสถานะ'); return; }
+  if(!idnum){ msg(m,'กรุณากรอกเลขบัตรประชาชน/พาสปอร์ต'); return; }
+  if(!RG_ID){ msg(m,'กรุณาแนบรูปบัตรประชาชน/พาสปอร์ต (กดปุ่ม 📷)'); return; }
   if(!/^\d{6}$/.test(pin)){ msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
   if(pin!==pin2){ msg(m,'PIN สองช่องไม่ตรงกัน'); return; }
   const btn=document.getElementById('rg-btn'); busy(btn,true);
-  const r=await api('register',{name,nickname:nick,phone,team,emp_type,pin});
+  const r=await api('register',{
+    name, nickname:nick, phone, team, emp_type, pin,
+    id_type:v('rg-idtype'), national_id:idnum, birthdate:v('rg-birth'),
+    address:v('rg-address').trim(),
+    emergency_name:v('rg-emc-name').trim(), emergency_phone:v('rg-emc-phone').replace(/\D/g,''),
+    start_date:v('rg-start'), position:v('rg-position').trim(),
+    bank_name:v('rg-bank').trim(), bank_account:v('rg-acct').replace(/[^0-9\-]/g,''),
+    id_doc_base64:RG_ID.b64, id_doc_mime:RG_ID.mime
+  });
   busy(btn,false,'ลงทะเบียน');
   if(!r.ok){ msg(m,r.error||'ลงทะเบียนไม่สำเร็จ'); return; }
+  RG_ID=null;
   msg(m,'✅ ลงทะเบียนเรียบร้อย รอผู้ดูแลอนุมัติก่อนเข้าใช้งาน','ok');
   setTimeout(()=>show('login'), 1900);
+}
+
+/* ---------- รูปบัตรประชาชน/พาสปอร์ต (ถ่าย/เลือก → ย่อ → เก็บ base64) ---------- */
+let RG_ID=null;        // รูปบัตรหน้าลงทะเบียน {b64,mime}
+let M_ID=null;         // รูปบัตรที่แอดมินเพิ่งเลือกใน modal {b64,mime}
+let _idTarget='rg';    // 'rg' = หน้าลงทะเบียน, 'm' = modal แอดมิน
+function pickIdDoc(target){ _idTarget=target; const f=document.getElementById('iddoc-file'); f.value=''; f.click(); }
+function onIdDocFile(input){
+  const file=input.files&&input.files[0]; if(!file) return;
+  resizeImage(file, 1500, 0.82, function(b64){
+    const data={b64:b64, mime:'image/jpeg'}, src='data:image/jpeg;base64,'+b64;
+    if(_idTarget==='m'){ M_ID=data; setIdPreview('m-iddoc-prev', src); var vb=document.getElementById('m-iddoc-view'); if(vb) vb.disabled=false; }
+    else { RG_ID=data; setIdPreview('rg-iddoc-prev', src); }
+  }, function(){ alert('อ่านรูปไม่ได้ ลองรูปอื่นครับ'); });
+}
+function resizeImage(file, maxDim, q, ok, err){   // ย่อให้ด้านยาวสุด ≤ maxDim คงสัดส่วน (อ่านบัตรออก แต่ไฟล์ไม่ใหญ่)
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const scale=Math.min(1, maxDim/Math.max(img.width,img.height));
+      const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      ok(cv.toDataURL('image/jpeg',q).split(',')[1]);
+    };
+    img.onerror=function(){ err&&err(); };
+    img.src=ev.target.result;
+  };
+  reader.onerror=function(){ err&&err(); };
+  reader.readAsDataURL(file);
+}
+function setIdPreview(boxId, src){
+  const box=document.getElementById(boxId); if(!box) return;
+  box.innerHTML=''; const im=new Image(); im.alt='รูปบัตร'; im.src=src; box.appendChild(im);
+}
+function openLightbox(src){ document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.remove('hidden'); }
+function closeLightbox(){ document.getElementById('lightbox').classList.add('hidden'); document.getElementById('lightbox-img').src=''; }
+async function viewEmpDoc(){
+  if(M_ID){ openLightbox('data:image/jpeg;base64,'+M_ID.b64); return; }   // รูปที่เพิ่งเลือก
+  const e=editingId?EMP_CACHE.find(x=>x.emp_id===editingId):null;
+  if(!e || !e.has_id_doc){ alert('ยังไม่มีรูปบัตรของคนนี้'); return; }
+  const btn=document.getElementById('m-iddoc-view'); busy(btn,true);
+  const r=await api('getEmpDoc',{emp_id:editingId});
+  busy(btn,false,'👁 ดูรูปบัตร');
+  if(!r.ok){ alert(r.error||'เปิดรูปไม่ได้'); return; }
+  openLightbox(r.dataUrl);
 }
 
 /* ---------- MODULE TILES ---------- */
@@ -1169,7 +1369,7 @@ function renderEmployees(){
         <div>
           <div class="nm">${esc(nm)}</div>
           <div class="meta">📱 ${esc(fmtPhone(e.phone))}</div>
-          <div class="meta">${TEAM_TH[e.team]||'—'} · ${EMPTYPE_TH[e.emp_type]||'—'}</div>
+          <div class="meta">${TEAM_TH[e.team]||'—'} · ${EMPTYPE_TH[e.emp_type]||'—'}${e.position?(' · '+esc(e.position)):''}${e.has_id_doc?' · 📇 มีรูปบัตร':''}</div>
           <div class="meta"><span class="dot ${e.active?'on':'off'}"></span>${e.active?'ใช้งาน':'⏳ รออนุมัติ'}</div>
         </div>
         <span class="chip ${e.role}">${ROLE_TH[e.role]||e.role}</span>
@@ -1199,6 +1399,15 @@ function openEmpModal(id){
   document.getElementById('m-pin').value = '';
   document.getElementById('m-pin-label').textContent = e ? 'รีเซ็ต PIN (เว้นว่าง = ไม่เปลี่ยน)' : 'ตั้ง PIN (6 หลัก)';
   document.getElementById('m-phone').disabled = !!e;  // ไม่ให้แก้เบอร์ตอนแก้ไข (เป็นตัวระบุตัวตน)
+  // ข้อมูลละเอียด
+  M_ID = null;
+  const g = (id,key)=>{ document.getElementById(id).value = e ? (e[key]||'') : ''; };
+  g('m-idtype','id_type'); g('m-birth','birthdate'); g('m-idnum','national_id');
+  g('m-address','address'); g('m-emc-name','emergency_name'); g('m-emc-phone','emergency_phone');
+  g('m-start','start_date'); g('m-position','position'); g('m-bank','bank_name'); g('m-acct','bank_account');
+  const prev=document.getElementById('m-iddoc-prev');
+  prev.innerHTML = (e && e.has_id_doc) ? '✅ มีรูปบัตรแล้ว — กด “ดูรูปบัตร”' : 'ยังไม่มีรูป';
+  document.getElementById('m-iddoc-view').disabled = !(e && e.has_id_doc);
   clearMsg(document.getElementById('m-msg'));
   document.getElementById('modal').classList.remove('hidden');
 }
@@ -1216,21 +1425,39 @@ async function saveEmp(){
   const btn = document.getElementById('m-save');
 
   if(!name){ msg(m,'กรุณากรอกชื่อ'); return; }
+  const det = {
+    id_type: document.getElementById('m-idtype').value,
+    national_id: document.getElementById('m-idnum').value.trim(),
+    birthdate: document.getElementById('m-birth').value,
+    address: document.getElementById('m-address').value.trim(),
+    emergency_name: document.getElementById('m-emc-name').value.trim(),
+    emergency_phone: document.getElementById('m-emc-phone').value.replace(/\D/g,''),
+    start_date: document.getElementById('m-start').value,
+    position: document.getElementById('m-position').value.trim(),
+    bank_name: document.getElementById('m-bank').value.trim(),
+    bank_account: document.getElementById('m-acct').value.replace(/[^0-9\-]/g,'')
+  };
   let r;
   busy(btn,true);
   if(editingId){
     if(pin && !/^\d{6}$/.test(pin)){ busy(btn,false,'บันทึก'); msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
     const active = document.getElementById('m-active').value;
-    const payload = {emp_id:editingId, name, nickname:nick, role, team, emp_type, active:active==='1'};
+    const payload = Object.assign({emp_id:editingId, name, nickname:nick, role, team, emp_type, active:active==='1'}, det);
     if(pin) payload.newPin = pin;
     r = await api('updateEmployee', payload);
+    if(r.ok && M_ID){   // แอดมินเลือกรูปบัตรใหม่ → อัปแยก
+      const r2 = await api('setEmpDoc', {emp_id:editingId, imageBase64:M_ID.b64, mime:M_ID.mime});
+      if(!r2.ok){ busy(btn,false,'บันทึก'); msg(m,'บันทึกข้อมูลแล้ว แต่รูปบัตรไม่สำเร็จ: '+(r2.error||'ลองใหม่')); return; }
+    }
   }else{
     if(phone.length<9){ busy(btn,false,'บันทึก'); msg(m,'เบอร์ไม่ถูกต้อง'); return; }
     if(!/^\d{6}$/.test(pin)){ busy(btn,false,'บันทึก'); msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
-    r = await api('addEmployee', {name, nickname:nick, phone, role, team, emp_type, pin});
+    r = await api('addEmployee', Object.assign({name, nickname:nick, phone, role, team, emp_type, pin,
+      id_doc_base64:(M_ID?M_ID.b64:''), id_doc_mime:(M_ID?M_ID.mime:'')}, det));
   }
   busy(btn,false,'บันทึก');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
+  M_ID=null;
   closeModal();
   openAdmin();
 }
