@@ -87,6 +87,7 @@
   .emp .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
   .emp .nm{font-weight:700;font-size:16px}
   .emp .meta{font-size:13px;color:var(--muted);margin-top:2px}
+  #rv-history .meta{font-size:13px;color:var(--muted)}
   .emp .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
   .dot.on{background:var(--ok)} .dot.off{background:#6f6357}
@@ -432,6 +433,10 @@
         <div class="ico">📦</div>
         <div><div class="tname">Stock</div><div class="tdesc">กรอกสต็อกประจำวัน</div></div>
       </div>
+      <div class="tile hidden" id="ho-recv-tile" onclick="openRecv()" style="grid-column:1/-1">
+        <div class="ico">📥</div>
+        <div><div class="tname">รับของเข้า</div><div class="tdesc">บันทึกของที่รับเข้าร้าน + รูปใบส่งของ</div></div>
+      </div>
       <div class="tile hidden" id="ho-cash-tile" onclick="openCash()" style="grid-column:1/-1">
         <div class="ico">💵</div>
         <div><div class="tname">เงินสด</div><div class="tdesc">บันทึกเงินสดรายวัน · ทีม Service</div></div>
@@ -554,6 +559,44 @@
     </div>
     <div class="sect-title">บันทึกล่าสุด (ย้อนหลัง 10 วัน)</div>
     <div id="cash-history"></div>
+  </section>
+
+  <!-- ============ รับของเข้า ============ -->
+  <section id="screen-recv" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">📥 รับของเข้า</div></div>
+    <div class="page-label" id="recv-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
+    <div class="card">
+      <label>วันที่รับของ</label>
+      <input id="rv-date" type="date">
+      <label>ร้าน / ผู้ขาย</label>
+      <input id="rv-supplier" type="text" list="rv-suppliers" placeholder="เช่น เจ๊หมวย, ตลาดไท, สหกรณ์">
+      <datalist id="rv-suppliers"></datalist>
+
+      <label style="margin-top:14px">รายการของที่รับ</label>
+      <div id="rv-items"></div>
+      <datalist id="rv-itemnames"></datalist>
+      <button class="btn ghost sm" type="button" onclick="rvAddLine()" style="margin-top:8px">+ เพิ่มรายการ</button>
+
+      <div class="card" style="margin:14px 0 0;padding:14px;background:var(--bg2)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b>รวมเงิน</b><b id="rv-total" style="font-size:22px;color:var(--accent2)">0</b>
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:6px">รวมช่อง "ราคารวม" ของทุกรายการ (กรอกราคารวมต่อรายการ ไม่ใช่ราคาต่อหน่วย)</div>
+      </div>
+
+      <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ</label>
+      <button class="btn ghost" type="button" onclick="pickRecvPhoto()">📷 ถ่ายรูป / เลือกรูป</button>
+      <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
+
+      <label style="margin-top:14px">หมายเหตุ / สภาพของ</label>
+      <textarea id="rv-note" rows="2" placeholder="เช่น ปลาสด ผักช้ำ 1 ถุง ของขาด 2 ขวด"></textarea>
+
+      <button class="btn" id="rv-send" onclick="sendRecv()">บันทึกการรับของ</button>
+      <div class="msg" id="rv-msg"></div>
+    </div>
+    <div class="sect-title">รับของล่าสุด</div>
+    <div id="rv-history"></div>
   </section>
 
 </div>
@@ -687,6 +730,7 @@
 
 <!-- input ถ่าย/เลือกรูปบัตร (ใช้ร่วมกันหน้าลงทะเบียน + modal แอดมิน) -->
 <input type="file" id="iddoc-file" accept="image/*" capture="environment" style="display:none" onchange="onIdDocFile(this)">
+<input type="file" id="recv-file" accept="image/*" capture="environment" style="display:none" onchange="onRecvPhotoFile(this)">
 
 <!-- ดูรูปบัตรเต็มจอ -->
 <div id="lightbox" class="overlay hidden" onclick="closeLightbox()">
@@ -741,7 +785,7 @@ async function api(action, data){
 }
 
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
   document.getElementById('screen-'+id).classList.remove('hidden');
   window.scrollTo(0,0);
 }
@@ -781,7 +825,20 @@ function enterHome(){
   chip.className = 'chip ' + ME.role;
   document.getElementById('ho-admin-sect').classList.toggle('hidden', !ME.is_admin);
   document.getElementById('ho-cash-tile').classList.toggle('hidden', !(ME.is_admin || ME.team === 'service'));
+  showRecvTileIfReady();
   show('home');
+}
+
+// เมนู "รับของเข้า" โผล่เมื่อหลังบ้านรองรับแล้วเท่านั้น (เว็บอัปก่อน GAS ได้ ไม่ทำให้พนักงานกดแล้วเจอ error)
+// เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
+async function showRecvTileIfReady(){
+  const tile=document.getElementById('ho-recv-tile');
+  if(RECV_READY===true){ tile.classList.remove('hidden'); return; }
+  if(RECV_READY===false) return;
+  const r=await api('ping',{});
+  if(r && r.ok){ RECV_READY = (r.recv===true); }
+  else { RECV_READY = null; return; }
+  if(RECV_READY) tile.classList.remove('hidden');
 }
 
 function logout(){
@@ -960,7 +1017,9 @@ const STOCK_GROUPS=[
   {name:'ผัก', icon:'🥬', cut:false, items:[]},
   {name:'เนื้อสัตว์', icon:'🥩', cut:false, items:[]}
 ];
-const HOTATE_BOX=30;
+// 1 กล่อง = 35 ตัว (เจ้าของยืนยัน 23 มิ.ย. 2026). ค่านี้ซ้ำอีก 2 ที่ ถ้าแก้ต้องแก้ให้ครบ:
+//   • ฟอร์ม Stock เดิม (Nuchiko/Stock index.html, ฟังก์ชัน calcUsed) • บอทเทียบยอด (ManaLineBot/Code_merged.gs ~บรรทัด 1332)
+const HOTATE_BOX=35;
 let stCurrentGroup=0;
 let DRINK_PHOTOS={};          // slug -> URL รูปที่อัปไว้ (จากเซิร์ฟเวอร์ Mana App)
 let DRINK_UPLOAD_ON=false;    // เปิดปุ่ม 📷 อัปรูป = true หลัง deploy หลังบ้าน (มีคำสั่ง setDrinkPhoto)
@@ -1343,6 +1402,136 @@ async function loadCashList(){
     '</tr>';
   }).join('');
   box.innerHTML='<table class="cash-tb"><thead><tr><th>วันที่</th><th>ยอดขาย</th><th class="l">รายการ</th><th>รวม</th><th>เซ็น</th></tr></thead><tbody>'+body+'</tbody></table>';
+}
+
+/* ---------- รับของเข้า ---------- */
+let RECV_ROWS=[];              // ประวัติรับของล่าสุด (ไว้ทำรายชื่อร้านให้เลือก)
+let RECV_READY=null;           // null=ยังไม่รู้ / true=หลังบ้านรองรับ / false=ยังไม่ deploy
+let RV_PHOTO=null;             // รูปใบส่งของที่เพิ่งเลือก {b64,mime}
+let RV_CLIENT_ID=null;         // คีย์กันบันทึกซ้ำ 1 คีย์ต่อ 1 การกรอก (สร้างใหม่หลังบันทึกสำเร็จ)
+function uuid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+const RV_UNITS=['กก.','ขีด','ก.','ตัว','กล่อง','ขวด','ถัง','ลัง','ถุง','แพ็ค','ชิ้น','ใบ','ครั้ง'];
+
+function rvItemNames(){        // ชื่อของที่มีในระบบ (ปลาดิบ + เครื่องดื่ม) ไว้ให้เลือกตอนพิมพ์
+  var out=[];
+  STOCK_GROUPS.forEach(function(g){
+    (g.items||[]).forEach(function(it){ var n=(typeof it==='string')?it:(it.n||''); if(n) out.push(n); });
+  });
+  return out;
+}
+function openRecv(){
+  document.getElementById('recv-datelabel').textContent=thaiDateNow();
+  // ถ้ามีร่างค้าง (พิมพ์ไว้แล้วเผลอกดกลับ) ไม่ล้าง — เก็บให้กรอกต่อ ; เริ่มใหม่เมื่อไม่มีร่าง
+  var hasDraft = document.querySelectorAll('#rv-items .rv-line').length && (rvCollect().length || RV_PHOTO);
+  if(!hasDraft){
+    RV_CLIENT_ID=uuid();
+    document.getElementById('rv-date').value=todayISO();
+    document.getElementById('rv-supplier').value='';
+    document.getElementById('rv-note').value='';
+    document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
+    RV_PHOTO=null; document.getElementById('rv-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
+  }
+  document.getElementById('rv-itemnames').innerHTML=rvItemNames().map(function(n){return '<option value="'+esc(n)+'">';}).join('');
+  clearMsg(document.getElementById('rv-msg'));
+  rvCalc();
+  loadRecvList();
+  show('recv');
+}
+function rvLineHtml(){
+  // ตัวแรกเว้นว่าง — กันกรณีไม่ได้เลือกแล้วถูกบันทึกเป็น "กก." โดยไม่ตั้งใจ
+  var units='<option value="">หน่วย</option>'+RV_UNITS.map(function(u){return '<option value="'+u+'">'+u+'</option>';}).join('');
+  return '<div class="rv-line" style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">'+
+    '<input type="text" class="rv-name" list="rv-itemnames" placeholder="ชื่อของ" style="flex:1 1 100%;min-width:0;margin:0">'+
+    '<input type="number" inputmode="decimal" class="rv-qty" placeholder="จำนวน" oninput="rvCalc()" style="flex:1 1 78px;min-width:0;margin:0">'+
+    '<select class="rv-unit" style="flex:1 1 86px;min-width:0;margin:0">'+units+'</select>'+
+    '<input type="number" inputmode="decimal" class="rv-price" placeholder="ราคารวม" oninput="rvCalc()" style="flex:1 1 86px;min-width:0;margin:0">'+
+    '<button type="button" class="btn ghost sm" title="ลบ" onclick="this.parentNode.remove();rvCalc()" style="flex:0 0 auto;padding:9px 12px;margin:0">✕</button>'+
+  '</div>';
+}
+function rvAddLine(){ document.getElementById('rv-items').insertAdjacentHTML('beforeend', rvLineHtml()); }
+function rvCollect(){
+  var out=[];
+  document.querySelectorAll('#rv-items .rv-line').forEach(function(ln){
+    var name=ln.querySelector('.rv-name').value.trim();
+    var qty=parseFloat(ln.querySelector('.rv-qty').value)||0;
+    var price=parseFloat(ln.querySelector('.rv-price').value)||0;
+    if(name||qty||price) out.push({name:name, qty:qty, unit:ln.querySelector('.rv-unit').value, price:price});
+  });
+  return out;
+}
+function rvCalc(){
+  var t=rvCollect().reduce(function(s,x){return s+(x.price||0);},0);
+  document.getElementById('rv-total').textContent=t.toLocaleString('en-US');
+}
+function pickRecvPhoto(){ var f=document.getElementById('recv-file'); f.value=''; f.click(); }
+function onRecvPhotoFile(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  resizeImage(file, 1600, 0.8, function(b64){
+    RV_PHOTO={b64:b64, mime:'image/jpeg'};
+    setIdPreview('rv-photo-prev', 'data:image/jpeg;base64,'+b64);
+  }, function(){ alert('อ่านรูปไม่ได้ ลองรูปอื่นครับ'); });
+}
+async function sendRecv(){
+  var m=document.getElementById('rv-msg'); clearMsg(m);
+  var date=document.getElementById('rv-date').value;
+  if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
+  var items=rvCollect();
+  if(!items.length){ msg(m,'กรุณากรอกรายการของอย่างน้อย 1 รายการ'); return; }
+  if(!items.some(function(x){return x.name;})){ msg(m,'กรุณากรอกชื่อของ'); return; }
+  if(!RV_CLIENT_ID) RV_CLIENT_ID=uuid();
+  var btn=document.getElementById('rv-send'); busy(btn,true);
+  var payload={
+    date:date,
+    supplier:document.getElementById('rv-supplier').value,
+    items:items,
+    note:document.getElementById('rv-note').value,
+    client_id:RV_CLIENT_ID   // กันบันทึกซ้ำถ้าเน็ตหลุดแล้วกดใหม่ (หลังบ้านอัปเดตทับ ไม่สร้างแถวใหม่)
+  };
+  if(RV_PHOTO){ payload.imageBase64=RV_PHOTO.b64; payload.mime=RV_PHOTO.mime; }
+  var r=await api('recvSave', payload);
+  busy(btn,false,'บันทึกการรับของ');
+  if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
+  msg(m,'✅ บันทึกแล้ว · '+items.length+' รายการ · รวม '+Number(r.total||0).toLocaleString('en-US')+' บาท','ok');
+  RV_CLIENT_ID=uuid();   // รายการถัดไป = คีย์ใหม่
+  document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
+  document.getElementById('rv-supplier').value=''; document.getElementById('rv-note').value='';
+  RV_PHOTO=null; document.getElementById('rv-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
+  rvCalc();
+  loadRecvList();
+}
+async function loadRecvList(){
+  var box=document.getElementById('rv-history');
+  box.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>';
+  var r=await api('recvList',{limit:20});
+  if(!r.ok){ box.innerHTML='<div class="card center muted">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
+  RECV_ROWS=r.rows||[];
+  var seen={}, sup=[];
+  RECV_ROWS.forEach(function(x){ if(x.supplier && !seen[x.supplier]){ seen[x.supplier]=1; sup.push(x.supplier); } });
+  document.getElementById('rv-suppliers').innerHTML=sup.map(function(s){return '<option value="'+esc(s)+'">';}).join('');
+  if(!RECV_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึกการรับของ</div>'; return; }
+  box.innerHTML=RECV_ROWS.slice(0,10).map(function(x){
+    var lines=(x.items||[]).map(function(o){
+      return esc(o.name||'-')+(o.qty?(' '+o.qty+' '+esc(o.unit||'')):'')+(o.price?(' · '+Number(o.price).toLocaleString('en-US')+' บ.'):'');
+    }).join('<br>');
+    var tm=String(x.created_at||'').slice(11,16);   // เวลา HH:mm (แยกรายการวันเดียวกันที่รับหลายรอบ)
+    return '<div class="card" style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'+
+        '<b>'+esc(cashDMY(x.date))+(tm?(' '+esc(tm)):'')+(x.supplier?(' · '+esc(x.supplier)):'')+'</b>'+
+        '<b style="color:var(--accent2)">'+Number(x.total||0).toLocaleString('en-US')+'</b>'+
+      '</div>'+
+      '<div class="meta" style="margin-top:6px;line-height:1.6">'+(lines||'-')+'</div>'+
+      (x.note?'<div class="meta" style="margin-top:6px;opacity:.75">📝 '+esc(x.note)+'</div>':'')+
+      '<div class="meta" style="margin-top:6px;opacity:.7">โดย '+esc(x.by||'—')+'</div>'+
+      (x.has_photo?'<button class="btn ghost sm" style="margin-top:8px" onclick="viewRecvPhoto(this,\''+esc(x.recv_id)+'\')">🧾 ดูรูปใบส่งของ</button>':'')+
+    '</div>';
+  }).join('');
+}
+async function viewRecvPhoto(btn, id){
+  if(btn) busy(btn,true);
+  var r=await api('recvPhoto',{recv_id:id});
+  if(btn) busy(btn,false,'🧾 ดูรูปใบส่งของ');
+  if(!r.ok){ alert(r.error||'เปิดรูปไม่ได้'); return; }
+  openLightbox(r.dataUrl);
 }
 
 /* ---------- ADMIN: list ---------- */
