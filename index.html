@@ -286,6 +286,13 @@
   .cash-tb td.tot{text-align:right;font-weight:800;color:var(--accent2);white-space:nowrap;font-variant-numeric:tabular-nums}
   .cash-tb td.it{color:var(--muted);line-height:1.35;min-width:78px}
   .cash-tb td.sg{font-size:11.5px;color:var(--muted);max-width:52px;word-break:break-word}
+  .cash-tb td.act{text-align:center;white-space:nowrap;padding:4px 4px}
+  .cash-tb td.d u{cursor:pointer;text-decoration-style:dotted;text-underline-offset:3px}
+  .cash-tb .iconbtn{background:none;border:0;color:var(--muted);font-size:15px;padding:4px 5px;cursor:pointer;border-radius:8px}
+  .cash-tb .iconbtn:active{background:rgba(127,127,127,.18)}
+  .editbar{margin:2px 0 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;
+    background:rgba(227,178,60,.14);border:1px solid rgba(227,178,60,.45)}
+  .editbar.lock{background:rgba(127,127,127,.14);border-color:var(--line);color:var(--muted)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -536,11 +543,12 @@
     <div class="card">
       <label>วันที่</label>
       <input id="cash-date" type="date" onchange="cashOnDate()">
+      <div id="cash-editbar" class="hidden"></div>
       <label>ยอดขาย (บาท)</label>
       <input id="cash-sales" type="number" inputmode="decimal" min="0" placeholder="0" oninput="cashCalc()">
       <label>รายการ (รายจ่ายเงินสด)</label>
       <div id="cash-payouts"></div>
-      <button class="btn ghost sm" type="button" onclick="cashAddLine()" style="margin-top:8px">+ เพิ่มรายการ</button>
+      <button class="btn ghost sm" id="cash-addline" type="button" onclick="cashAddLine()" style="margin-top:8px">+ เพิ่มรายการ</button>
       <label style="margin-top:14px">เซ็น (เวลามีคนเอาเงินออก/ค้างเซ็น)</label>
       <input id="cash-sign" type="text" placeholder="เช่น ชื่อคน หรือ เซ็นแล้ว — ไม่มีเว้นว่าง">
       <div class="card" style="margin:14px 0 0;padding:14px;background:var(--bg2)">
@@ -1310,18 +1318,90 @@ async function openReport(){
 }
 
 /* ---------- เงินสด (Service + ผู้ดูแล) — ตรงตารางร้าน: วันที่ | ยอดขาย | รายการ | รวม | เซ็น ---------- */
-let CASH_ROWS = [];   // บันทึกล่าสุด (ไว้คิด "ยอดยกมา" = รวมของวันก่อน)
-function openCash(){
+let CASH_ROWS = [];        // บันทึกล่าสุด (ไว้คิด "ยอดยกมา" = รวมของวันก่อน + รู้ว่าวันไหนบันทึกแล้ว)
+let CASH_MODE = 'new';     // new = วันใหม่ / edit = มีข้อมูลแล้วและเป็นเจ้าของ / locked = มีข้อมูลแล้วแต่ไม่ใช่เจ้าของ
+let CASH_DATE_CUR = '';    // วันที่ที่ฟอร์มกำลังแสดงอยู่
+let CASH_SNAP = '';        // สแนปช็อตฟอร์มตอนโหลด — ไว้เตือนก่อนทิ้งที่กรอกค้าง
+let CASHDEL_READY = null;  // หลังบ้านรองรับ cashDelete แล้วหรือยัง (null = ยังไม่รู้)
+
+// แก้/ลบบันทึกที่ลงไปแล้ว = เจ้าของร้านเท่านั้น (ผู้จัดการ/Service บันทึกวันใหม่ได้ แต่แก้ทับไม่ได้)
+function cashIsOwner(){ return !!(ME && ME.role==='owner'); }
+
+async function openCash(){
   if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
   document.getElementById('cash-datelabel').textContent=thaiDateNow();
   var di=document.getElementById('cash-date'); if(!di.value) di.value=todayISO();
+  CASH_DATE_CUR=''; CASH_MODE='new';
+  cashClearFields(); cashRenderMode(); cashCalc();
+  clearMsg(document.getElementById('cash-msg'));
+  show('cash');
+  await loadCashList();            // โหลดประวัติก่อน แล้วค่อยตัดสินว่าวันนี้เป็น "วันใหม่" หรือ "แก้ของเดิม"
+  cashShowDate(di.value, true);
+}
+
+function cashClearFields(){
   ['cash-sales','cash-sign','cash-note'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('cash-payouts').innerHTML=''; cashAddLine();
   var c=document.getElementById('cash-carry'); c.value=''; c.dataset.touched='';
-  clearMsg(document.getElementById('cash-msg'));
-  cashOnDate();
-  loadCashList();
-  show('cash');
+}
+function cashRowFor(d){ return (CASH_ROWS||[]).filter(function(r){ return r.date===d; })[0] || null; }
+function cashSnapshot(){
+  return JSON.stringify([document.getElementById('cash-sales').value, cashCollect(),
+    document.getElementById('cash-sign').value, document.getElementById('cash-note').value,
+    document.getElementById('cash-carry').value]);
+}
+function cashLoadRow(row){       // เอาข้อมูลที่บันทึกไว้จริงขึ้นฟอร์ม (ยอดยกมาใช้ค่าที่บันทึกไว้ ไม่คิดใหม่ — บางวันตั้งเองตอนเก็บเงินเข้าธนาคาร)
+  document.getElementById('cash-sales').value = row.sales || '';
+  document.getElementById('cash-payouts').innerHTML='';
+  (row.payouts||[]).forEach(function(o){ cashAddLine(o.note, o.amt); });
+  if(!(row.payouts||[]).length) cashAddLine();
+  document.getElementById('cash-sign').value = row.sign || '';
+  document.getElementById('cash-note').value = row.note || '';
+  var c=document.getElementById('cash-carry'); c.value = (row.carry!=null ? row.carry : ''); c.dataset.touched='1';
+}
+function cashShowDate(dateStr, force){
+  if(!force && CASH_DATE_CUR && dateStr!==CASH_DATE_CUR && cashSnapshot()!==CASH_SNAP){
+    if(!confirm('ข้อมูลวันที่ '+cashDMY(CASH_DATE_CUR)+' ที่กรอกค้างไว้ยังไม่ได้บันทึก — เปลี่ยนวันเลยไหม?')){
+      document.getElementById('cash-date').value=CASH_DATE_CUR; return;
+    }
+  }
+  CASH_DATE_CUR=dateStr;
+  var row=cashRowFor(dateStr);
+  if(row){ cashLoadRow(row); CASH_MODE = cashIsOwner() ? 'edit' : 'locked'; }
+  else { cashClearFields(); document.getElementById('cash-carry').value=carryForDate(dateStr); CASH_MODE='new'; }
+  cashRenderMode(); cashCalc();
+  CASH_SNAP=cashSnapshot();
+}
+function cashRenderMode(){
+  var bar=document.getElementById('cash-editbar'), btn=document.getElementById('cash-send');
+  var lock=(CASH_MODE==='locked'), pay=document.getElementById('cash-payouts');
+  ['cash-sales','cash-sign','cash-note','cash-carry'].forEach(function(id){ document.getElementById(id).disabled=lock; });
+  pay.style.pointerEvents = lock?'none':''; pay.style.opacity = lock?'.55':'';
+  document.getElementById('cash-addline').classList.toggle('hidden', lock);
+  btn.disabled=lock;
+  btn.textContent = (CASH_MODE==='edit') ? '💾 บันทึกการแก้ไข' : 'บันทึกเงินสด';
+  if(CASH_MODE==='new'){ bar.className='hidden'; bar.innerHTML=''; return; }
+  var d=esc(cashDMY(CASH_DATE_CUR));
+  if(CASH_MODE==='edit'){
+    bar.className='editbar';
+    bar.innerHTML='✏️ <b>กำลังแก้ไขบันทึกวันที่ '+d+'</b> (มีข้อมูลอยู่แล้ว) — กดบันทึกเพื่อทับของเดิม'+
+      '<div style="margin-top:4px;opacity:.75">ยอด “รวม” ของวันถัด ๆ ไปจะไม่ถูกคิดใหม่ให้ ถ้าต้องการก็เปิดวันนั้นแล้วกดบันทึกซ้ำ</div>';
+  } else {
+    bar.className='editbar lock';
+    bar.innerHTML='🔒 วันที่ '+d+' บันทึกไว้แล้ว — <b>แก้ไขได้เฉพาะเจ้าของร้าน</b> (เลือกวันอื่นเพื่อบันทึกใหม่)';
+  }
+}
+function cashPick(d){ document.getElementById('cash-date').value=d; cashShowDate(d); window.scrollTo({top:0,behavior:'smooth'}); }
+async function cashDelete(dateStr){
+  if(!cashIsOwner()) return;
+  var row=cashRowFor(dateStr)||{};
+  if(!confirm('ลบบันทึกเงินสดวันที่ '+cashDMY(dateStr)+' ทั้งแถว?\n(ยอดขาย '+Number(row.sales||0).toLocaleString('en-US')+' · รวม '+Number(row.total||0).toLocaleString('en-US')+')\n\n⚠️ ลบแล้วเอาคืนไม่ได้ และยอด “รวม” ของวันถัด ๆ ไปจะไม่ถูกคิดใหม่ให้')) return;
+  var m=document.getElementById('cash-msg'); clearMsg(m);
+  var r=await api('cashDelete',{date:dateStr});
+  if(!r.ok){ msg(m, r.error||'ลบไม่สำเร็จ'); return; }
+  msg(m,'🗑 ลบบันทึกวันที่ '+cashDMY(dateStr)+' แล้ว','ok');
+  await loadCashList();
+  cashShowDate(document.getElementById('cash-date').value, true);
 }
 function todayISO(){ var d=new Date(),p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function cashDMY(d){ var p=String(d||'').split('-'); return p.length===3 ? ((+p[2])+'/'+(+p[1])) : String(d||''); }   // 2026-06-22 → 22/6
@@ -1330,10 +1410,8 @@ function carryForDate(dateStr){   // ยอดยกมา = ยอด "รว�
   (CASH_ROWS||[]).forEach(function(r){ if(r.date < dateStr && (!best || r.date > best.date)) best=r; });
   return best ? best.total : 0;
 }
-function cashOnDate(){   // เลือกวันใหม่ → เติม "ยอดยกมา" ให้อัตโนมัติ (ถ้ายังไม่ถูกแก้เอง) แล้วคิดรวม
-  var c=document.getElementById('cash-carry');
-  if(c.dataset.touched!=='1') c.value=carryForDate(document.getElementById('cash-date').value);
-  cashCalc();
+function cashOnDate(){   // เปลี่ยนวัน → วันที่มีข้อมูลแล้วให้โหลดของเดิมมาแก้ ; วันใหม่ให้เติม "ยอดยกมา" อัตโนมัติ
+  cashShowDate(document.getElementById('cash-date').value);
 }
 function cashCarryEdited(){ document.getElementById('cash-carry').dataset.touched='1'; cashCalc(); }
 function cashLineHtml(note,amt){
@@ -1365,6 +1443,7 @@ async function sendCash(){
   var m=document.getElementById('cash-msg'); clearMsg(m);
   var date=document.getElementById('cash-date').value;
   if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
+  if(CASH_MODE==='locked'){ msg(m,'วันที่นี้บันทึกไว้แล้ว — แก้ไขได้เฉพาะเจ้าของร้าน'); return; }
   var btn=document.getElementById('cash-send'); busy(btn,true);
   var r=await api('cashSave',{
     date:date,
@@ -1374,11 +1453,11 @@ async function sendCash(){
     sign:document.getElementById('cash-sign').value,
     note:document.getElementById('cash-note').value
   });
-  busy(btn,false,'บันทึกเงินสด');
+  busy(btn,false,(CASH_MODE==='edit')?'💾 บันทึกการแก้ไข':'บันทึกเงินสด');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
-  msg(m,'✅ บันทึกวันที่ '+r.date+' แล้ว · รวม '+Number(r.total||0).toLocaleString('en-US')+(r.updated?' (อัปเดตของเดิม)':''),'ok');
-  document.getElementById('cash-carry').dataset.touched='';   // รอบถัดไปให้คิดยอดยกมาให้ใหม่
-  loadCashList();
+  msg(m,'✅ บันทึกวันที่ '+r.date+' แล้ว · รวม '+Number(r.total||0).toLocaleString('en-US')+(r.updated?' (แก้ของเดิม)':''),'ok');
+  await loadCashList();
+  cashShowDate(date, true);       // โหลดค่าที่บันทึกจริงกลับขึ้นฟอร์ม + สลับเป็นโหมดแก้ไข
 }
 async function loadCashList(){
   var box=document.getElementById('cash-history');
@@ -1386,22 +1465,33 @@ async function loadCashList(){
   var r=await api('cashList',{limit:30});
   if(!r.ok){ box.innerHTML='<div class="card center muted">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
   CASH_ROWS=r.rows||[];
-  var c=document.getElementById('cash-carry'); if(c && c.dataset.touched!=='1') cashOnDate();
+  if(CASHDEL_READY===null){   // ปุ่มลบโผล่เมื่อหลังบ้านรองรับแล้วเท่านั้น (อัปเว็บก่อน deploy GAS ได้ ไม่ทำให้กดแล้ว error)
+    var pg=await api('ping',{});
+    if(pg && pg.ok) CASHDEL_READY=(pg.cashdel===true);
+  }
+  var canEdit=cashIsOwner(), canDel=(canEdit && CASHDEL_READY===true);
   if(!CASH_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
   var rows10=CASH_ROWS.slice(0,10).reverse();   // 10 วันล่าสุด เรียงเก่า→ใหม่ (ล่าสุดอยู่ล่าง เหมือนกระดาษ)
   var body=rows10.map(function(x){
     var items=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
     if(!items) items='-';
     if(x.note) items+=' <span style="opacity:.65">· '+esc(x.note)+'</span>';
+    var d=esc(cashDMY(x.date)), key=esc(x.date);
     return '<tr>'+
-      '<td class="d">'+esc(cashDMY(x.date))+'</td>'+
+      '<td class="d">'+(canEdit?'<u onclick="cashPick(\''+key+'\')">'+d+'</u>':d)+'</td>'+
       '<td class="num">'+Number(x.sales||0).toLocaleString('en-US')+'</td>'+
       '<td class="it">'+items+'</td>'+
       '<td class="tot">'+Number(x.total||0).toLocaleString('en-US')+'</td>'+
       '<td class="sg">'+esc(x.sign||'')+'</td>'+
+      (canEdit?'<td class="act">'+
+        '<button class="iconbtn" title="แก้ไขวันนี้" onclick="cashPick(\''+key+'\')">✏️</button>'+
+        (canDel?'<button class="iconbtn" title="ลบทั้งวัน" onclick="cashDelete(\''+key+'\')">🗑</button>':'')+
+      '</td>':'')+
     '</tr>';
   }).join('');
-  box.innerHTML='<table class="cash-tb"><thead><tr><th>วันที่</th><th>ยอดขาย</th><th class="l">รายการ</th><th>รวม</th><th>เซ็น</th></tr></thead><tbody>'+body+'</tbody></table>';
+  box.innerHTML='<table class="cash-tb"><thead><tr><th>วันที่</th><th>ยอดขาย</th><th class="l">รายการ</th><th>รวม</th><th>เซ็น</th>'+
+    (canEdit?'<th></th>':'')+'</tr></thead><tbody>'+body+'</tbody></table>'+
+    (canEdit?'<div class="muted" style="font-size:12px;margin-top:8px;padding:0 2px">แตะวันที่ (หรือ ✏️) เพื่อเปิดขึ้นมาแก้ไข</div>':'');
 }
 
 /* ---------- รับของเข้า ---------- */
