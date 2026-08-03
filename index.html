@@ -310,6 +310,9 @@
       </div>
       <div class="sub">ระบบหลังบ้านร้าน</div>
     </div>
+    <div id="dev-setup-note" class="card hidden" style="border:1px solid #e3b23c;background:rgba(227,178,60,.12);text-align:center;font-size:13.5px;line-height:1.5">
+      ⚙ <b>โหมดทดลอง (DEV)</b><br>ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ทดลอง — เข้าสู่ระบบยังไม่ได้จนกว่าจะใส่ URL ของ “Mana App DEV”<br><span style="opacity:.7">(ระบบจริงที่พนักงานใช้อยู่ที่หน้าเว็บปกติ ไม่ได้รับผลกระทบ)</span>
+    </div>
     <div class="card">
       <label>เบอร์มือถือ</label>
       <input id="li-phone" type="tel" inputmode="numeric" autocomplete="username" placeholder="08x-xxx-xxxx" maxlength="15">
@@ -1783,7 +1786,9 @@ function fmtPhone(p){
 
 /* ---------- boot: auto-login ด้วยโทเค็นเดิม ---------- */
 (async function(){
-  if(API_URL.indexOf('PASTE') === 0){ show('login'); return; }
+  if(API_URL.indexOf('PASTE') === 0){   // ยังไม่ตั้ง backend (ส่วนใหญ่คือฝั่ง DEV) → โชว์ป้ายบอก + ไม่พยายามล็อกอิน
+    if(IS_DEV){ var n=document.getElementById('dev-setup-note'); if(n) n.classList.remove('hidden'); }
+    show('login'); return; }
   if(!token()){ show('login'); return; }
   const r = await api('me');
   if(r.ok){ ME = r.emp; enterHome(); }
