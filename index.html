@@ -568,7 +568,7 @@
       <button class="btn" id="cash-send" onclick="sendCash()">บันทึกเงินสด</button>
       <div class="msg" id="cash-msg"></div>
     </div>
-    <div class="sect-title">บันทึกล่าสุด (ย้อนหลัง 10 วัน)</div>
+    <div class="sect-title">บันทึกล่าสุด (ย้อนหลัง 30 วัน)</div>
     <div id="cash-history"></div>
   </section>
 
@@ -1474,8 +1474,8 @@ async function loadCashList(){
   }
   var canEdit=cashIsOwner(), canDel=(canEdit && CASHDEL_READY===true);
   if(!CASH_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
-  var rows10=CASH_ROWS.slice(0,10).reverse();   // 10 วันล่าสุด เรียงเก่า→ใหม่ (ล่าสุดอยู่ล่าง เหมือนกระดาษ)
-  var body=rows10.map(function(x){
+  var rows30=CASH_ROWS.slice(0,30).reverse();   // 30 วันล่าสุด เรียงเก่า→ใหม่ (ล่าสุดอยู่ล่าง เหมือนกระดาษ)
+  var body=rows30.map(function(x){
     var items=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
     if(!items) items='-';
     if(x.note) items+=' <span style="opacity:.65">· '+esc(x.note)+'</span>';
