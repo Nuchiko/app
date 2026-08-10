@@ -451,10 +451,6 @@
         <div class="ico">💵</div>
         <div><div class="tname">เงินสด</div><div class="tdesc">บันทึกเงินสดรายวัน · ทีม Service</div></div>
       </div>
-      <div class="tile hidden" id="ho-sales-tile" onclick="openSales()" style="grid-column:1/-1">
-        <div class="ico">📊</div>
-        <div><div class="tname">ยอดขายประจำวัน</div><div class="tdesc">เช็คยอดตรงจากเครื่อง POS · ทีม Service</div></div>
-      </div>
     </div>
 
     <div id="ho-admin-sect" class="hidden">
@@ -612,20 +608,6 @@
     </div>
     <div class="sect-title">รับของล่าสุด</div>
     <div id="rv-history"></div>
-  </section>
-
-  <!-- ============ ยอดขายประจำวัน (เช็คตรงจาก POS — ทีม Service + ผู้ดูแล) ============ -->
-  <section id="screen-sales" class="hidden">
-    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
-    <div class="topbar" style="padding-top:0"><div class="who">📊 ยอดขายประจำวัน (จาก POS)</div></div>
-    <div class="page-label" id="sales-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
-    <div class="card">
-      <label>วันที่</label>
-      <input id="sl-date" type="date" onchange="posLoad()">
-      <div id="sl-summary"></div>
-    </div>
-    <div class="sect-title">ยอดขายรายเมนู</div>
-    <div id="sl-items"></div>
   </section>
 
 </div>
@@ -814,7 +796,7 @@ async function api(action, data){
 }
 
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','sales'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
   document.getElementById('screen-'+id).classList.remove('hidden');
   window.scrollTo(0,0);
 }
@@ -855,20 +837,7 @@ function enterHome(){
   document.getElementById('ho-admin-sect').classList.toggle('hidden', !ME.is_admin);
   document.getElementById('ho-cash-tile').classList.toggle('hidden', !(ME.is_admin || ME.team === 'service'));
   showRecvTileIfReady();
-  showSalesTileIfReady();
   show('home');
-}
-
-// เมนู "ยอดขายประจำวัน" โผล่เมื่อ (ก) เป็นทีม Service/ผู้ดูแล และ (ข) หลังบ้านรองรับแล้ว (ping.sales)
-async function showSalesTileIfReady(){
-  const tile=document.getElementById('ho-sales-tile');
-  if(!(ME && (ME.is_admin || ME.team==='service'))){ tile.classList.add('hidden'); return; }
-  if(SALES_READY===true){ tile.classList.remove('hidden'); return; }
-  if(SALES_READY===false) return;
-  const r=await api('ping',{});
-  if(r && r.ok){ SALES_READY = (r.sales===true); }
-  else { SALES_READY = null; return; }
-  if(SALES_READY) tile.classList.remove('hidden');
 }
 
 // เมนู "รับของเข้า" โผล่เมื่อหลังบ้านรองรับแล้วเท่านั้น (เว็บอัปก่อน GAS ได้ ไม่ทำให้พนักงานกดแล้วเจอ error)
@@ -1658,39 +1627,6 @@ async function viewRecvPhoto(btn, id){
   openLightbox(r.dataUrl);
 }
 
-/* ---------- ยอดขายประจำวัน: เช็คตรงจาก POS (เจ้าของสั่ง 10 ส.ค. 2026 — ไม่ต้องกรอกมือ) ---------- */
-let SALES_READY=null;          // tile โผล่เมื่อหลังบ้านรองรับ (ping.sales) — อัปเว็บก่อน deploy GAS ได้
-async function openSales(){
-  if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
-  document.getElementById('sales-datelabel').textContent=thaiDateNow();
-  var di=document.getElementById('sl-date'); if(!di.value) di.value=todayISO();
-  show('sales');
-  posLoad();
-}
-async function posLoad(){
-  var date=document.getElementById('sl-date').value;
-  var sum=document.getElementById('sl-summary'), box=document.getElementById('sl-items');
-  sum.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>'; box.innerHTML='';
-  var r=await api('posDay',{date:date});
-  if(!r.ok){ sum.innerHTML='<div class="card center muted" style="margin-top:10px">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
-  if(!r.found){
-    sum.innerHTML='<div class="card center muted" style="margin-top:10px">ยังไม่มีข้อมูล POS ของวันที่ '+esc(cashDMY(date))+'<br><span style="font-size:12px">เครื่อง POS ร้านส่งข้อมูลวันละ 3 รอบ (~14:00 / 19:00 / 23:50) — ถ้าเลยเวลาแล้วยังไม่มา ให้เช็คว่าเครื่อง POS ร้านเปิดอยู่</span></div>';
-    return;
-  }
-  sum.innerHTML=
-    '<div class="card" style="margin:12px 0 0;padding:14px;background:var(--bg2)">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center"><b>ยอดขายรวม</b><b style="font-size:24px;color:var(--accent2)">'+Number(r.total||0).toLocaleString('en-US')+'</b></div>'+
-      '<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">จำนวนจาน/แก้ว</span><b>'+Number(r.plates||0).toLocaleString('en-US')+'</b></div>'+
-      '<div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">จำนวนเมนูที่ขายได้</span><b>'+Number(r.menu_count||0)+'</b></div>'+
-      '<div class="muted" style="font-size:12px;margin-top:8px">ข้อมูลจากเครื่อง POS ณ '+esc(r.synced_at||'')+' · ยอดรวมรายเมนู (ไม่รวม VAT/ส่วนลดท้ายบิล)</div>'+
-    '</div>';
-  box.innerHTML=(r.items||[]).map(function(x,i){
-    return '<div class="card" style="margin-bottom:8px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:baseline">'+
-      '<div style="min-width:0"><b>'+(i+1)+'. '+esc(x.name)+'</b><span class="muted"> × '+Number(x.qty||0)+'</span></div>'+
-      '<b style="flex:0 0 auto">'+Number(x.amount||0).toLocaleString('en-US')+'</b>'+
-    '</div>';
-  }).join('') || '<div class="card center muted">ไม่มีรายการ</div>';
-}
 /* ---------- ADMIN: list ---------- */
 async function openAdmin(){
   show('admin');
