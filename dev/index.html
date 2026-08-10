@@ -453,7 +453,7 @@
       </div>
       <div class="tile hidden" id="ho-sales-tile" onclick="openSales()" style="grid-column:1/-1">
         <div class="ico">📊</div>
-        <div><div class="tname">ยอดขายประจำวัน</div><div class="tdesc">กรอกยอดจากใบสรุป POS + แนบรูป · ทีม Service</div></div>
+        <div><div class="tname">ยอดขายประจำวัน</div><div class="tdesc">เช็คยอดตรงจากเครื่อง POS · ทีม Service</div></div>
       </div>
     </div>
 
@@ -614,43 +614,18 @@
     <div id="rv-history"></div>
   </section>
 
-  <!-- ============ ยอดขายประจำวัน (ทีม Service + ผู้ดูแล — แทนบอท OCR ใน LINE) ============ -->
+  <!-- ============ ยอดขายประจำวัน (เช็คตรงจาก POS — ทีม Service + ผู้ดูแล) ============ -->
   <section id="screen-sales" class="hidden">
     <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
-    <div class="topbar" style="padding-top:0"><div class="who">📊 ยอดขายประจำวัน</div></div>
+    <div class="topbar" style="padding-top:0"><div class="who">📊 ยอดขายประจำวัน (จาก POS)</div></div>
     <div class="page-label" id="sales-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
     <div class="card">
-      <label>วันที่ (วันของยอดขาย)</label>
-      <input id="sl-date" type="date" onchange="slOnDate()">
-      <div id="sl-editbar" class="hidden"></div>
-      <label>เงินสด (บาท)</label>
-      <input id="sl-cash" type="number" inputmode="decimal" min="0" placeholder="0" oninput="slCalc()">
-      <label>บัตรเครดิต (บาท)</label>
-      <input id="sl-card" type="number" inputmode="decimal" min="0" placeholder="0" oninput="slCalc()">
-      <label>QR KBANK (บาท)</label>
-      <input id="sl-kbank" type="number" inputmode="decimal" min="0" placeholder="0" oninput="slCalc()">
-      <label>QR SCB (บาท)</label>
-      <input id="sl-scb" type="number" inputmode="decimal" min="0" placeholder="0" oninput="slCalc()">
-      <div class="card" style="margin:14px 0 0;padding:14px;background:var(--bg2)">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <b>รวมรับชำระ</b><b id="sl-total" style="font-size:22px;color:var(--accent2)">0</b>
-        </div>
-        <div class="muted" style="font-size:12px;margin-top:6px">รวม 4 ช่องให้อัตโนมัติ — เช็คกับใบสรุป POS ให้ตรงก่อนบันทึก</div>
-      </div>
-      <div class="row2" style="margin-top:14px">
-        <div><label>จำนวนบิล</label><input id="sl-bills" type="number" inputmode="numeric" min="0" placeholder="0"></div>
-        <div><label>จำนวนลูกค้า</label><input id="sl-cust" type="number" inputmode="numeric" min="0" placeholder="0"></div>
-      </div>
-      <label style="margin-top:14px">รูปใบสรุปยอดขาย (POS)</label>
-      <button class="btn ghost" type="button" id="sl-photobtn" onclick="pickSalesPhoto()">📷 ถ่ายรูป / เลือกรูป</button>
-      <div class="iddoc-box" id="sl-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
-      <label style="margin-top:14px">หมายเหตุ (ถ้ามี)</label>
-      <textarea id="sl-note" rows="2" placeholder="(ถ้ามี)"></textarea>
-      <button class="btn" id="sl-send" onclick="sendSales()">บันทึกยอดขาย</button>
-      <div class="msg" id="sl-msg"></div>
+      <label>วันที่</label>
+      <input id="sl-date" type="date" onchange="posLoad()">
+      <div id="sl-summary"></div>
     </div>
-    <div class="sect-title">บันทึกล่าสุด (ย้อนหลัง 30 วัน)</div>
-    <div id="sl-history"></div>
+    <div class="sect-title">ยอดขายรายเมนู</div>
+    <div id="sl-items"></div>
   </section>
 
 </div>
@@ -785,7 +760,6 @@
 <!-- input ถ่าย/เลือกรูปบัตร (ใช้ร่วมกันหน้าลงทะเบียน + modal แอดมิน) -->
 <input type="file" id="iddoc-file" accept="image/*" capture="environment" style="display:none" onchange="onIdDocFile(this)">
 <input type="file" id="recv-file" accept="image/*" capture="environment" style="display:none" onchange="onRecvPhotoFile(this)">
-<input type="file" id="sales-file" accept="image/*" capture="environment" style="display:none" onchange="onSalesPhotoFile(this)">
 
 <!-- ดูรูปบัตรเต็มจอ -->
 <div id="lightbox" class="overlay hidden" onclick="closeLightbox()">
@@ -1684,160 +1658,39 @@ async function viewRecvPhoto(btn, id){
   openLightbox(r.dataUrl);
 }
 
-/* ---------- ยอดขายประจำวัน (แทนบอท OCR ใน LINE — เลิกใช้ 10 ส.ค. 2026) ---------- */
-let SALES_ROWS=[];
+/* ---------- ยอดขายประจำวัน: เช็คตรงจาก POS (เจ้าของสั่ง 10 ส.ค. 2026 — ไม่ต้องกรอกมือ) ---------- */
 let SALES_READY=null;          // tile โผล่เมื่อหลังบ้านรองรับ (ping.sales) — อัปเว็บก่อน deploy GAS ได้
-let SL_PHOTO=null;             // {b64,mime} รูปใบสรุปที่เพิ่งเลือก
-let SL_DATE_CUR='';            // วันที่กำลังแสดงบนฟอร์ม
-let SL_MODE='new';             // new | edit (เจ้าของแก้ของเดิม) | locked (คนอื่นเปิดวันที่บันทึกแล้ว)
-
 async function openSales(){
   if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
   document.getElementById('sales-datelabel').textContent=thaiDateNow();
   var di=document.getElementById('sl-date'); if(!di.value) di.value=todayISO();
-  SL_DATE_CUR=''; SL_MODE='new';
-  slClearFields(); slRenderMode(); slCalc();
-  clearMsg(document.getElementById('sl-msg'));
   show('sales');
-  await loadSalesList();           // โหลดประวัติก่อน แล้วค่อยตัดสินว่าวันนี้เป็น "วันใหม่" หรือ "แก้ของเดิม"
-  slShowDate(di.value, true);
+  posLoad();
 }
-function slClearFields(){
-  ['sl-cash','sl-card','sl-kbank','sl-scb','sl-bills','sl-cust','sl-note'].forEach(function(id){ document.getElementById(id).value=''; });
-  SL_PHOTO=null; document.getElementById('sl-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
-}
-function slRowFor(d){ return (SALES_ROWS||[]).filter(function(r){ return r.date===d; })[0] || null; }
-function slLoadRow(row){
-  document.getElementById('sl-cash').value  = row.cash || '';
-  document.getElementById('sl-card').value  = row.credit_card || '';
-  document.getElementById('sl-kbank').value = row.qr_kbank || '';
-  document.getElementById('sl-scb').value   = row.qr_scb || '';
-  document.getElementById('sl-bills').value = row.bill_count || '';
-  document.getElementById('sl-cust').value  = row.customer_count || '';
-  document.getElementById('sl-note').value  = row.note || '';
-  SL_PHOTO=null;
-  document.getElementById('sl-photo-prev').innerHTML = row.has_photo ? '🧾 มีรูปแนบไว้แล้ว — แนบใหม่จะแทนที่รูปเดิม' : 'ยังไม่ได้แนบรูป';
-}
-function slSnapshot(){
-  return JSON.stringify(['sl-cash','sl-card','sl-kbank','sl-scb','sl-bills','sl-cust','sl-note'].map(function(id){ return document.getElementById(id).value; }).concat([SL_PHOTO?1:0]));
-}
-var SL_SNAP='';
-function slShowDate(dateStr, force){
-  if(!force && SL_DATE_CUR && dateStr!==SL_DATE_CUR && slSnapshot()!==SL_SNAP){
-    if(!confirm('ข้อมูลวันที่ '+cashDMY(SL_DATE_CUR)+' ที่กรอกค้างไว้ยังไม่ได้บันทึก — เปลี่ยนวันเลยไหม?')){
-      document.getElementById('sl-date').value=SL_DATE_CUR; return;
-    }
-  }
-  SL_DATE_CUR=dateStr;
-  var row=slRowFor(dateStr);
-  if(row){ slLoadRow(row); SL_MODE = cashIsOwner() ? 'edit' : 'locked'; }
-  else { slClearFields(); SL_MODE='new'; }
-  slRenderMode(); slCalc();
-  SL_SNAP=slSnapshot();
-}
-function slRenderMode(){
-  var bar=document.getElementById('sl-editbar'), btn=document.getElementById('sl-send');
-  var lock=(SL_MODE==='locked');
-  ['sl-cash','sl-card','sl-kbank','sl-scb','sl-bills','sl-cust','sl-note'].forEach(function(id){ document.getElementById(id).disabled=lock; });
-  document.getElementById('sl-photobtn').disabled=lock;
-  btn.disabled=lock;
-  btn.textContent=(SL_MODE==='edit')?'💾 บันทึกการแก้ไข':'บันทึกยอดขาย';
-  if(SL_MODE==='new'){ bar.className='hidden'; bar.innerHTML=''; return; }
-  var d=esc(cashDMY(SL_DATE_CUR));
-  if(SL_MODE==='edit'){ bar.className='editbar'; bar.innerHTML='✏️ <b>กำลังแก้ไขบันทึกวันที่ '+d+'</b> (มีข้อมูลอยู่แล้ว) — กดบันทึกเพื่อทับของเดิม'; }
-  else { bar.className='editbar lock'; bar.innerHTML='🔒 วันที่ '+d+' บันทึกไว้แล้ว — <b>แก้ไขได้เฉพาะเจ้าของร้าน</b> (เลือกวันอื่นเพื่อบันทึกใหม่)'; }
-}
-function slOnDate(){ slShowDate(document.getElementById('sl-date').value); }
-function slPick(d){ document.getElementById('sl-date').value=d; slShowDate(d); window.scrollTo({top:0,behavior:'smooth'}); }
-function slCalc(){
-  var t=['sl-cash','sl-card','sl-kbank','sl-scb'].reduce(function(s,id){ return s+(parseFloat(document.getElementById(id).value)||0); },0);
-  document.getElementById('sl-total').textContent=t.toLocaleString('en-US');
-}
-function pickSalesPhoto(){ var f=document.getElementById('sales-file'); f.value=''; f.click(); }
-function onSalesPhotoFile(input){
-  var file=input.files&&input.files[0]; if(!file) return;
-  resizeImage(file, 1600, 0.8, function(b64){
-    SL_PHOTO={b64:b64, mime:'image/jpeg'};
-    setIdPreview('sl-photo-prev', 'data:image/jpeg;base64,'+b64);
-  }, function(){ alert('อ่านรูปไม่ได้ ลองรูปอื่นครับ'); });
-}
-async function sendSales(){
-  var m=document.getElementById('sl-msg'); clearMsg(m);
+async function posLoad(){
   var date=document.getElementById('sl-date').value;
-  if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
-  if(SL_MODE==='locked'){ msg(m,'วันที่นี้บันทึกไว้แล้ว — แก้ไขได้เฉพาะเจ้าของร้าน'); return; }
-  var btn=document.getElementById('sl-send'); busy(btn,true);
-  var payload={
-    date:date,
-    cash:parseFloat(document.getElementById('sl-cash').value)||0,
-    credit_card:parseFloat(document.getElementById('sl-card').value)||0,
-    qr_kbank:parseFloat(document.getElementById('sl-kbank').value)||0,
-    qr_scb:parseFloat(document.getElementById('sl-scb').value)||0,
-    total:'',   // ให้หลังบ้านรวม 4 ช่องเอง (กันเลขหน้าจอกับเลขบันทึกไม่ตรงกัน)
-    bill_count:parseFloat(document.getElementById('sl-bills').value)||0,
-    customer_count:parseFloat(document.getElementById('sl-cust').value)||0,
-    note:document.getElementById('sl-note').value
-  };
-  if(SL_PHOTO){ payload.imageBase64=SL_PHOTO.b64; payload.mime=SL_PHOTO.mime; }
-  var r=await api('salesSave', payload);
-  busy(btn,false,(SL_MODE==='edit')?'💾 บันทึกการแก้ไข':'บันทึกยอดขาย');
-  if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
-  msg(m,'✅ บันทึกยอดวันที่ '+cashDMY(r.date)+' แล้ว · รวม '+Number(r.total||0).toLocaleString('en-US')+' บาท'+(r.updated?' (แก้ของเดิม)':''),'ok');
-  await loadSalesList();
-  slShowDate(date, true);          // โหลดค่าที่บันทึกจริงกลับขึ้นฟอร์ม + สลับโหมด
-}
-async function loadSalesList(){
-  var box=document.getElementById('sl-history');
-  box.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>';
-  var r=await api('salesList',{limit:100});   // ดึงกว้างกว่าที่โชว์ (30) — กันเปิดวันเก่าแล้วฟอร์มว่าง กดบันทึกทับด้วยศูนย์
-  if(!r.ok){ box.innerHTML='<div class="card center muted">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
-  SALES_ROWS=r.rows||[];
-  if(!SALES_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
-  var canEdit=cashIsOwner();
-  box.innerHTML=SALES_ROWS.slice(0,30).map(function(x){
-    var parts=[];
-    if(x.cash) parts.push('เงินสด '+Number(x.cash).toLocaleString('en-US'));
-    if(x.credit_card) parts.push('บัตร '+Number(x.credit_card).toLocaleString('en-US'));
-    if(x.qr_kbank) parts.push('QR KBANK '+Number(x.qr_kbank).toLocaleString('en-US'));
-    if(x.qr_scb) parts.push('QR SCB '+Number(x.qr_scb).toLocaleString('en-US'));
-    var meta=[];
-    if(x.bill_count) meta.push(x.bill_count+' บิล');
-    if(x.customer_count) meta.push(x.customer_count+' คน');
-    return '<div class="card" style="margin-bottom:10px">'+
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'+
-        '<b>'+(canEdit?'<u onclick="slPick(\''+esc(x.date)+'\')">'+esc(cashDMY(x.date))+'</u>':esc(cashDMY(x.date)))+
-        (meta.length?(' <span class="muted" style="font-weight:400">· '+meta.join(' · ')+'</span>'):'')+'</b>'+
-        '<b style="color:var(--accent2)">'+Number(x.total||0).toLocaleString('en-US')+'</b>'+
-      '</div>'+
-      (parts.length?'<div class="meta" style="margin-top:6px;line-height:1.6">'+parts.join(' · ')+'</div>':'')+
-      (x.note?'<div class="meta" style="margin-top:6px;opacity:.75">📝 '+esc(x.note)+'</div>':'')+
-      '<div class="meta" style="margin-top:6px;opacity:.7">โดย '+esc(x.by||'—')+'</div>'+
-      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-        (x.has_photo?'<button class="btn ghost sm" style="margin-top:8px" onclick="viewSalesPhoto(this,\''+esc(x.date)+'\')">🧾 ดูรูปใบสรุป</button>':'')+
-        (canEdit?'<button class="btn ghost sm" style="margin-top:8px" onclick="salesDelete(\''+esc(x.date)+'\')">🗑 ลบ</button>':'')+
-      '</div>'+
+  var sum=document.getElementById('sl-summary'), box=document.getElementById('sl-items');
+  sum.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>'; box.innerHTML='';
+  var r=await api('posDay',{date:date});
+  if(!r.ok){ sum.innerHTML='<div class="card center muted" style="margin-top:10px">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
+  if(!r.found){
+    sum.innerHTML='<div class="card center muted" style="margin-top:10px">ยังไม่มีข้อมูล POS ของวันที่ '+esc(cashDMY(date))+'<br><span style="font-size:12px">เครื่อง POS ร้านส่งข้อมูลวันละ 3 รอบ (~14:00 / 19:00 / 23:50) — ถ้าเลยเวลาแล้วยังไม่มา ให้เช็คว่าเครื่อง POS ร้านเปิดอยู่</span></div>';
+    return;
+  }
+  sum.innerHTML=
+    '<div class="card" style="margin:12px 0 0;padding:14px;background:var(--bg2)">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center"><b>ยอดขายรวม</b><b style="font-size:24px;color:var(--accent2)">'+Number(r.total||0).toLocaleString('en-US')+'</b></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">จำนวนจาน/แก้ว</span><b>'+Number(r.plates||0).toLocaleString('en-US')+'</b></div>'+
+      '<div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">จำนวนเมนูที่ขายได้</span><b>'+Number(r.menu_count||0)+'</b></div>'+
+      '<div class="muted" style="font-size:12px;margin-top:8px">ข้อมูลจากเครื่อง POS ณ '+esc(r.synced_at||'')+' · ยอดรวมรายเมนู (ไม่รวม VAT/ส่วนลดท้ายบิล)</div>'+
     '</div>';
-  }).join('');
+  box.innerHTML=(r.items||[]).map(function(x,i){
+    return '<div class="card" style="margin-bottom:8px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:baseline">'+
+      '<div style="min-width:0"><b>'+(i+1)+'. '+esc(x.name)+'</b><span class="muted"> × '+Number(x.qty||0)+'</span></div>'+
+      '<b style="flex:0 0 auto">'+Number(x.amount||0).toLocaleString('en-US')+'</b>'+
+    '</div>';
+  }).join('') || '<div class="card center muted">ไม่มีรายการ</div>';
 }
-async function viewSalesPhoto(btn, date){
-  if(btn) busy(btn,true);
-  var r=await api('salesPhoto',{date:date});
-  if(btn) busy(btn,false,'🧾 ดูรูปใบสรุป');
-  if(!r.ok){ alert(r.error||'เปิดรูปไม่ได้'); return; }
-  openLightbox(r.dataUrl);
-}
-async function salesDelete(dateStr){
-  if(!cashIsOwner()) return;
-  var row=slRowFor(dateStr)||{};
-  if(!confirm('ลบบันทึกยอดขายวันที่ '+cashDMY(dateStr)+' ทั้งแถว?\n(รวม '+Number(row.total||0).toLocaleString('en-US')+' บาท)\n\n⚠️ ลบแล้วเอาคืนไม่ได้ (รูปแนบถูกย้ายลงถังขยะ Drive)')) return;
-  var m=document.getElementById('sl-msg'); clearMsg(m);
-  var r=await api('salesDelete',{date:dateStr});
-  if(!r.ok){ alert(r.error||'ลบไม่สำเร็จ'); return; }
-  msg(m,'🗑 ลบบันทึกวันที่ '+cashDMY(dateStr)+' แล้ว','ok');
-  await loadSalesList();
-  slShowDate(document.getElementById('sl-date').value, true);
-}
-
 /* ---------- ADMIN: list ---------- */
 async function openAdmin(){
   show('admin');
