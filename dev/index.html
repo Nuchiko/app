@@ -54,6 +54,7 @@
   .msg.show{display:block}
   .msg.err{background:rgba(224,83,61,.14);color:#ffb4a6;border:1px solid rgba(224,83,61,.3)}
   .msg.ok{background:rgba(76,175,114,.14);color:#b6e7c6;border:1px solid rgba(76,175,114,.3)}
+  .msg.warn{background:rgba(230,168,60,.14);color:#f2d79b;border:1px solid rgba(230,168,60,.32)}
 
   /* Top bar (home) */
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0 14px}
@@ -254,6 +255,7 @@
   /* ในการ์ดขาว = โทนสว่างปกติ */
   .msg.err{ background:#fdecea; color:#b23b32; border:1px solid #f3c2bc; }
   .msg.ok{ background:#e9f6ef; color:#177a4a; border:1px solid #bfe3cd; }
+  .msg.warn{ background:#fff6e5; color:#8a5a00; border:1px solid #f0d9a8; }
   .tile.admin{ background:linear-gradient(160deg,#eaf1fd,#ffffff); border-color:rgba(10,65,145,.25); }
   .soon-tag{ color:#5f7088; }
   .badge.in{ background:rgba(31,157,87,.14); color:#177a4a; border:1px solid rgba(31,157,87,.42); }
@@ -580,7 +582,15 @@
     <div class="card">
       <label>วันที่รับของ</label>
       <input id="rv-date" type="date">
-      <label>ร้าน / ผู้ขาย</label>
+
+      <!-- ถ่ายรูปก่อน → AI อ่านเป็นรายการให้ → พนักงานตรวจ/แก้ แล้วค่อยบันทึก -->
+      <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ</label>
+      <button class="btn ghost" type="button" onclick="pickRecvPhoto()">📷 ถ่ายรูป / เลือกรูป</button>
+      <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
+      <div class="msg" id="rv-ocr-msg"></div>
+      <button class="btn ghost sm hidden" type="button" id="rv-ocr-btn" onclick="runRecvOcr(true)" style="margin-top:8px">✨ ให้ AI อ่านบิลอีกครั้ง</button>
+
+      <label style="margin-top:14px">ร้าน / ผู้ขาย</label>
       <input id="rv-supplier" type="text" list="rv-suppliers" placeholder="เช่น เจ๊หมวย, ตลาดไท, สหกรณ์">
       <datalist id="rv-suppliers"></datalist>
 
@@ -595,10 +605,6 @@
         </div>
         <div class="muted" style="font-size:12px;margin-top:6px">รวมช่อง "ราคารวม" ของทุกรายการ (กรอกราคารวมต่อรายการ ไม่ใช่ราคาต่อหน่วย)</div>
       </div>
-
-      <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ</label>
-      <button class="btn ghost" type="button" onclick="pickRecvPhoto()">📷 ถ่ายรูป / เลือกรูป</button>
-      <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
 
       <label style="margin-top:14px">หมายเหตุ / สภาพของ</label>
       <textarea id="rv-note" rows="2" placeholder="เช่น ปลาสด ผักช้ำ 1 ถุง ของขาด 2 ขวด"></textarea>
@@ -847,7 +853,7 @@ async function showRecvTileIfReady(){
   if(RECV_READY===true){ tile.classList.remove('hidden'); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); }
   else { RECV_READY = null; return; }
   if(RECV_READY) tile.classList.remove('hidden');
 }
@@ -1501,6 +1507,7 @@ async function loadCashList(){
 let RECV_ROWS=[];              // ประวัติรับของล่าสุด (ไว้ทำรายชื่อร้านให้เลือก)
 let RECV_READY=null;           // null=ยังไม่รู้ / true=หลังบ้านรองรับ / false=ยังไม่ deploy
 let RV_PHOTO=null;             // รูปใบส่งของที่เพิ่งเลือก {b64,mime}
+let OCR_READY=false;           // หลังบ้านตั้งคีย์ AI แล้วหรือยัง (มาจาก ping.ocr) — ยังไม่ตั้ง = ซ่อนปุ่ม AI
 let RV_CLIENT_ID=null;         // คีย์กันบันทึกซ้ำ 1 คีย์ต่อ 1 การกรอก (สร้างใหม่หลังบันทึกสำเร็จ)
 function uuid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
 const RV_UNITS=['กก.','ขีด','ก.','ตัว','กล่อง','ขวด','ถัง','ลัง','ถุง','แพ็ค','ชิ้น','ใบ','ครั้ง'];
@@ -1525,6 +1532,8 @@ function openRecv(){
     RV_PHOTO=null; document.getElementById('rv-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
   }
   document.getElementById('rv-itemnames').innerHTML=rvItemNames().map(function(n){return '<option value="'+esc(n)+'">';}).join('');
+  document.getElementById('rv-ocr-btn').classList.toggle('hidden', !(OCR_READY && RV_PHOTO));
+  if(!RV_PHOTO) clearMsg(document.getElementById('rv-ocr-msg'));
   clearMsg(document.getElementById('rv-msg'));
   rvCalc();
   loadRecvList();
@@ -1562,7 +1571,41 @@ function onRecvPhotoFile(input){
   resizeImage(file, 1600, 0.8, function(b64){
     RV_PHOTO={b64:b64, mime:'image/jpeg'};
     setIdPreview('rv-photo-prev', 'data:image/jpeg;base64,'+b64);
+    runRecvOcr(false);            // ถ่ายเสร็จ → ให้ AI อ่านให้เลย (ถ้าหลังบ้านเปิดใช้ AI ไว้)
   }, function(){ alert('อ่านรูปไม่ได้ ลองรูปอื่นครับ'); });
+}
+// ให้ AI อ่านบิลแล้วเติมรายการให้ — พนักงาน "ต้องตรวจ/แก้เอง" ก่อนกดบันทึกเสมอ
+// manual=true = กดปุ่มอ่านซ้ำเอง (ถามก่อนทับของที่กรอกไว้) ; ล้มเหลวเมื่อไหร่ก็แค่พิมพ์เอง ไม่บล็อกการบันทึก
+async function runRecvOcr(manual){
+  var m=document.getElementById('rv-ocr-msg'), btn=document.getElementById('rv-ocr-btn');
+  if(!OCR_READY || !RV_PHOTO){ btn.classList.add('hidden'); return; }
+  btn.classList.remove('hidden');
+  if(manual && rvCollect().length && !confirm('ให้ AI อ่านใหม่ แล้วแทนที่รายการที่กรอกไว้ตอนนี้?')) return;
+  msg(m,'⏳ AI กำลังอ่านบิล... (ระหว่างรอ พิมพ์เองได้)','ok');
+  busy(btn,true);
+  var r=await api('recvOcr',{imageBase64:RV_PHOTO.b64, mime:RV_PHOTO.mime});
+  busy(btn,false,'✨ ให้ AI อ่านบิลอีกครั้ง');
+  if(!r.ok){ msg(m,(r.error||'AI อ่านไม่สำเร็จ')+' — พิมพ์รายการเองได้ตามปกติ'); return; }
+  rvFillFromOcr(r);
+  msg(m,'⚠️ AI อ่านให้ '+(r.items||[]).length+' รายการ — กรุณาตรวจทุกบรรทัดกับใบจริงก่อนกดบันทึก','warn');
+}
+function rvFillFromOcr(r){
+  if(r.supplier) document.getElementById('rv-supplier').value=r.supplier;
+  if(r.date) document.getElementById('rv-date').value=r.date;
+  if(r.note && !document.getElementById('rv-note').value) document.getElementById('rv-note').value=r.note;
+  var box=document.getElementById('rv-items');
+  box.innerHTML='';
+  (r.items||[]).forEach(function(it){
+    box.insertAdjacentHTML('beforeend', rvLineHtml());
+    var ln=box.lastElementChild;
+    ln.querySelector('.rv-name').value = it.name||'';
+    ln.querySelector('.rv-qty').value  = it.qty ? it.qty : '';
+    ln.querySelector('.rv-price').value= it.price ? it.price : '';
+    var u=ln.querySelector('.rv-unit');
+    if(it.unit && RV_UNITS.indexOf(it.unit)>=0) u.value=it.unit;   // หน่วยแปลก ๆ = ปล่อยว่างให้คนเลือก
+  });
+  rvAddLine();          // เว้นบรรทัดว่างไว้ 1 แถว เผื่อ AI อ่านตกไปรายการหนึ่ง
+  rvCalc();
 }
 async function sendRecv(){
   var m=document.getElementById('rv-msg'); clearMsg(m);
@@ -1589,6 +1632,7 @@ async function sendRecv(){
   document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
   document.getElementById('rv-supplier').value=''; document.getElementById('rv-note').value='';
   RV_PHOTO=null; document.getElementById('rv-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
+  document.getElementById('rv-ocr-btn').classList.add('hidden'); clearMsg(document.getElementById('rv-ocr-msg'));
   rvCalc();
   loadRecvList();
 }
