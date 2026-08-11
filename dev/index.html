@@ -603,6 +603,7 @@
       <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ / รูปสินค้า (แนบได้หลายรูป)</label>
       <button class="btn ghost" type="button" onclick="pickRecvGallery()">🖼 เลือกรูป (เลือกได้หลายรูป)</button>
       <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
+      <div class="msg" id="rv-dup-msg"></div>
       <div class="msg" id="rv-ocr-msg"></div>
       <button class="btn ghost sm hidden" type="button" id="rv-ocr-btn" onclick="runRecvOcr(true)" style="margin-top:8px">✨ ให้ AI อ่านบิลอีกครั้ง</button>
 
@@ -1546,7 +1547,7 @@ function openRecv(){
     document.getElementById('rv-supplier').value='';
     document.getElementById('rv-note').value='';
     document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
-    RV_PHOTOS=[]; rvRenderPhotos();
+    RV_PHOTOS=[]; rvRenderPhotos(); clearMsg(document.getElementById('rv-dup-msg'));
   }
   document.getElementById('rv-itemnames').innerHTML=rvItemNames().map(function(n){return '<option value="'+esc(n)+'">';}).join('');
   document.getElementById('rv-ocr-btn').classList.toggle('hidden', !(OCR_READY && RV_PHOTOS.length));
@@ -1591,9 +1592,9 @@ function rvCollect(){
   });
   return out;
 }
+function rvTotal(){ return rvCollect().reduce(function(s,x){return s+(x.price||0);},0); }
 function rvCalc(){
-  var t=rvCollect().reduce(function(s,x){return s+(x.price||0);},0);
-  document.getElementById('rv-total').textContent=t.toLocaleString('en-US');
+  document.getElementById('rv-total').textContent=rvTotal().toLocaleString('en-US');
 }
 // ปุ่มเดียว: เลือกได้ทีละหลายรูป (ตัวเลือก "ถ่ายรูป" มีอยู่ในหน้าเลือกไฟล์ของมือถืออยู่แล้ว — เจ้าของสั่งตัดปุ่มกล้องออก 11 ส.ค. 2026)
 function pickRecvGallery(){ var f=document.getElementById('recv-file-multi'); f.value=''; f.click(); }
@@ -1612,8 +1613,39 @@ async function onRecvPhotoFile(input){
   if(bad) alert('อ่านรูปไม่ได้ '+bad+' รูป ลองรูปอื่นครับ');
   rvRenderPhotos();
   if(!RV_PHOTOS.length) return;
+  rvCheckDup();                    // เตือนทันทีถ้ารูปนี้เคยอัปไปแล้ว (ไม่ต้องรอกดบันทึก)
   if(hadNone) runRecvOcr(false);   // แนบชุดแรก → ให้ AI อ่านให้เลย ; เพิ่มทีหลัง → ให้กดอ่านใหม่เอง (กันยิง AI ซ้ำทุกรูปที่เพิ่ม)
   else msg(document.getElementById('rv-ocr-msg'),'📷 มีรูปแนบ '+RV_PHOTOS.length+' รูป — กด ✨ เพื่อให้ AI อ่านใหม่รวมทุกรูป','ok');
+}
+// ลายนิ้วมือรูป (SHA-256 ของไฟล์) — ใช้จับ "รูปเดียวกันเป๊ะ" ที่เคยอัปไปแล้ว ; ต้องคิดจาก base64 ตัวเดียวกับที่ส่งขึ้นเซิร์ฟเวอร์
+async function sha256b64(b64){
+  if(!(window.crypto && crypto.subtle)) return null;      // เบราว์เซอร์เก่า/ไม่ใช่ https → ข้ามการเช็คฝั่งหน้าเว็บ (หลังบ้านยังเช็คให้ตอนบันทึก)
+  var bin=atob(b64), arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  var h=await crypto.subtle.digest('SHA-256', arr);
+  return Array.prototype.map.call(new Uint8Array(h), function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+}
+function rvDupText(d){
+  return cashDMY(d.date)+(d.supplier?(' · '+d.supplier):'')+' · '+Number(d.total||0).toLocaleString('en-US')+' บาท'+
+    (d.by?(' (บันทึกโดย '+d.by+')'):'');
+}
+// เช็คบิลซ้ำ: รูปเดียวกันเป๊ะ หรือ ร้าน+วันที่+ยอด ตรงกับที่เคยบันทึก
+async function rvCheckDup(){
+  var m=document.getElementById('rv-dup-msg'); if(!m) return;
+  if(!RV_PHOTOS.length && !rvTotal()){ clearMsg(m); return; }
+  var hashes=[];
+  for(var i=0;i<RV_PHOTOS.length;i++){ var h=await sha256b64(RV_PHOTOS[i].b64); if(h) hashes.push(h); }
+  var r=await api('recvCheckDup',{
+    hashes:hashes, client_id:RV_CLIENT_ID,
+    date:document.getElementById('rv-date').value,
+    supplier:document.getElementById('rv-supplier').value,
+    total:rvTotal()
+  });
+  if(!r.ok || !r.dups || !r.dups.length){ clearMsg(m); return; }
+  var d=r.dups[0];
+  msg(m,(d.reason==='photo'?'⚠️ รูปนี้เคยอัปโหลดแล้ว':'⚠️ เคยบันทึกบิลของร้านนี้ วันที่นี้ ยอดเท่ากันแล้ว')+
+    ' — '+rvDupText(d)+(r.dups.length>1?(' (และอีก '+(r.dups.length-1)+' รายการ)'):'')+
+    ' · ถ้าเป็นคนละใบจริง กดบันทึกแล้วยืนยันได้','warn');
 }
 function rvRenderPhotos(){
   var box=document.getElementById('rv-photo-prev');
@@ -1650,6 +1682,7 @@ async function runRecvOcr(manual){
   if(!r.ok){ msg(m,(r.error||'AI อ่านไม่สำเร็จ')+' — พิมพ์รายการเองได้ตามปกติ'); return; }
   rvFillFromOcr(r);
   msg(m,'⚠️ AI อ่านให้ '+(r.items||[]).length+' รายการ — กรุณาตรวจทุกบรรทัดกับใบจริงก่อนกดบันทึก','warn');
+  rvCheckDup();   // ได้ร้าน/วันที่/ยอดจาก AI แล้ว → เช็คซ้ำอีกรอบ (จับใบเดิมที่ถ่ายใหม่ ซึ่งแฮชรูปไม่ตรง)
 }
 function rvFillFromOcr(r){
   if(r.supplier) document.getElementById('rv-supplier').value=r.supplier;
@@ -1688,6 +1721,19 @@ async function sendRecv(){
   };
   if(RV_PHOTOS.length){ payload.photos=RV_PHOTOS.map(function(p){return {imageBase64:p.b64, mime:p.mime};}); }
   var r=await api('recvSave', payload);
+  // หลังบ้านเจอบิลซ้ำ → ถามยืนยันก่อน (เตือน ไม่บล็อก) ; ยืนยันแล้วส่งซ้ำพร้อม dup_ok
+  if(r.dup && r.dups && r.dups.length){
+    busy(btn,false,'บันทึกการรับของ');
+    var d=r.dups[0];
+    var head=(d.reason==='photo'?'รูปใบเสร็จนี้เคยอัปโหลดแล้ว':'เคยบันทึกบิลของร้านนี้ วันที่นี้ ยอดเท่ากันแล้ว');
+    var lines=r.dups.slice(0,3).map(function(x){ return '• '+rvDupText(x); }).join('\n');
+    if(!confirm('⚠️ '+head+'\n\n'+lines+(r.dups.length>3?('\n• …และอีก '+(r.dups.length-3)+' รายการ'):'')+'\n\nถ้าเป็นคนละใบจริง กด OK เพื่อบันทึกซ้อน\nถ้าเผลออัปซ้ำ กด Cancel')){
+      msg(m,'ยกเลิกการบันทึก — บิลนี้เคยบันทึกไปแล้ว ดูได้ที่ "รับของล่าสุด"');
+      return;
+    }
+    busy(btn,true);
+    r=await api('recvSave', Object.assign({}, payload, {dup_ok:1}));   // ส่งชุดใหม่ ไม่แก้ payload เดิม
+  }
   busy(btn,false,'บันทึกการรับของ');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
   msg(m,'✅ บันทึกแล้ว · '+items.length+' รายการ · รวม '+Number(r.total||0).toLocaleString('en-US')+' บาท','ok');
@@ -1695,7 +1741,8 @@ async function sendRecv(){
   document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
   document.getElementById('rv-supplier').value=''; document.getElementById('rv-note').value='';
   RV_PHOTOS=[]; rvRenderPhotos();
-  document.getElementById('rv-ocr-btn').classList.add('hidden'); clearMsg(document.getElementById('rv-ocr-msg'));
+  document.getElementById('rv-ocr-btn').classList.add('hidden');
+  clearMsg(document.getElementById('rv-ocr-msg')); clearMsg(document.getElementById('rv-dup-msg'));
   rvCalc();
   loadRecvList();
 }
