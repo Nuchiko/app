@@ -54,6 +54,7 @@
   .msg.show{display:block}
   .msg.err{background:rgba(224,83,61,.14);color:#ffb4a6;border:1px solid rgba(224,83,61,.3)}
   .msg.ok{background:rgba(76,175,114,.14);color:#b6e7c6;border:1px solid rgba(76,175,114,.3)}
+  .msg.warn{background:rgba(230,168,60,.14);color:#f2d79b;border:1px solid rgba(230,168,60,.32)}
 
   /* Top bar (home) */
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0 14px}
@@ -254,6 +255,7 @@
   /* ในการ์ดขาว = โทนสว่างปกติ */
   .msg.err{ background:#fdecea; color:#b23b32; border:1px solid #f3c2bc; }
   .msg.ok{ background:#e9f6ef; color:#177a4a; border:1px solid #bfe3cd; }
+  .msg.warn{ background:#fff6e5; color:#8a5a00; border:1px solid #f0d9a8; }
   .tile.admin{ background:linear-gradient(160deg,#eaf1fd,#ffffff); border-color:rgba(10,65,145,.25); }
   .soon-tag{ color:#5f7088; }
   .badge.in{ background:rgba(31,157,87,.14); color:#177a4a; border:1px solid rgba(31,157,87,.42); }
@@ -290,6 +292,21 @@
   .cash-tb td.d u{cursor:pointer;text-decoration-style:dotted;text-underline-offset:3px}
   .cash-tb .iconbtn{background:none;border:0;color:var(--muted);font-size:15px;padding:4px 5px;cursor:pointer;border-radius:8px}
   .cash-tb .iconbtn:active{background:rgba(127,127,127,.18)}
+  /* 1 รายการของที่รับ = กริด 2 ช่องต่อแถว (ชื่อ / จำนวน+หน่วย / ราคาต่อหน่วย+ราคารวม)
+     เดิมเรียง 4 ช่องบรรทัดเดียว พอเพิ่มช่องราคาต่อหน่วยแล้วแต่ละช่องแคบจน placeholder ถูกตัด ("จำน", "ราคา/") */
+  .rv-line{display:grid;grid-template-columns:1fr 1fr 44px;gap:6px;margin-bottom:12px;align-items:center}
+  .rv-line>*{margin:0;min-width:0}
+  .rv-line .rv-name{grid-column:1/-1}
+  .rv-line .rv-del{grid-column:3;grid-row:2/4;height:100%;padding:0}
+  /* ตารางรายการของที่รับ (ในการ์ดประวัติรับของเข้า) — อ่านง่ายกว่าบรรทัดยาว ๆ ที่ชื่อของกับจำนวนติดกัน */
+  .rv-tb{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;table-layout:fixed}
+  .rv-tb th{color:var(--muted);font-weight:700;font-size:11.5px;padding:4px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  .rv-tb th.l{text-align:left}
+  .rv-tb td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.35}
+  .rv-tb tr:last-child td{border-bottom:none}
+  .rv-tb td.nm{word-break:break-word}
+  .rv-tb td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .rv-tb td.pr{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
   .editbar{margin:2px 0 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;
     background:rgba(227,178,60,.14);border:1px solid rgba(227,178,60,.45)}
   .editbar.lock{background:rgba(127,127,127,.14);border-color:var(--line);color:var(--muted)}
@@ -580,7 +597,17 @@
     <div class="card">
       <label>วันที่รับของ</label>
       <input id="rv-date" type="date">
-      <label>ร้าน / ผู้ขาย</label>
+
+      <!-- ถ่ายรูปก่อน → AI อ่านเป็นรายการให้ → พนักงานตรวจ/แก้ แล้วค่อยบันทึก
+           แนบได้หลายรูป: ใบเสร็จหลายหน้า + รูปสินค้า (พฤติกรรมจริงเหมือนที่เคยส่งใน LINE กลุ่ม) -->
+      <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ / รูปสินค้า (แนบได้หลายรูป)</label>
+      <button class="btn ghost" type="button" onclick="pickRecvGallery()">🖼 เลือกรูป (เลือกได้หลายรูป)</button>
+      <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
+      <div class="msg" id="rv-dup-msg"></div>
+      <div class="msg" id="rv-ocr-msg"></div>
+      <button class="btn ghost sm hidden" type="button" id="rv-ocr-btn" onclick="runRecvOcr(true)" style="margin-top:8px">✨ ให้ AI อ่านบิลอีกครั้ง</button>
+
+      <label style="margin-top:14px">ร้าน / ผู้ขาย</label>
       <input id="rv-supplier" type="text" list="rv-suppliers" placeholder="เช่น เจ๊หมวย, ตลาดไท, สหกรณ์">
       <datalist id="rv-suppliers"></datalist>
 
@@ -593,12 +620,8 @@
         <div style="display:flex;justify-content:space-between;align-items:center">
           <b>รวมเงิน</b><b id="rv-total" style="font-size:22px;color:var(--accent2)">0</b>
         </div>
-        <div class="muted" style="font-size:12px;margin-top:6px">รวมช่อง "ราคารวม" ของทุกรายการ (กรอกราคารวมต่อรายการ ไม่ใช่ราคาต่อหน่วย)</div>
+        <div class="muted" style="font-size:12px;margin-top:6px">รวมช่อง "ราคารวม" ของทุกรายการ — กรอกจำนวน + ราคา/หน่วย ระบบคิดราคารวมให้เอง (พิมพ์ทับได้ถ้าบิลมีส่วนลด/ปัดเศษ)</div>
       </div>
-
-      <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ</label>
-      <button class="btn ghost" type="button" onclick="pickRecvPhoto()">📷 ถ่ายรูป / เลือกรูป</button>
-      <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
 
       <label style="margin-top:14px">หมายเหตุ / สภาพของ</label>
       <textarea id="rv-note" rows="2" placeholder="เช่น ปลาสด ผักช้ำ 1 ถุง ของขาด 2 ขวด"></textarea>
@@ -741,7 +764,7 @@
 
 <!-- input ถ่าย/เลือกรูปบัตร (ใช้ร่วมกันหน้าลงทะเบียน + modal แอดมิน) -->
 <input type="file" id="iddoc-file" accept="image/*" capture="environment" style="display:none" onchange="onIdDocFile(this)">
-<input type="file" id="recv-file" accept="image/*" capture="environment" style="display:none" onchange="onRecvPhotoFile(this)">
+<input type="file" id="recv-file-multi" accept="image/*" multiple style="display:none" onchange="onRecvPhotoFile(this)">
 
 <!-- ดูรูปบัตรเต็มจอ -->
 <div id="lightbox" class="overlay hidden" onclick="closeLightbox()">
@@ -847,7 +870,7 @@ async function showRecvTileIfReady(){
   if(RECV_READY===true){ tile.classList.remove('hidden'); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); }
   else { RECV_READY = null; return; }
   if(RECV_READY) tile.classList.remove('hidden');
 }
@@ -942,7 +965,7 @@ function setIdPreview(boxId, src){
   box.innerHTML=''; const im=new Image(); im.alt='รูปบัตร'; im.src=src; box.appendChild(im);
 }
 function openLightbox(src){ document.getElementById('lightbox-img').src=src; document.getElementById('lightbox').classList.remove('hidden'); }
-function closeLightbox(){ document.getElementById('lightbox').classList.add('hidden'); document.getElementById('lightbox-img').src=''; }
+function closeLightbox(){ document.getElementById('lightbox').classList.add('hidden'); document.getElementById('lightbox-img').src=''; var n=document.getElementById('lb-nav'); if(n) n.remove(); }
 async function viewEmpDoc(){
   if(M_ID){ openLightbox('data:image/jpeg;base64,'+M_ID.b64); return; }   // รูปที่เพิ่งเลือก
   const e=editingId?EMP_CACHE.find(x=>x.emp_id===editingId):null;
@@ -1500,7 +1523,9 @@ async function loadCashList(){
 /* ---------- รับของเข้า ---------- */
 let RECV_ROWS=[];              // ประวัติรับของล่าสุด (ไว้ทำรายชื่อร้านให้เลือก)
 let RECV_READY=null;           // null=ยังไม่รู้ / true=หลังบ้านรองรับ / false=ยังไม่ deploy
-let RV_PHOTO=null;             // รูปใบส่งของที่เพิ่งเลือก {b64,mime}
+let RV_PHOTOS=[];              // รูปที่แนบ (หลายรูป: ใบเสร็จหลายหน้า + รูปสินค้า) [{b64,mime}]
+const RV_MAX_PHOTOS=8;         // ต้องตรงกับ RECV_MAX_PHOTOS ฝั่ง GAS
+let OCR_READY=false;           // หลังบ้านตั้งคีย์ AI แล้วหรือยัง (มาจาก ping.ocr) — ยังไม่ตั้ง = ซ่อนปุ่ม AI
 let RV_CLIENT_ID=null;         // คีย์กันบันทึกซ้ำ 1 คีย์ต่อ 1 การกรอก (สร้างใหม่หลังบันทึกสำเร็จ)
 function uuid(){ return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
 const RV_UNITS=['กก.','ขีด','ก.','ตัว','กล่อง','ขวด','ถัง','ลัง','ถุง','แพ็ค','ชิ้น','ใบ','ครั้ง'];
@@ -1515,16 +1540,18 @@ function rvItemNames(){        // ชื่อของที่มีในร�
 function openRecv(){
   document.getElementById('recv-datelabel').textContent=thaiDateNow();
   // ถ้ามีร่างค้าง (พิมพ์ไว้แล้วเผลอกดกลับ) ไม่ล้าง — เก็บให้กรอกต่อ ; เริ่มใหม่เมื่อไม่มีร่าง
-  var hasDraft = document.querySelectorAll('#rv-items .rv-line').length && (rvCollect().length || RV_PHOTO);
+  var hasDraft = document.querySelectorAll('#rv-items .rv-line').length && (rvCollect().length || RV_PHOTOS.length);
   if(!hasDraft){
     RV_CLIENT_ID=uuid();
     document.getElementById('rv-date').value=todayISO();
     document.getElementById('rv-supplier').value='';
     document.getElementById('rv-note').value='';
     document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
-    RV_PHOTO=null; document.getElementById('rv-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
+    RV_PHOTOS=[]; rvRenderPhotos(); clearMsg(document.getElementById('rv-dup-msg'));
   }
   document.getElementById('rv-itemnames').innerHTML=rvItemNames().map(function(n){return '<option value="'+esc(n)+'">';}).join('');
+  document.getElementById('rv-ocr-btn').classList.toggle('hidden', !(OCR_READY && RV_PHOTOS.length));
+  if(!RV_PHOTOS.length) clearMsg(document.getElementById('rv-ocr-msg'));
   clearMsg(document.getElementById('rv-msg'));
   rvCalc();
   loadRecvList();
@@ -1533,13 +1560,25 @@ function openRecv(){
 function rvLineHtml(){
   // ตัวแรกเว้นว่าง — กันกรณีไม่ได้เลือกแล้วถูกบันทึกเป็น "กก." โดยไม่ตั้งใจ
   var units='<option value="">หน่วย</option>'+RV_UNITS.map(function(u){return '<option value="'+u+'">'+u+'</option>';}).join('');
-  return '<div class="rv-line" style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">'+
-    '<input type="text" class="rv-name" list="rv-itemnames" placeholder="ชื่อของ" style="flex:1 1 100%;min-width:0;margin:0">'+
-    '<input type="number" inputmode="decimal" class="rv-qty" placeholder="จำนวน" oninput="rvCalc()" style="flex:1 1 78px;min-width:0;margin:0">'+
-    '<select class="rv-unit" style="flex:1 1 86px;min-width:0;margin:0">'+units+'</select>'+
-    '<input type="number" inputmode="decimal" class="rv-price" placeholder="ราคารวม" oninput="rvCalc()" style="flex:1 1 86px;min-width:0;margin:0">'+
-    '<button type="button" class="btn ghost sm" title="ลบ" onclick="this.parentNode.remove();rvCalc()" style="flex:0 0 auto;padding:9px 12px;margin:0">✕</button>'+
+  return '<div class="rv-line">'+
+    '<input type="text" class="rv-name" list="rv-itemnames" placeholder="ชื่อของ">'+
+    '<input type="number" inputmode="decimal" class="rv-qty" placeholder="จำนวน" oninput="rvAutoTotal(this)">'+
+    '<select class="rv-unit">'+units+'</select>'+
+    '<button type="button" class="btn ghost sm rv-del" title="ลบรายการนี้" onclick="this.parentNode.remove();rvCalc()">✕</button>'+
+    '<input type="number" inputmode="decimal" class="rv-uprice" placeholder="ราคา/หน่วย" oninput="rvAutoTotal(this)">'+
+    '<input type="number" inputmode="decimal" class="rv-price" placeholder="ราคารวม" oninput="rvCalc()">'+
   '</div>';
+}
+// กรอกจำนวน/ราคาต่อหน่วย → เติม "ราคารวม" ให้เอง ; แต่ถ้าคนพิมพ์ราคารวมเองไว้แล้ว ไม่ทับ (บิลบางใบมีส่วนลด/ปัดเศษ ต้องยึดตามบิล)
+function rvAutoTotal(el){
+  var ln=el.closest('.rv-line');
+  var qty=parseFloat(ln.querySelector('.rv-qty').value)||0;
+  var up=parseFloat(ln.querySelector('.rv-uprice').value)||0;
+  var pe=ln.querySelector('.rv-price');
+  if(qty && up && (!pe.value || pe.dataset.auto==='1')){
+    pe.value=Math.round(qty*up*100)/100; pe.dataset.auto='1';
+  }
+  rvCalc();
 }
 function rvAddLine(){ document.getElementById('rv-items').insertAdjacentHTML('beforeend', rvLineHtml()); }
 function rvCollect(){
@@ -1547,22 +1586,122 @@ function rvCollect(){
   document.querySelectorAll('#rv-items .rv-line').forEach(function(ln){
     var name=ln.querySelector('.rv-name').value.trim();
     var qty=parseFloat(ln.querySelector('.rv-qty').value)||0;
+    var up=parseFloat(ln.querySelector('.rv-uprice').value)||0;
     var price=parseFloat(ln.querySelector('.rv-price').value)||0;
-    if(name||qty||price) out.push({name:name, qty:qty, unit:ln.querySelector('.rv-unit').value, price:price});
+    if(name||qty||price||up) out.push({name:name, qty:qty, unit:ln.querySelector('.rv-unit').value, unit_price:up, price:price});
   });
   return out;
 }
+function rvTotal(){ return rvCollect().reduce(function(s,x){return s+(x.price||0);},0); }
 function rvCalc(){
-  var t=rvCollect().reduce(function(s,x){return s+(x.price||0);},0);
-  document.getElementById('rv-total').textContent=t.toLocaleString('en-US');
+  document.getElementById('rv-total').textContent=rvTotal().toLocaleString('en-US');
 }
-function pickRecvPhoto(){ var f=document.getElementById('recv-file'); f.value=''; f.click(); }
-function onRecvPhotoFile(input){
-  var file=input.files&&input.files[0]; if(!file) return;
-  resizeImage(file, 1600, 0.8, function(b64){
-    RV_PHOTO={b64:b64, mime:'image/jpeg'};
-    setIdPreview('rv-photo-prev', 'data:image/jpeg;base64,'+b64);
-  }, function(){ alert('อ่านรูปไม่ได้ ลองรูปอื่นครับ'); });
+// ปุ่มเดียว: เลือกได้ทีละหลายรูป (ตัวเลือก "ถ่ายรูป" มีอยู่ในหน้าเลือกไฟล์ของมือถืออยู่แล้ว — เจ้าของสั่งตัดปุ่มกล้องออก 11 ส.ค. 2026)
+function pickRecvGallery(){ var f=document.getElementById('recv-file-multi'); f.value=''; f.click(); }
+function resizeP(file){ return new Promise(function(res){ resizeImage(file,1600,0.8,function(b64){res(b64);},function(){res(null);}); }); }
+async function onRecvPhotoFile(input){
+  var files=Array.prototype.slice.call(input.files||[]); if(!files.length) return;
+  var hadNone = RV_PHOTOS.length===0;
+  var room = RV_MAX_PHOTOS - RV_PHOTOS.length;
+  if(room<=0){ alert('แนบได้สูงสุด '+RV_MAX_PHOTOS+' รูป — ลบรูปเก่าก่อนถ้าจะเพิ่ม'); return; }
+  if(files.length>room){ alert('แนบได้สูงสุด '+RV_MAX_PHOTOS+' รูป — รับเพิ่มได้อีก '+room+' รูป ที่เกินถูกตัดออก'); files=files.slice(0,room); }
+  var bad=0;
+  for(var i=0;i<files.length;i++){
+    var b64=await resizeP(files[i]);
+    if(b64) RV_PHOTOS.push({b64:b64, mime:'image/jpeg'}); else bad++;
+  }
+  if(bad) alert('อ่านรูปไม่ได้ '+bad+' รูป ลองรูปอื่นครับ');
+  rvRenderPhotos();
+  if(!RV_PHOTOS.length) return;
+  rvCheckDup();                    // เตือนทันทีถ้ารูปนี้เคยอัปไปแล้ว (ไม่ต้องรอกดบันทึก)
+  if(hadNone) runRecvOcr(false);   // แนบชุดแรก → ให้ AI อ่านให้เลย ; เพิ่มทีหลัง → ให้กดอ่านใหม่เอง (กันยิง AI ซ้ำทุกรูปที่เพิ่ม)
+  else msg(document.getElementById('rv-ocr-msg'),'📷 มีรูปแนบ '+RV_PHOTOS.length+' รูป — กด ✨ เพื่อให้ AI อ่านใหม่รวมทุกรูป','ok');
+}
+// ลายนิ้วมือรูป (SHA-256 ของไฟล์) — ใช้จับ "รูปเดียวกันเป๊ะ" ที่เคยอัปไปแล้ว ; ต้องคิดจาก base64 ตัวเดียวกับที่ส่งขึ้นเซิร์ฟเวอร์
+async function sha256b64(b64){
+  if(!(window.crypto && crypto.subtle)) return null;      // เบราว์เซอร์เก่า/ไม่ใช่ https → ข้ามการเช็คฝั่งหน้าเว็บ (หลังบ้านยังเช็คให้ตอนบันทึก)
+  var bin=atob(b64), arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  var h=await crypto.subtle.digest('SHA-256', arr);
+  return Array.prototype.map.call(new Uint8Array(h), function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+}
+function rvDupText(d){
+  return cashDMY(d.date)+(d.supplier?(' · '+d.supplier):'')+' · '+Number(d.total||0).toLocaleString('en-US')+' บาท'+
+    (d.by?(' (บันทึกโดย '+d.by+')'):'');
+}
+// เช็คบิลซ้ำ: รูปเดียวกันเป๊ะ หรือ ร้าน+วันที่+ยอด ตรงกับที่เคยบันทึก
+async function rvCheckDup(){
+  var m=document.getElementById('rv-dup-msg'); if(!m) return;
+  if(!RV_PHOTOS.length && !rvTotal()){ clearMsg(m); return; }
+  var hashes=[];
+  for(var i=0;i<RV_PHOTOS.length;i++){ var h=await sha256b64(RV_PHOTOS[i].b64); if(h) hashes.push(h); }
+  var r=await api('recvCheckDup',{
+    hashes:hashes, client_id:RV_CLIENT_ID,
+    date:document.getElementById('rv-date').value,
+    supplier:document.getElementById('rv-supplier').value,
+    total:rvTotal()
+  });
+  if(!r.ok || !r.dups || !r.dups.length){ clearMsg(m); return; }
+  var d=r.dups[0];
+  msg(m,(d.reason==='photo'?'⚠️ รูปนี้เคยอัปโหลดแล้ว':'⚠️ เคยบันทึกบิลของร้านนี้ วันที่นี้ ยอดเท่ากันแล้ว')+
+    ' — '+rvDupText(d)+(r.dups.length>1?(' (และอีก '+(r.dups.length-1)+' รายการ)'):'')+
+    ' · ถ้าเป็นคนละใบจริง กดบันทึกแล้วยืนยันได้','warn');
+}
+function rvRenderPhotos(){
+  var box=document.getElementById('rv-photo-prev');
+  if(!RV_PHOTOS.length){ box.innerHTML='ยังไม่ได้แนบรูป'; }
+  else{
+    box.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap">'+RV_PHOTOS.map(function(p,i){
+      return '<div style="position:relative">'+
+        '<img src="data:image/jpeg;base64,'+p.b64+'" alt="รูปที่ '+(i+1)+'" onclick="openLightbox(this.src)" '+
+          'style="width:84px;height:84px;object-fit:cover;border-radius:10px;display:block">'+
+        '<button type="button" onclick="rvDelPhoto('+i+')" aria-label="ลบรูปที่ '+(i+1)+'" '+
+          'style="position:absolute;top:-7px;right:-7px;width:26px;height:26px;border-radius:50%;border:0;background:#c0392b;color:#fff;font-size:14px;line-height:1;padding:0">✕</button>'+
+      '</div>';
+    }).join('')+'</div>'+
+    '<div class="muted" style="font-size:12px;margin-top:6px">'+RV_PHOTOS.length+'/'+RV_MAX_PHOTOS+' รูป — แตะรูปเพื่อดูใหญ่ · กด ✕ เพื่อลบ</div>';
+  }
+  document.getElementById('rv-ocr-btn').classList.toggle('hidden', !(OCR_READY && RV_PHOTOS.length));
+}
+function rvDelPhoto(i){
+  RV_PHOTOS.splice(i,1); rvRenderPhotos();
+  if(!RV_PHOTOS.length) clearMsg(document.getElementById('rv-ocr-msg'));
+}
+// ให้ AI อ่านบิลแล้วเติมรายการให้ — พนักงาน "ต้องตรวจ/แก้เอง" ก่อนกดบันทึกเสมอ
+// manual=true = กดปุ่มอ่านซ้ำเอง (ถามก่อนทับของที่กรอกไว้) ; ล้มเหลวเมื่อไหร่ก็แค่พิมพ์เอง ไม่บล็อกการบันทึก
+async function runRecvOcr(manual){
+  var m=document.getElementById('rv-ocr-msg'), btn=document.getElementById('rv-ocr-btn');
+  if(!OCR_READY || !RV_PHOTOS.length){ btn.classList.add('hidden'); return; }
+  btn.classList.remove('hidden');
+  if(manual && rvCollect().length && !confirm('ให้ AI อ่านใหม่จากทุกรูป ('+RV_PHOTOS.length+' รูป) แล้วแทนที่รายการที่กรอกไว้ตอนนี้?')) return;
+  msg(m,'⏳ AI กำลังอ่านบิล '+RV_PHOTOS.length+' รูป... (ระหว่างรอ พิมพ์เองได้)','ok');
+  busy(btn,true);
+  // ส่งทุกรูปในคำขอเดียว (นับโควตา 1 ครั้ง) — AI รวมใบเสร็จหลายหน้าเป็นรายการชุดเดียว และข้ามรูปสินค้าเอง
+  var r=await api('recvOcr',{images:RV_PHOTOS.map(function(p){return {imageBase64:p.b64, mime:p.mime};})});
+  busy(btn,false,'✨ ให้ AI อ่านบิลอีกครั้ง');
+  if(!r.ok){ msg(m,(r.error||'AI อ่านไม่สำเร็จ')+' — พิมพ์รายการเองได้ตามปกติ'); return; }
+  rvFillFromOcr(r);
+  msg(m,'⚠️ AI อ่านให้ '+(r.items||[]).length+' รายการ — กรุณาตรวจทุกบรรทัดกับใบจริงก่อนกดบันทึก','warn');
+  rvCheckDup();   // ได้ร้าน/วันที่/ยอดจาก AI แล้ว → เช็คซ้ำอีกรอบ (จับใบเดิมที่ถ่ายใหม่ ซึ่งแฮชรูปไม่ตรง)
+}
+function rvFillFromOcr(r){
+  if(r.supplier) document.getElementById('rv-supplier').value=r.supplier;
+  if(r.date) document.getElementById('rv-date').value=r.date;
+  if(r.note && !document.getElementById('rv-note').value) document.getElementById('rv-note').value=r.note;
+  var box=document.getElementById('rv-items');
+  box.innerHTML='';
+  (r.items||[]).forEach(function(it){
+    box.insertAdjacentHTML('beforeend', rvLineHtml());
+    var ln=box.lastElementChild;
+    ln.querySelector('.rv-name').value = it.name||'';
+    ln.querySelector('.rv-qty').value  = it.qty ? it.qty : '';
+    ln.querySelector('.rv-uprice').value = it.unit_price ? it.unit_price : '';
+    ln.querySelector('.rv-price').value= it.price ? it.price : '';
+    var u=ln.querySelector('.rv-unit');
+    if(it.unit && RV_UNITS.indexOf(it.unit)>=0) u.value=it.unit;   // หน่วยแปลก ๆ = ปล่อยว่างให้คนเลือก
+  });
+  rvAddLine();          // เว้นบรรทัดว่างไว้ 1 แถว เผื่อ AI อ่านตกไปรายการหนึ่ง
+  rvCalc();
 }
 async function sendRecv(){
   var m=document.getElementById('rv-msg'); clearMsg(m);
@@ -1580,15 +1719,30 @@ async function sendRecv(){
     note:document.getElementById('rv-note').value,
     client_id:RV_CLIENT_ID   // กันบันทึกซ้ำถ้าเน็ตหลุดแล้วกดใหม่ (หลังบ้านอัปเดตทับ ไม่สร้างแถวใหม่)
   };
-  if(RV_PHOTO){ payload.imageBase64=RV_PHOTO.b64; payload.mime=RV_PHOTO.mime; }
+  if(RV_PHOTOS.length){ payload.photos=RV_PHOTOS.map(function(p){return {imageBase64:p.b64, mime:p.mime};}); }
   var r=await api('recvSave', payload);
+  // หลังบ้านเจอบิลซ้ำ → ถามยืนยันก่อน (เตือน ไม่บล็อก) ; ยืนยันแล้วส่งซ้ำพร้อม dup_ok
+  if(r.dup && r.dups && r.dups.length){
+    busy(btn,false,'บันทึกการรับของ');
+    var d=r.dups[0];
+    var head=(d.reason==='photo'?'รูปใบเสร็จนี้เคยอัปโหลดแล้ว':'เคยบันทึกบิลของร้านนี้ วันที่นี้ ยอดเท่ากันแล้ว');
+    var lines=r.dups.slice(0,3).map(function(x){ return '• '+rvDupText(x); }).join('\n');
+    if(!confirm('⚠️ '+head+'\n\n'+lines+(r.dups.length>3?('\n• …และอีก '+(r.dups.length-3)+' รายการ'):'')+'\n\nถ้าเป็นคนละใบจริง กด OK เพื่อบันทึกซ้อน\nถ้าเผลออัปซ้ำ กด Cancel')){
+      msg(m,'ยกเลิกการบันทึก — บิลนี้เคยบันทึกไปแล้ว ดูได้ที่ "รับของล่าสุด"');
+      return;
+    }
+    busy(btn,true);
+    r=await api('recvSave', Object.assign({}, payload, {dup_ok:1}));   // ส่งชุดใหม่ ไม่แก้ payload เดิม
+  }
   busy(btn,false,'บันทึกการรับของ');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
   msg(m,'✅ บันทึกแล้ว · '+items.length+' รายการ · รวม '+Number(r.total||0).toLocaleString('en-US')+' บาท','ok');
   RV_CLIENT_ID=uuid();   // รายการถัดไป = คีย์ใหม่
   document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
   document.getElementById('rv-supplier').value=''; document.getElementById('rv-note').value='';
-  RV_PHOTO=null; document.getElementById('rv-photo-prev').innerHTML='ยังไม่ได้แนบรูป';
+  RV_PHOTOS=[]; rvRenderPhotos();
+  document.getElementById('rv-ocr-btn').classList.add('hidden');
+  clearMsg(document.getElementById('rv-ocr-msg')); clearMsg(document.getElementById('rv-dup-msg'));
   rvCalc();
   loadRecvList();
 }
@@ -1603,28 +1757,50 @@ async function loadRecvList(){
   document.getElementById('rv-suppliers').innerHTML=sup.map(function(s){return '<option value="'+esc(s)+'">';}).join('');
   if(!RECV_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึกการรับของ</div>'; return; }
   box.innerHTML=RECV_ROWS.slice(0,10).map(function(x){
-    var lines=(x.items||[]).map(function(o){
-      return esc(o.name||'-')+(o.qty?(' '+o.qty+' '+esc(o.unit||'')):'')+(o.price?(' · '+Number(o.price).toLocaleString('en-US')+' บ.'):'');
-    }).join('<br>');
+    var items=x.items||[];
+    // ตาราง 3 ช่อง: รายการ | จำนวน | ราคา — เดิมพิมพ์ต่อกันเป็นบรรทัดเดียว ทำให้ชื่อของที่มีขนาดปน (เช่น "น้ำตาล 1 กก.") อ่านสับสนกับจำนวน
+    var tbl = items.length
+      ? '<table class="rv-tb"><thead><tr><th class="l" style="width:auto">รายการ</th><th style="width:66px">จำนวน</th><th style="width:70px">ราคา/หน่วย</th><th style="width:70px">รวม</th></tr></thead><tbody>'+
+        items.map(function(o){
+          var q=o.qty?(Number(o.qty).toLocaleString('en-US')+(o.unit?(' '+esc(o.unit)):'')):'—';
+          var u=o.unit_price?Number(o.unit_price).toLocaleString('en-US'):'—';
+          var p=o.price?Number(o.price).toLocaleString('en-US'):'—';
+          return '<tr><td class="nm">'+esc(o.name||'-')+'</td><td class="num">'+q+'</td><td class="num">'+u+'</td><td class="pr">'+p+'</td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<div class="meta" style="margin-top:6px">-</div>';
     var tm=String(x.created_at||'').slice(11,16);   // เวลา HH:mm (แยกรายการวันเดียวกันที่รับหลายรอบ)
     return '<div class="card" style="margin-bottom:10px">'+
+      // min-width:0 = ให้ชื่อร้านยาว ๆ ตัดบรรทัดได้ ไม่ดันการ์ดกว้างจนคอลัมน์ราคาหลุดขอบจอ
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'+
-        '<b>'+esc(cashDMY(x.date))+(tm?(' '+esc(tm)):'')+(x.supplier?(' · '+esc(x.supplier)):'')+'</b>'+
-        '<b style="color:var(--accent2)">'+Number(x.total||0).toLocaleString('en-US')+'</b>'+
+        '<b style="min-width:0;word-break:break-word">'+esc(cashDMY(x.date))+(tm?(' '+esc(tm)):'')+(x.supplier?(' · '+esc(x.supplier)):'')+'</b>'+
+        '<b style="color:var(--accent2);flex:0 0 auto">'+Number(x.total||0).toLocaleString('en-US')+'</b>'+
       '</div>'+
-      '<div class="meta" style="margin-top:6px;line-height:1.6">'+(lines||'-')+'</div>'+
+      tbl+
       (x.note?'<div class="meta" style="margin-top:6px;opacity:.75">📝 '+esc(x.note)+'</div>':'')+
       '<div class="meta" style="margin-top:6px;opacity:.7">โดย '+esc(x.by||'—')+'</div>'+
-      (x.has_photo?'<button class="btn ghost sm" style="margin-top:8px" onclick="viewRecvPhoto(this,\''+esc(x.recv_id)+'\')">🧾 ดูรูปใบส่งของ</button>':'')+
+      (x.has_photo?'<button class="btn ghost sm" style="margin-top:8px" onclick="viewRecvPhoto(this,\''+esc(x.recv_id)+'\',0)">🧾 ดูรูป'+((x.photo_count||1)>1?(' ('+x.photo_count+' รูป)'):'')+'</button>':'')+
     '</div>';
   }).join('');
 }
-async function viewRecvPhoto(btn, id){
+async function viewRecvPhoto(btn, id, idx){
   if(btn) busy(btn,true);
-  var r=await api('recvPhoto',{recv_id:id});
-  if(btn) busy(btn,false,'🧾 ดูรูปใบส่งของ');
+  var r=await api('recvPhoto',{recv_id:id, idx:idx||0});
+  if(btn) busy(btn,false, btn?(btn.dataset.txt||'🧾 ดูรูป'):'');
   if(!r.ok){ alert(r.error||'เปิดรูปไม่ได้'); return; }
   openLightbox(r.dataUrl);
+  rvLbNav(id, r.idx||0, r.count||1);
+}
+// แถบเลื่อนดูรูปหลายรูปใน lightbox (‹ 1/3 ›) — โผล่เฉพาะรายการที่มีมากกว่า 1 รูป
+function rvLbNav(id, idx, count){
+  var old=document.getElementById('lb-nav'); if(old) old.remove();
+  if(count<2) return;
+  var bs='background:rgba(255,255,255,.22);color:#fff;border:0;border-radius:10px;padding:8px 18px;font-size:18px;margin:0 10px';
+  var d=document.createElement('div'); d.id='lb-nav';
+  d.style.cssText='position:absolute;bottom:24px;left:0;right:0;text-align:center;color:#fff;font-size:15px;z-index:5';
+  d.innerHTML='<button type="button" style="'+bs+'" onclick="event.stopPropagation();viewRecvPhoto(null,\''+esc(id)+'\','+((idx+count-1)%count)+')">‹</button>'+
+    'รูป '+(idx+1)+' / '+count+
+    '<button type="button" style="'+bs+'" onclick="event.stopPropagation();viewRecvPhoto(null,\''+esc(id)+'\','+((idx+1)%count)+')">›</button>';
+  document.getElementById('lightbox').appendChild(d);
 }
 
 /* ---------- ADMIN: list ---------- */
