@@ -292,6 +292,15 @@
   .cash-tb td.d u{cursor:pointer;text-decoration-style:dotted;text-underline-offset:3px}
   .cash-tb .iconbtn{background:none;border:0;color:var(--muted);font-size:15px;padding:4px 5px;cursor:pointer;border-radius:8px}
   .cash-tb .iconbtn:active{background:rgba(127,127,127,.18)}
+  /* ตารางรายการของที่รับ (ในการ์ดประวัติรับของเข้า) — อ่านง่ายกว่าบรรทัดยาว ๆ ที่ชื่อของกับจำนวนติดกัน */
+  .rv-tb{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;table-layout:fixed}
+  .rv-tb th{color:var(--muted);font-weight:700;font-size:11.5px;padding:4px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  .rv-tb th.l{text-align:left}
+  .rv-tb td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.35}
+  .rv-tb tr:last-child td{border-bottom:none}
+  .rv-tb td.nm{word-break:break-word}
+  .rv-tb td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .rv-tb td.pr{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
   .editbar{margin:2px 0 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;
     background:rgba(227,178,60,.14);border:1px solid rgba(227,178,60,.45)}
   .editbar.lock{background:rgba(127,127,127,.14);border-color:var(--line);color:var(--muted)}
@@ -1685,16 +1694,24 @@ async function loadRecvList(){
   document.getElementById('rv-suppliers').innerHTML=sup.map(function(s){return '<option value="'+esc(s)+'">';}).join('');
   if(!RECV_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึกการรับของ</div>'; return; }
   box.innerHTML=RECV_ROWS.slice(0,10).map(function(x){
-    var lines=(x.items||[]).map(function(o){
-      return esc(o.name||'-')+(o.qty?(' '+o.qty+' '+esc(o.unit||'')):'')+(o.price?(' · '+Number(o.price).toLocaleString('en-US')+' บ.'):'');
-    }).join('<br>');
+    var items=x.items||[];
+    // ตาราง 3 ช่อง: รายการ | จำนวน | ราคา — เดิมพิมพ์ต่อกันเป็นบรรทัดเดียว ทำให้ชื่อของที่มีขนาดปน (เช่น "น้ำตาล 1 กก.") อ่านสับสนกับจำนวน
+    var tbl = items.length
+      ? '<table class="rv-tb"><thead><tr><th class="l" style="width:auto">รายการ</th><th style="width:74px">จำนวน</th><th style="width:74px">ราคา</th></tr></thead><tbody>'+
+        items.map(function(o){
+          var q=o.qty?(Number(o.qty).toLocaleString('en-US')+(o.unit?(' '+esc(o.unit)):'')):'—';
+          var p=o.price?Number(o.price).toLocaleString('en-US'):'—';
+          return '<tr><td class="nm">'+esc(o.name||'-')+'</td><td class="num">'+q+'</td><td class="pr">'+p+'</td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<div class="meta" style="margin-top:6px">-</div>';
     var tm=String(x.created_at||'').slice(11,16);   // เวลา HH:mm (แยกรายการวันเดียวกันที่รับหลายรอบ)
     return '<div class="card" style="margin-bottom:10px">'+
+      // min-width:0 = ให้ชื่อร้านยาว ๆ ตัดบรรทัดได้ ไม่ดันการ์ดกว้างจนคอลัมน์ราคาหลุดขอบจอ
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'+
-        '<b>'+esc(cashDMY(x.date))+(tm?(' '+esc(tm)):'')+(x.supplier?(' · '+esc(x.supplier)):'')+'</b>'+
-        '<b style="color:var(--accent2)">'+Number(x.total||0).toLocaleString('en-US')+'</b>'+
+        '<b style="min-width:0;word-break:break-word">'+esc(cashDMY(x.date))+(tm?(' '+esc(tm)):'')+(x.supplier?(' · '+esc(x.supplier)):'')+'</b>'+
+        '<b style="color:var(--accent2);flex:0 0 auto">'+Number(x.total||0).toLocaleString('en-US')+'</b>'+
       '</div>'+
-      '<div class="meta" style="margin-top:6px;line-height:1.6">'+(lines||'-')+'</div>'+
+      tbl+
       (x.note?'<div class="meta" style="margin-top:6px;opacity:.75">📝 '+esc(x.note)+'</div>':'')+
       '<div class="meta" style="margin-top:6px;opacity:.7">โดย '+esc(x.by||'—')+'</div>'+
       (x.has_photo?'<button class="btn ghost sm" style="margin-top:8px" onclick="viewRecvPhoto(this,\''+esc(x.recv_id)+'\',0)">🧾 ดูรูป'+((x.photo_count||1)>1?(' ('+x.photo_count+' รูป)'):'')+'</button>':'')+
