@@ -595,10 +595,7 @@
       <!-- ถ่ายรูปก่อน → AI อ่านเป็นรายการให้ → พนักงานตรวจ/แก้ แล้วค่อยบันทึก
            แนบได้หลายรูป: ใบเสร็จหลายหน้า + รูปสินค้า (พฤติกรรมจริงเหมือนที่เคยส่งใน LINE กลุ่ม) -->
       <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ / รูปสินค้า (แนบได้หลายรูป)</label>
-      <div style="display:flex;gap:8px">
-        <button class="btn ghost" type="button" style="flex:1;margin:0" onclick="pickRecvCam()">📷 ถ่ายรูป</button>
-        <button class="btn ghost" type="button" style="flex:1;margin:0" onclick="pickRecvGallery()">🖼 เลือกหลายรูป</button>
-      </div>
+      <button class="btn ghost" type="button" onclick="pickRecvGallery()">🖼 เลือกรูป (เลือกได้หลายรูป)</button>
       <div class="iddoc-box" id="rv-photo-prev" style="margin-top:8px">ยังไม่ได้แนบรูป</div>
       <div class="msg" id="rv-ocr-msg"></div>
       <button class="btn ghost sm hidden" type="button" id="rv-ocr-btn" onclick="runRecvOcr(true)" style="margin-top:8px">✨ ให้ AI อ่านบิลอีกครั้ง</button>
@@ -760,7 +757,6 @@
 
 <!-- input ถ่าย/เลือกรูปบัตร (ใช้ร่วมกันหน้าลงทะเบียน + modal แอดมิน) -->
 <input type="file" id="iddoc-file" accept="image/*" capture="environment" style="display:none" onchange="onIdDocFile(this)">
-<input type="file" id="recv-file" accept="image/*" capture="environment" style="display:none" onchange="onRecvPhotoFile(this)">
 <input type="file" id="recv-file-multi" accept="image/*" multiple style="display:none" onchange="onRecvPhotoFile(this)">
 
 <!-- ดูรูปบัตรเต็มจอ -->
@@ -1580,8 +1576,8 @@ function rvCalc(){
   var t=rvCollect().reduce(function(s,x){return s+(x.price||0);},0);
   document.getElementById('rv-total').textContent=t.toLocaleString('en-US');
 }
-function pickRecvCam(){ var f=document.getElementById('recv-file'); f.value=''; f.click(); }          // กล้อง = ทีละรูป กดซ้ำเพื่อเพิ่ม
-function pickRecvGallery(){ var f=document.getElementById('recv-file-multi'); f.value=''; f.click(); } // แกลเลอรี = เลือกทีเดียวหลายรูป
+// ปุ่มเดียว: เลือกได้ทีละหลายรูป (ตัวเลือก "ถ่ายรูป" มีอยู่ในหน้าเลือกไฟล์ของมือถืออยู่แล้ว — เจ้าของสั่งตัดปุ่มกล้องออก 11 ส.ค. 2026)
+function pickRecvGallery(){ var f=document.getElementById('recv-file-multi'); f.value=''; f.click(); }
 function resizeP(file){ return new Promise(function(res){ resizeImage(file,1600,0.8,function(b64){res(b64);},function(){res(null);}); }); }
 async function onRecvPhotoFile(input){
   var files=Array.prototype.slice.call(input.files||[]); if(!files.length) return;
