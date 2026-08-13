@@ -999,6 +999,11 @@ const STOCK_GROUPS=[
   {name:'ปลาดิบ', icon:'🐟', cut:true, items:[
     'Salmon','Maguro','Madai','ShimaAji','Kanpachi','Aori Ika','Hokkigai',{n:'Ikura',boxg:500},{n:'Hotate',hotate:true}
   ]},
+  // ไข่ไก่ซื้อเป็นแผง — กรอก "แผง + ฟอง" ระบบคูณ 30 ให้เอง ; "ใช้ไป" ส่งเข้าชีทเป็นจำนวนฟองล้วน
+  // ลำดับที่ 2 ต่อจากปลาดิบ (เจ้าของสั่ง 13 ส.ค. 2026) — เป็นของที่นับทุกวันเหมือนกัน
+  {name:'ไข่', icon:'🥚', cut:false, tip:'กรอกเป็นแผง + ฟอง · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ', items:[
+    {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
+  ]},
   {name:'เครื่องดื่ม', icon:'🥤', count:true, items:[
     // 🍺 เบียร์
     {n:'เบียร์สดสิงห์',u:'ถัง',img:'singha-draft',e:'🍺',sub:'เบียร์'},
@@ -1066,11 +1071,7 @@ const STOCK_GROUPS=[
     {n:'Chardonnay',u:'ขวด',img:'chardonnay',e:'🍷',sub:'ไวน์'}
   ]},
   {name:'ผัก', icon:'🥬', cut:false, items:[]},
-  {name:'เนื้อสัตว์', icon:'🥩', cut:false, items:[]},
-  // ไข่ไก่ซื้อเป็นแผง — กรอก "แผง + ฟอง" ระบบคูณ 30 ให้เอง ; "ใช้ไป" ส่งเข้าชีทเป็นจำนวนฟองล้วน
-  {name:'ไข่', icon:'🥚', cut:false, tip:'กรอกเป็นแผง + ฟอง · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ', items:[
-    {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
-  ]}
+  {name:'เนื้อสัตว์', icon:'🥩', cut:false, items:[]}
 ];
 // 1 กล่อง = 35 ตัว (เจ้าของยืนยัน 23 มิ.ย. 2026). ค่านี้ซ้ำอีก 2 ที่ ถ้าแก้ต้องแก้ให้ครบ:
 //   • ฟอร์ม Stock เดิม (Nuchiko/Stock index.html, ฟังก์ชัน calcUsed) • บอทเทียบยอด (ManaLineBot/Code_merged.gs ~บรรทัด 1332)
