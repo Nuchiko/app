@@ -158,6 +158,9 @@
     background:var(--bg2);color:var(--text);border-radius:7px;outline:none}
   .st-hpair input:focus{border-color:var(--accent2)}
   .st-hu{font-size:10px;color:var(--muted)}
+  /* ป้ายเตือนขนาดกล่อง (Ikura 500 ก.) — เคยกรอกผิดคิดว่ากล่องละ 1,000 ก. */
+  .st-boxnote{font-size:11.5px;line-height:1.4;color:#8a6a00;background:rgba(227,178,60,.16);
+    border:1px solid rgba(227,178,60,.5);border-radius:9px;padding:6px 9px;margin:0 0 8px}
   .st-unit{font-size:12px;color:var(--muted);font-weight:400}
   .st-count{display:flex;align-items:center;gap:12px}
   .st-count label{font-size:13px;color:var(--muted);font-weight:700;min-width:56px}
@@ -980,7 +983,7 @@ async function viewEmpDoc(){
 /* ---------- MODULE TILES ---------- */
 const STOCK_GROUPS=[
   {name:'ปลาดิบ', icon:'🐟', cut:true, items:[
-    'Salmon','Maguro','Madai','ShimaAji','Kanpachi','Aori Ika','Hokkigai','Ikura',{n:'Hotate',hotate:true}
+    'Salmon','Maguro','Madai','ShimaAji','Kanpachi','Aori Ika','Hokkigai',{n:'Ikura',boxg:500},{n:'Hotate',hotate:true}
   ]},
   {name:'เครื่องดื่ม', icon:'🥤', count:true, items:[
     // 🍺 เบียร์
@@ -1054,6 +1057,8 @@ const STOCK_GROUPS=[
 // 1 กล่อง = 35 ตัว (เจ้าของยืนยัน 23 มิ.ย. 2026). ค่านี้ซ้ำอีก 2 ที่ ถ้าแก้ต้องแก้ให้ครบ:
 //   • ฟอร์ม Stock เดิม (Nuchiko/Stock index.html, ฟังก์ชัน calcUsed) • บอทเทียบยอด (ManaLineBot/Code_merged.gs ~บรรทัด 1332)
 const HOTATE_BOX=35;
+// Ikura ซื้อเป็นกล่อง 500 ก. — เคยกรอกผิดคิดว่ากล่องละ 1,000 ก. ทำให้ "ของเข้า" พองเท่าตัวมาตลอด (CLAUDE.md §7.4.12)
+// จึงให้กรอกเป็น "กล่อง + เศษกรัม" แล้วระบบคูณ 500 ให้เอง (ตั้งค่าที่ item: {n:'Ikura',boxg:500})
 let stCurrentGroup=0;
 let DRINK_PHOTOS={};          // slug -> URL รูปที่อัปไว้ (จากเซิร์ฟเวอร์ Mana App)
 let DRINK_UPLOAD_ON=false;    // เปิดปุ่ม 📷 อัปรูป = true หลัง deploy หลังบ้าน (มีคำสั่ง setDrinkPhoto)
@@ -1063,7 +1068,7 @@ const STOCK_FLAT=[];   // รายการแบนราบ + ข้อมู
 STOCK_GROUPS.forEach(function(g){ g.items.forEach(function(it){
   var nm=(typeof it==='string')?it:it.n;
   var o=(typeof it==='object')?it:{};
-  STOCK_FLAT.push({name:nm, unit:o.u||'', hotate:!!o.hotate||nm==='Hotate', cut:!!g.cut, count:!!g.count, img:o.img||'', e:o.e||g.icon});
+  STOCK_FLAT.push({name:nm, unit:o.u||'', hotate:!!o.hotate||nm==='Hotate', boxg:o.boxg||0, cut:!!g.cut, count:!!g.count, img:o.img||'', e:o.e||g.icon});
 }); });
 const DRINK_SUBS=[   // กลุ่มย่อยตามเมนูร้านจริง: Beer→Whisky→Kotsuzumi(อุเมะชุ)→ShioYuzu(ยูซุ)→Soft→Shochu→Sake + เบียร์คราฟต์(Beervana) + ไวน์
   {name:'เบียร์',icon:'🍺'},
@@ -1142,6 +1147,16 @@ function stItemCard(item,i,group){
         '<div class="st-hf"><label>เหลือ</label>'+pair('rem_'+i)+'</div>'+
       '</div></div>';
   }
+  if(meta.boxg){   // ของที่ซื้อเป็นกล่อง (Ikura 500 ก./กล่อง) — กรอก "กล่อง + เศษกรัม" ระบบคูณให้ กันเข้าใจผิดเรื่องขนาดกล่อง
+    const pairG=pfx=>'<div class="st-hpair">'+stNi(pfx+'_box')+'<span class="st-hu">กล่อง</span>'+stNi(pfx+'_g')+'<span class="st-hu">ก.</span></div>';
+    return '<div class="st-card"><div class="st-top"><span class="st-n">'+icon+' '+name+'</span><span class="st-u" id="used_'+i+'">ใช้ 0 ก.</span></div>'+
+      '<div class="st-boxnote">1 กล่อง = '+meta.boxg+' ก. (ระบบคูณให้เอง) · เศษที่เปิดแล้วใส่ช่อง "ก."</div>'+
+      '<div class="st-hrow">'+
+        '<div class="st-hf"><label>ของเดิม</label>'+pairG('old_'+i)+'</div>'+
+        '<div class="st-hf"><label>ของเข้า</label>'+pairG('in_'+i)+'</div>'+
+        '<div class="st-hf"><label>เหลือ</label>'+pairG('rem_'+i)+'</div>'+
+      '</div></div>';
+  }
   if(group.count){   // เครื่องดื่ม: บรรทัดเดียว — รูป + ชื่อ + ช่องเลข + หน่วย (ช่วยพนักงานต่างด้าวดูรูปออก)
     var up=DRINK_PHOTOS[meta.img]||'';                       // รูปที่อัปไว้ (ถ้ามี) มาก่อน
     var src=up||(meta.img?('drinks/'+meta.img+'.jpg'):'');   // ไม่มี → รูปในเครื่อง → ไม่มีอีก → อิโมจิ
@@ -1180,6 +1195,11 @@ function computeUsed(i){
            -(stGv('rem_'+i+'_box')*HOTATE_BOX+stGv('rem_'+i+'_pc'));
     return {num:u, used:u+'ตัว', pill:'ใช้ '+u+' ตัว'};
   }
+  if(meta.boxg){   // กล่อง×ขนาดกล่อง + เศษกรัม → รวมเป็นกรัม (ส่งเข้าชีทเป็นกรัมล้วน เหมือนปลาตัวอื่น)
+    const tot=pfx=>stGv(pfx+'_box')*meta.boxg+stGv(pfx+'_g');
+    const ug=tot('old_'+i)+tot('in_'+i)-tot('rem_'+i);
+    return {num:ug, used:String(ug), pill:'ใช้ '+ug.toLocaleString('en-US')+' ก.'};
+  }
   const u=meta.cut ? (stGv('old_'+i)+stGv('in_'+i)-stGv('cut_'+i)-stGv('rem_'+i))
                    : (stGv('old_'+i)+stGv('in_'+i)-stGv('rem_'+i));
   return {num:u, used:String(u), pill:'ใช้ '+u.toLocaleString('en-US')};
@@ -1192,8 +1212,10 @@ function calcStockUsed(){
   });
 }
 function stCell(pfx){
-  const b=document.getElementById(pfx+'_box'), p=document.getElementById(pfx+'_pc');
+  const b=document.getElementById(pfx+'_box');
+  const p=document.getElementById(pfx+'_pc'), gm=document.getElementById(pfx+'_g');
   if(b&&p) return b.value+'กล่อง '+p.value+'ตัว';
+  if(b&&gm) return b.value+'กล่อง '+gm.value+'ก.';
   return stRaw(pfx);
 }
 function buildStockCapture(rows,date,note,by,cat){
@@ -1211,7 +1233,7 @@ async function sendStockCat(){
   const rows=g.items.map(function(item,k){ var i=start+k, meta=STOCK_FLAT[i];
     if(g.count){ var v=stRaw('rem_'+i); return {item:meta.name, old:'', in:'', cut:'', rem:(v!==''?(v+' '+meta.unit):''), used:''}; }
     return {item:meta.name, old:stCell('old_'+i), in:stCell('in_'+i),
-      cut:(meta.cut&&!meta.hotate)?stRaw('cut_'+i):'', rem:stCell('rem_'+i), used:computeUsed(i).used}; });
+      cut:(meta.cut&&!meta.hotate&&!meta.boxg)?stRaw('cut_'+i):'', rem:stCell('rem_'+i), used:computeUsed(i).used}; });
   const note=document.getElementById('stc-note').value;
   const date=document.getElementById('stc-date').textContent;
   const by=(ME&&(ME.nickname||ME.name))||'';
