@@ -116,6 +116,27 @@
   #lightbox img{max-width:96%;max-height:92vh;border-radius:10px}
   #lightbox .lb-close{position:fixed;top:14px;right:16px;color:#fff;font-size:30px;font-weight:300;cursor:pointer;line-height:1}
 
+  /* ===== วิธีใช้งาน: การ์ดพับได้ (หัวข้อละเมนู) + คลิปสอน ===== */
+  .hp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+  .hp-h{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;user-select:none}
+  .hp-h .hico{font-size:26px;line-height:1}
+  .hp-h .ht{font-weight:700;font-size:16px}
+  .hp-h .hs{font-size:12px;color:var(--muted);margin-top:2px}
+  .hp-h .har{margin-left:auto;color:var(--muted);font-size:16px;transition:transform .18s}
+  .hp.open .hp-h .har{transform:rotate(90deg)}
+  .hp-b{display:none;padding:0 16px 16px}
+  .hp.open .hp-b{display:block}
+  .hp-b ol{margin:0;padding-left:22px}
+  .hp-b li{font-size:14px;line-height:1.7;margin-bottom:8px}
+  .hp-tip{font-size:13px;line-height:1.7;background:var(--bg2);border:1px solid var(--line);
+    border-radius:10px;padding:11px 13px;margin-top:12px}
+  .hp-clip{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg2)}
+  .hp-clip img{display:block;width:100%;height:auto;cursor:zoom-in}
+  .hp-note{font-size:12px;color:var(--muted);text-align:center;padding:13px 10px}
+  /* สปินเนอร์ตัวหลักเป็นสีขาว (ไว้ใช้บนปุ่มพื้นน้ำเงิน) — ในการ์ดขาวต้องเปลี่ยนเป็นสีเข้ม ไม่งั้นมองไม่เห็น */
+  .hp-note .spinner{width:15px;height:15px;border:2px solid rgba(10,65,145,.22);border-top-color:var(--accent2);
+    vertical-align:-2px;margin-right:5px}
+
   .center{text-align:center}
   .muted{color:var(--muted)}
   .spinner{width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;
@@ -482,6 +503,14 @@
       </div>
     </div>
 
+    <div class="sect-title">ช่วยเหลือ</div>
+    <div class="grid">
+      <div class="tile" onclick="openHelp()" style="grid-column:1/-1">
+        <div class="ico">❓</div>
+        <div><div class="tname">วิธีใช้งาน</div><div class="tdesc">คลิปสอน + ขั้นตอนของแต่ละเมนู</div></div>
+      </div>
+    </div>
+
     <div id="ho-admin-sect" class="hidden">
       <div class="sect-title">สำหรับผู้ดูแล</div>
       <div class="grid">
@@ -644,6 +673,15 @@
     </div>
     <div class="sect-title">รับของล่าสุด</div>
     <div id="rv-history"></div>
+  </section>
+
+  <!-- ============ วิธีใช้งาน (คลิปสอน) ============ -->
+  <section id="screen-help" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">❓ วิธีใช้งาน</div></div>
+    <div class="st-tip">แตะหัวข้อเพื่อดูขั้นตอน + คลิปสอน</div>
+    <div id="hp-list"></div>
+    <div class="footnote">ทำตามคลิปแล้วยังติด — ถามหัวหน้ากะหรือเจ้าของได้เลย</div>
   </section>
 
 </div>
@@ -832,7 +870,7 @@ async function api(action, data){
 }
 
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv'].forEach(s=>{
+  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -1897,6 +1935,84 @@ function rvLbNav(id, idx, count){
     'รูป '+(idx+1)+' / '+count+
     '<button type="button" style="'+bs+'" onclick="event.stopPropagation();viewRecvPhoto(null,\''+esc(id)+'\','+((idx+1)%count)+')">›</button>';
   document.getElementById('lightbox').appendChild(d);
+}
+
+/* ---------- วิธีใช้งาน (คลิปสอน) ----------
+   ไฟล์คลิปอยู่โฟลเดอร์ help/ ของเว็บ (repo Nuchiko/app) — คลิปชุดเดียว ใช้ทั้งแอปจริงและ /app/dev/
+   หน้า dev อยู่ลึกลงไป 1 ชั้น จึงต้องถอยขึ้นมาก่อน (ดูจาก path จริง ไม่ใช้ IS_DEV เพราะ ?dev บนแอปจริงจะพาไปผิดที่)
+   ➕ เพิ่มคลิปใหม่ = วางไฟล์ .gif ใน ManaApp/help/ แล้วเพิ่ม 1 บล็อกใน HELP_TOPICS (ไม่ต้องแก้อย่างอื่น) */
+const HELP_BASE = /\/dev\/$/.test(location.pathname.replace(/[^/]*$/,'')) ? '../help/' : 'help/';
+const HELP_TOPICS = [
+  { id:'stock', ico:'📦', name:'Stock ปลาดิบ', sub:'กรอกสต็อกประจำวัน', clip:'stock-fish.gif', steps:[
+      'หน้าหลัก → แตะ <b>Stock</b> → เลือกหมวด <b>🐟 ปลาดิบ</b>',
+      'ช่อง <b>ของเดิม</b> ระบบเติมให้เองจากยอดเหลือครั้งก่อน — ถ้านับจริงไม่ตรง <b>แก้ทับได้เลย</b> (ยึดของที่นับจริง)',
+      'กรอก <b>ของเข้า</b> · <b>ตัดแต่ง</b> · <b>เหลือ</b> เป็นกรัม → ช่อง <b>ใช้ไป</b> ระบบคิดให้เอง (เดิม + เข้า − ตัดแต่ง − เหลือ)',
+      '<b>Ikura</b> กรอกเป็น <b>กล่อง + เศษกรัม</b> (1 กล่อง = 500 ก. ระบบคูณให้เอง) · <b>Hotate</b> กรอกเป็น <b>กล่อง + ตัว</b> (1 กล่อง = 35 ตัว)',
+      'ใส่หมายเหตุถ้ามี → กด <b>ส่งข้อมูล</b> (บันทึกลงชีท + ส่งรูปสรุปเข้า LINE กลุ่ม Staff)'
+    ], tip:'💡 กรอกรอบเดียวตอนปิดร้านจะแม่นที่สุด · ถ้า “ใช้ไป” ขึ้นสีแดง/ติดลบ = กรอกผิดตรงไหนสักช่อง ให้นับใหม่ก่อนส่ง · วันที่แล่ปลาต่อ ให้ลงช่อง <b>ตัดแต่ง</b> ไม่ใช่ปล่อยไปกอง “ใช้ไป”' },
+
+  { id:'recv', ico:'📥', name:'รับของเข้า', sub:'บันทึกของที่รับ + ถ่ายบิล', clip:'recv.gif', steps:[
+      'หน้าหลัก → แตะ <b>รับของเข้า</b> → เลือก <b>วันที่รับของ</b>',
+      'กด <b>🖼 เลือกรูป</b> แนบใบส่งของ/ใบเสร็จ/รูปสินค้า — <b>แนบได้หลายรูป</b> (สูงสุด 8 รูป) จะถ่ายใหม่หรือเลือกจากคลังก็ได้',
+      'แนบเสร็จ <b>AI จะอ่านบิลให้อัตโนมัติ</b> แล้วเติมรายการลงฟอร์ม — <b>ต้องตรวจทุกบรรทัดก่อนบันทึก</b> (AI อ่านผิดได้ โดยเฉพาะลายมือ)',
+      'แก้/เพิ่มรายการเอง: ชื่อของ · จำนวน · หน่วย · <b>ราคา/หน่วย</b> → ช่อง <b>ราคารวม</b> คิดให้เอง (ถ้าบิลมีส่วนลด/ปัดเศษ พิมพ์ทับได้)',
+      'ถ้าบิลใบนี้เคยบันทึกไปแล้ว ระบบจะขึ้น <b>เตือนบิลซ้ำ</b> — ถ้าของมาจริง 2 รอบ กดยืนยันแล้วบันทึกซ้ำได้',
+      'ใส่หมายเหตุ/สภาพของ (เช่น ผักช้ำ 1 ถุง) → กด <b>บันทึกการรับของ</b>'
+    ], tip:'💡 ถ้าไม่มีปุ่ม AI หรือ AI อ่านไม่ออก — <b>พิมพ์รายการเองได้ตามปกติ</b> ของที่พิมพ์ไว้จะไม่หาย · ดูของที่เคยรับย้อนหลังได้ที่หัวข้อ “รับของล่าสุด” ท้ายหน้า (แตะ 🧾 เพื่อดูรูปบิล)' },
+
+  { id:'cash', ico:'💵', name:'เงินสด', sub:'บันทึกเงินสดรายวัน', clip:'cash.gif', cashOnly:true, steps:[
+      'หน้าหลัก → แตะ <b>เงินสด</b> → เลือก <b>วันที่</b>',
+      'กรอก <b>ยอดขาย</b> ของวันนั้น',
+      'มีรายจ่ายเงินสด → กด <b>+ เพิ่มรายการ</b> ใส่ชื่อรายการ + จำนวน (เพิ่มได้หลายบรรทัด)',
+      'ช่อง <b>เซ็น</b> = ใส่เมื่อมีคนเอาเงินออกไป (เหมือนที่เซ็นในสมุด)',
+      '<b>ยอดยกมา</b> ระบบเติมจากวันก่อนให้เอง → <b>รวม</b> = ยกมา + ขาย − จ่าย ; วันเริ่มรอบใหม่หลังเก็บเงินเข้าธนาคาร ให้แก้ยอดยกมาเป็น 0',
+      'กด <b>บันทึกเงินสด</b> → แถวจะไปโผล่ในตาราง “บันทึกล่าสุด” ด้านล่าง'
+    ], tip:'💡 วันที่บันทึกไปแล้ว <b>แก้/ลบได้เฉพาะเจ้าของร้าน</b> — ถ้ากรอกผิดให้บอกเจ้าของ · ตารางย้อนหลัง: พนักงานเห็น 10 วัน เจ้าของเห็น 30 วัน' }
+];
+
+function openHelp(){
+  // เรนเดอร์ใหม่ทุกครั้ง — สิทธิ์ของคนที่ล็อกอินอยู่อาจเปลี่ยน (เข้าออกคนละบัญชี)
+  const canCash = !!(ME && (ME.is_admin || ME.team === 'service'));
+  document.getElementById('hp-list').innerHTML =
+    HELP_TOPICS.filter(t => !t.cashOnly || canCash).map(helpCard).join('');
+  show('help');
+}
+function helpCard(t){
+  return '<div class="hp" id="hp-'+t.id+'">'+
+    '<div class="hp-h" onclick="helpToggle(\''+t.id+'\')">'+
+      '<div class="hico">'+t.ico+'</div>'+
+      '<div><div class="ht">'+esc(t.name)+'</div><div class="hs">'+esc(t.sub)+'</div></div>'+
+      '<div class="har">›</div>'+
+    '</div>'+
+    '<div class="hp-b">'+
+      '<ol>'+t.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol>'+
+      (t.tip ? '<div class="hp-tip">'+t.tip+'</div>' : '')+
+      (t.clip ? '<div class="hp-clip" id="hpc-'+t.id+'"></div>' : '')+
+    '</div></div>';
+}
+function helpToggle(id){
+  const card=document.getElementById('hp-'+id); if(!card) return;
+  if(card.classList.toggle('open')) helpLoadClip(id);
+}
+/* โหลดคลิปตอนกางหัวข้อเท่านั้น — คลิปตัวละ ~0.7–1 MB ถ้าโหลดทุกตัวพร้อมกันจะกินเน็ตพนักงานฟรี ๆ
+   คลิปยังไม่ได้อัปขึ้นเว็บ/เน็ตพัง → บอกให้อ่านขั้นตอนแทน (ขั้นตอนเป็นข้อความ ใช้ได้เสมอ) */
+function helpLoadClip(id){
+  const t=HELP_TOPICS.find(x=>x.id===id); if(!t || !t.clip) return;
+  const box=document.getElementById('hpc-'+id); if(!box || box.dataset.loaded) return;
+  box.dataset.loaded='1';
+  box.innerHTML='<div class="hp-note"><span class="spinner"></span>กำลังโหลดคลิป…</div>';
+  const src=HELP_BASE+t.clip, img=new Image();
+  img.onload=function(){
+    img.alt='คลิปสอน'+t.name; img.onclick=function(){ openLightbox(src); };
+    box.innerHTML=''; box.appendChild(img);
+    const c=document.createElement('div'); c.className='hp-note'; c.textContent='แตะคลิปเพื่อดูเต็มจอ';
+    box.appendChild(c);
+  };
+  img.onerror=function(){
+    box.dataset.loaded='';   // ให้ลองใหม่ได้ตอนกางซ้ำ
+    box.innerHTML='<div class="hp-note">ยังโหลดคลิปไม่ได้ — ทำตามขั้นตอนด้านบนได้เลย (ลองกางหัวข้อใหม่อีกครั้ง)</div>';
+  };
+  img.src=src;
 }
 
 /* ---------- ADMIN: list ---------- */
