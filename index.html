@@ -158,6 +158,10 @@
     background:var(--bg2);color:var(--text);border-radius:7px;outline:none}
   .st-hpair input:focus{border-color:var(--accent2)}
   .st-hu{font-size:10px;color:var(--muted)}
+  /* แถบบอกว่า "ของเดิม" ถูกเติมให้จากยอดเหลือครั้งก่อน */
+  .st-prev:empty{display:none}
+  .st-prev{margin:0 2px 10px;padding:8px 11px;border-radius:10px;font-size:12.5px;line-height:1.45;
+    color:#0b3d2c;background:rgba(46,160,110,.16);border:1px solid rgba(46,160,110,.45)}
   /* ป้ายเตือนขนาดกล่อง (Ikura 500 ก.) — เคยกรอกผิดคิดว่ากล่องละ 1,000 ก. */
   .st-boxnote{font-size:11.5px;line-height:1.4;color:#8a6a00;background:rgba(227,178,60,.16);
     border:1px solid rgba(227,178,60,.5);border-radius:9px;padding:6px 9px;margin:0 0 8px}
@@ -516,6 +520,7 @@
     <div class="topbar" style="padding-top:0"><div class="who" id="stc-title">หมวด</div></div>
     <div class="muted" id="stc-date" style="margin:-6px 2px 2px">—</div>
     <div class="st-tip" id="stc-tip">กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ</div>
+    <div class="st-prev" id="stc-prev"></div>
     <input type="file" id="dphoto-file" accept="image/*" capture="environment" style="display:none" onchange="onDrinkPhotoFile(this)">
     <div id="stc-cards"></div>
     <div id="stc-form">
@@ -588,7 +593,7 @@
       <button class="btn" id="cash-send" onclick="sendCash()">บันทึกเงินสด</button>
       <div class="msg" id="cash-msg"></div>
     </div>
-    <div class="sect-title">บันทึกล่าสุด (ย้อนหลัง 30 วัน)</div>
+    <div class="sect-title" id="cash-histtitle">บันทึกล่าสุด</div>
     <div id="cash-history"></div>
   </section>
 
@@ -1111,6 +1116,7 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     document.getElementById('stc-note').value='';
     clearMsg(document.getElementById('stc-msg'));
     calcStockUsed();
+    if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
     if(g.count && DRINK_UPLOAD_ON){ loadDrinkPhotos().then(applyDrinkPhotos); }   // โหลดรูปที่อัปไว้แล้วแปะทับ (เปิดหลัง deploy หลังบ้าน)
   }
   show('stockcat');
@@ -1136,6 +1142,31 @@ function thaiDateNow(){
   return 'วัน'+days[d.getDay()]+'ที่ '+d.getDate()+' '+months[d.getMonth()]+' '+(d.getFullYear()+543)+' '+p(d.getHours())+':'+p(d.getMinutes());
 }
 function stNi(id){ return '<input id="'+id+'" type="number" inputmode="numeric" min="0" placeholder="0" oninput="calcStockUsed()">'; }
+/* ---------- "ของเดิม" = ยอดเหลือของครั้งก่อน (ดึงจากชีท Stock วันล่าสุด) ----------
+   เติมให้เฉพาะช่องที่ยังว่าง — ไม่ทับสิ่งที่พนักงานพิมพ์ไว้แล้ว และแก้ทับได้เสมอถ้านับจริงไม่ตรง */
+function stParsePrev(txt){          // "3968" | "2กล่อง 20ตัว" | "1กล่อง 150ก." → {box, rest}
+  var s=String(txt==null?'':txt).replace(/,/g,'').trim();
+  var m=/^(\d+(?:\.\d+)?)\s*กล่อง\s*(\d+(?:\.\d+)?)?/.exec(s);
+  if(m) return {box:parseFloat(m[1])||0, rest:parseFloat(m[2]||'0')||0};
+  var n=parseFloat(s);
+  return isNaN(n)?null:{box:0, rest:n};   // ค่าเก่าที่เก็บเป็นตัวเลขล้วน → ใส่ช่องเศษทั้งก้อน (ยอดรวมเท่ากัน)
+}
+function stSetIfEmpty(id,v){ var e=document.getElementById(id); if(e && e.value==='' && v!=null){ e.value=String(v); return true; } return false; }
+async function fillPrevStock(start,g){
+  var box=document.getElementById('stc-prev'); if(box) box.textContent='';
+  var r=await api('stockPrev');
+  if(!r || !r.ok || !r.found || !r.items) return;     // ยังไม่มีข้อมูลเก่า/หลังบ้านรุ่นเก่า = เงียบ ๆ ให้กรอกเองตามปกติ
+  var n=0;
+  g.items.forEach(function(item,k){
+    var i=start+k, meta=STOCK_FLAT[i];
+    var p=stParsePrev(r.items[meta.name]); if(!p) return;
+    if(meta.hotate)      n+= (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_pc',p.rest))?1:0;
+    else if(meta.boxg)   n+= (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_g',p.rest))?1:0;
+    else                 n+= stSetIfEmpty('old_'+i, p.box*0+p.rest)?1:0;
+  });
+  calcStockUsed();
+  if(box && n) box.innerHTML='↩️ ใส่ "ของเดิม" ให้แล้วจากยอดเหลือวันที่ '+esc(cashDMY(r.date))+' — ถ้านับจริงไม่ตรง แก้ทับได้เลย';
+}
 function stItemCard(item,i,group){
   var meta=STOCK_FLAT[i], name=meta.name, unit=meta.unit, icon=group.icon;
   if(meta.hotate){
@@ -1374,6 +1405,9 @@ let CASHDEL_READY = null;  // หลังบ้านรองรับ cashDel
 
 // แก้/ลบบันทึกที่ลงไปแล้ว = เจ้าของร้านเท่านั้น (ผู้จัดการ/Service บันทึกวันใหม่ได้ แต่แก้ทับไม่ได้)
 function cashIsOwner(){ return !!(ME && ME.role==='owner'); }
+// ประวัติย้อนหลังที่เห็นได้ (เจ้าของสั่ง 13 ส.ค. 2026) — หลังบ้านคุมเพดานนี้ซ้ำอีกชั้น (cashList คืน cap มาให้)
+const CASH_DAYS_OWNER=30, CASH_DAYS_STAFF=10;
+function cashDaysBack(){ return cashIsOwner()?CASH_DAYS_OWNER:CASH_DAYS_STAFF; }
 
 async function openCash(){
   if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
@@ -1510,17 +1544,21 @@ async function sendCash(){
 async function loadCashList(){
   var box=document.getElementById('cash-history');
   box.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>';
-  var r=await api('cashList',{limit:30});
+  var want=cashDaysBack();
+  var r=await api('cashList',{limit:want});
   if(!r.ok){ box.innerHTML='<div class="card center muted">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
   CASH_ROWS=r.rows||[];
+  var days=Math.min(want, Number(r.cap)||want);          // หลังบ้านรุ่นเก่ายังไม่คืน cap → ใช้เพดานของหน้าเว็บไปก่อน
+  var ht=document.getElementById('cash-histtitle');
+  if(ht) ht.textContent='บันทึกล่าสุด (ย้อนหลัง '+days+' วัน)';
   if(CASHDEL_READY===null){   // ปุ่มลบโผล่เมื่อหลังบ้านรองรับแล้วเท่านั้น (อัปเว็บก่อน deploy GAS ได้ ไม่ทำให้กดแล้ว error)
     var pg=await api('ping',{});
     if(pg && pg.ok) CASHDEL_READY=(pg.cashdel===true);
   }
   var canEdit=cashIsOwner(), canDel=(canEdit && CASHDEL_READY===true);
   if(!CASH_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึก</div>'; return; }
-  var rows30=CASH_ROWS.slice(0,30).reverse();   // 30 วันล่าสุด เรียงเก่า→ใหม่ (ล่าสุดอยู่ล่าง เหมือนกระดาษ)
-  var body=rows30.map(function(x){
+  var rowsShow=CASH_ROWS.slice(0,days).reverse();   // N วันล่าสุด เรียงเก่า→ใหม่ (ล่าสุดอยู่ล่าง เหมือนกระดาษ)
+  var body=rowsShow.map(function(x){
     var items=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
     if(!items) items='-';
     if(x.note) items+=' <span style="opacity:.65">· '+esc(x.note)+'</span>';
