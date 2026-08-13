@@ -475,6 +475,11 @@
         <div class="ico">💵</div>
         <div><div class="tname">เงินสด</div><div class="tdesc">บันทึกเงินสดรายวัน · ทีม Service</div></div>
       </div>
+      <!-- เวลาเข้างาน = แบบร่าง โผล่เฉพาะ DEV (แอปจริงตัดออก) -->
+      <div class="tile hidden" id="ho-clock-tile" onclick="openClock()" style="grid-column:1/-1">
+        <div class="ico">⏰</div>
+        <div><div class="tname">เวลาเข้างาน</div><div class="tdesc">เข้า–ออกงาน · ยังทดลองอยู่ (เฉพาะ DEV)</div></div>
+      </div>
     </div>
 
     <div id="ho-admin-sect" class="hidden">
@@ -827,8 +832,12 @@ async function api(action, data){
 }
 
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
-  document.getElementById('screen-'+id).classList.remove('hidden');
+  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv'].forEach(s=>{
+    const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
+  });
+  const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
+  if(!cur) return;
+  cur.classList.remove('hidden');
   window.scrollTo(0,0);
 }
 function msg(el, text, kind){
@@ -1057,7 +1066,11 @@ const STOCK_GROUPS=[
     {n:'Chardonnay',u:'ขวด',img:'chardonnay',e:'🍷',sub:'ไวน์'}
   ]},
   {name:'ผัก', icon:'🥬', cut:false, items:[]},
-  {name:'เนื้อสัตว์', icon:'🥩', cut:false, items:[]}
+  {name:'เนื้อสัตว์', icon:'🥩', cut:false, items:[]},
+  // ไข่ไก่ซื้อเป็นแผง — กรอก "แผง + ฟอง" ระบบคูณ 30 ให้เอง ; "ใช้ไป" ส่งเข้าชีทเป็นจำนวนฟองล้วน
+  {name:'ไข่', icon:'🥚', cut:false, tip:'กรอกเป็นแผง + ฟอง · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ', items:[
+    {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
+  ]}
 ];
 // 1 กล่อง = 35 ตัว (เจ้าของยืนยัน 23 มิ.ย. 2026). ค่านี้ซ้ำอีก 2 ที่ ถ้าแก้ต้องแก้ให้ครบ:
 //   • ฟอร์ม Stock เดิม (Nuchiko/Stock index.html, ฟังก์ชัน calcUsed) • บอทเทียบยอด (ManaLineBot/Code_merged.gs ~บรรทัด 1332)
@@ -1073,7 +1086,9 @@ const STOCK_FLAT=[];   // รายการแบนราบ + ข้อมู
 STOCK_GROUPS.forEach(function(g){ g.items.forEach(function(it){
   var nm=(typeof it==='string')?it:it.n;
   var o=(typeof it==='object')?it:{};
-  STOCK_FLAT.push({name:nm, unit:o.u||'', hotate:!!o.hotate||nm==='Hotate', boxg:o.boxg||0, cut:!!g.cut, count:!!g.count, img:o.img||'', e:o.e||g.icon});
+  STOCK_FLAT.push({name:nm, unit:o.u||'', hotate:!!o.hotate||nm==='Hotate', boxg:o.boxg||0,
+    pack:o.pack||0, packU:o.packU||'แผง', pieceU:o.pieceU||'ฟอง',
+    cut:!!g.cut, count:!!g.count, img:o.img||'', e:o.e||g.icon});
 }); });
 const DRINK_SUBS=[   // กลุ่มย่อยตามเมนูร้านจริง: Beer→Whisky→Kotsuzumi(อุเมะชุ)→ShioYuzu(ยูซุ)→Soft→Shochu→Sake + เบียร์คราฟต์(Beervana) + ไวน์
   {name:'เบียร์',icon:'🍺'},
@@ -1103,8 +1118,9 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
   document.getElementById('stc-title').textContent=g.icon+' '+g.name;
   document.getElementById('stc-date').textContent=thaiDateNow();
   var tipEl=document.getElementById('stc-tip');
-  if(tipEl) tipEl.textContent = g.count ? 'แตะกลุ่มเพื่อกางรายการ · ใส่จำนวนคงเหลือ (มีรูปช่วยดู)'
-                                        : 'กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ';
+  if(tipEl) tipEl.textContent = g.tip ? g.tip
+                                      : g.count ? 'แตะกลุ่มเพื่อกางรายการ · ใส่จำนวนคงเหลือ (มีรูปช่วยดู)'
+                                                : 'กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ';
   if(!g.items.length){
     document.getElementById('stc-cards').innerHTML='<div class="st-empty">ยังไม่มีรายการในหมวดนี้ — เดี๋ยวเพิ่มทีหลัง</div>';
     form.style.display='none';
@@ -1144,9 +1160,9 @@ function thaiDateNow(){
 function stNi(id){ return '<input id="'+id+'" type="number" inputmode="numeric" min="0" placeholder="0" oninput="calcStockUsed()">'; }
 /* ---------- "ของเดิม" = ยอดเหลือของครั้งก่อน (ดึงจากชีท Stock วันล่าสุด) ----------
    เติมให้เฉพาะช่องที่ยังว่าง — ไม่ทับสิ่งที่พนักงานพิมพ์ไว้แล้ว และแก้ทับได้เสมอถ้านับจริงไม่ตรง */
-function stParsePrev(txt){          // "3968" | "2กล่อง 20ตัว" | "1กล่อง 150ก." → {box, rest}
+function stParsePrev(txt){          // "3968" | "2กล่อง 20ตัว" | "1กล่อง 150ก." | "3แผง 12ฟอง" → {box, rest}
   var s=String(txt==null?'':txt).replace(/,/g,'').trim();
-  var m=/^(\d+(?:\.\d+)?)\s*กล่อง\s*(\d+(?:\.\d+)?)?/.exec(s);
+  var m=/^(\d+(?:\.\d+)?)\s*(?:กล่อง|แผง)\s*(\d+(?:\.\d+)?)?/.exec(s);
   if(m) return {box:parseFloat(m[1])||0, rest:parseFloat(m[2]||'0')||0};
   var n=parseFloat(s);
   return isNaN(n)?null:{box:0, rest:n};   // ค่าเก่าที่เก็บเป็นตัวเลขล้วน → ใส่ช่องเศษทั้งก้อน (ยอดรวมเท่ากัน)
@@ -1162,6 +1178,7 @@ async function fillPrevStock(start,g){
     var p=stParsePrev(r.items[meta.name]); if(!p) return;
     if(meta.hotate)      n+= (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_pc',p.rest))?1:0;
     else if(meta.boxg)   n+= (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_g',p.rest))?1:0;
+    else if(meta.pack)   n+= (stSetIfEmpty('old_'+i+'_pk',p.box)  | stSetIfEmpty('old_'+i+'_pcs',p.rest))?1:0;
     else                 n+= stSetIfEmpty('old_'+i, p.box*0+p.rest)?1:0;
   });
   calcStockUsed();
@@ -1186,6 +1203,16 @@ function stItemCard(item,i,group){
         '<div class="st-hf"><label>ของเดิม</label>'+pairG('old_'+i)+'</div>'+
         '<div class="st-hf"><label>ของเข้า</label>'+pairG('in_'+i)+'</div>'+
         '<div class="st-hf"><label>เหลือ</label>'+pairG('rem_'+i)+'</div>'+
+      '</div></div>';
+  }
+  if(meta.pack){   // ของที่ซื้อเป็นแผง (ไข่ไก่ 30 ฟอง/แผง) — กรอก "แผง + ฟอง" ระบบคูณให้เอง
+    const pairP=pfx=>'<div class="st-hpair">'+stNi(pfx+'_pk')+'<span class="st-hu">'+esc(meta.packU)+'</span>'+stNi(pfx+'_pcs')+'<span class="st-hu">'+esc(meta.pieceU)+'</span></div>';
+    return '<div class="st-card"><div class="st-top"><span class="st-n">'+(meta.e||icon)+' '+name+'</span><span class="st-u" id="used_'+i+'">ใช้ 0 '+esc(meta.pieceU)+'</span></div>'+
+      '<div class="st-boxnote">1 '+esc(meta.packU)+' = '+meta.pack+' '+esc(meta.pieceU)+' (ระบบคูณให้เอง) · เศษที่แกะแล้วใส่ช่อง "'+esc(meta.pieceU)+'"</div>'+
+      '<div class="st-hrow">'+
+        '<div class="st-hf"><label>ของเดิม</label>'+pairP('old_'+i)+'</div>'+
+        '<div class="st-hf"><label>ของเข้า</label>'+pairP('in_'+i)+'</div>'+
+        '<div class="st-hf"><label>เหลือ</label>'+pairP('rem_'+i)+'</div>'+
       '</div></div>';
   }
   if(group.count){   // เครื่องดื่ม: บรรทัดเดียว — รูป + ชื่อ + ช่องเลข + หน่วย (ช่วยพนักงานต่างด้าวดูรูปออก)
@@ -1231,6 +1258,11 @@ function computeUsed(i){
     const ug=tot('old_'+i)+tot('in_'+i)-tot('rem_'+i);
     return {num:ug, used:String(ug), pill:'ใช้ '+ug.toLocaleString('en-US')+' ก.'};
   }
+  if(meta.pack){   // แผง×จำนวนต่อแผง + เศษฟอง → รวมเป็นจำนวนฟอง (ส่งเข้าชีทเป็นตัวเลขล้วน ให้บอทเทียบยอดอ่านได้ตรง)
+    const totP=pfx=>stGv(pfx+'_pk')*meta.pack+stGv(pfx+'_pcs');
+    const ue=totP('old_'+i)+totP('in_'+i)-totP('rem_'+i);
+    return {num:ue, used:String(ue), pill:'ใช้ '+ue.toLocaleString('en-US')+' '+meta.pieceU};
+  }
   const u=meta.cut ? (stGv('old_'+i)+stGv('in_'+i)-stGv('cut_'+i)-stGv('rem_'+i))
                    : (stGv('old_'+i)+stGv('in_'+i)-stGv('rem_'+i));
   return {num:u, used:String(u), pill:'ใช้ '+u.toLocaleString('en-US')};
@@ -1247,6 +1279,9 @@ function stCell(pfx){
   const p=document.getElementById(pfx+'_pc'), gm=document.getElementById(pfx+'_g');
   if(b&&p) return b.value+'กล่อง '+p.value+'ตัว';
   if(b&&gm) return b.value+'กล่อง '+gm.value+'ก.';
+  const pk=document.getElementById(pfx+'_pk'), pcs=document.getElementById(pfx+'_pcs');
+  if(pk&&pcs){ const m=STOCK_FLAT[parseInt(String(pfx).split('_')[1],10)]||{};
+    return pk.value+(m.packU||'แผง')+' '+pcs.value+(m.pieceU||'ฟอง'); }
   return stRaw(pfx);
 }
 function buildStockCapture(rows,date,note,by,cat){
@@ -2019,6 +2054,17 @@ function fmtPhone(p){
   p = String(p||'').replace(/\D/g,'');
   return p.length===10 ? p.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3') : p;
 }
+
+/* ---------- เวลาเข้างาน = ยังเป็นแบบร่าง ให้อยู่เฉพาะ DEV ----------
+   แอปจริง (root): ตัดหน้าจอเข้า–ออกงาน + หน้ารายงานออกจาก DOM ไปเลย พนักงานไม่เห็น ไม่มีทางเข้าถึง
+   DEV (/app/dev/): มีไทล์ ⏰ ในหน้าหลัก ไว้พัฒนา/ทดลองต่อ
+   จะเปิดใช้จริงเมื่อไหร่ = ลบบล็อกนี้ทิ้ง (หลังบ้าน Attendance.gs ยังอยู่ครบ ไม่ได้ถอด) */
+(function(){
+  if(IS_DEV){ var t=document.getElementById('ho-clock-tile'); if(t) t.classList.remove('hidden'); return; }
+  ['ho-clock-tile','screen-clock','screen-report'].forEach(function(id){
+    var el=document.getElementById(id); if(el && el.parentNode) el.parentNode.removeChild(el);
+  });
+})();
 
 /* ---------- boot: auto-login ด้วยโทเค็นเดิม ---------- */
 (async function(){
