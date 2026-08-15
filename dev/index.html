@@ -559,6 +559,13 @@
     <input type="file" id="dphoto-file" accept="image/*" capture="environment" style="display:none" onchange="onDrinkPhotoFile(this)">
     <div id="stc-cards"></div>
     <div id="stc-form">
+      <div id="stc-uses" class="hidden">
+        <label class="page-label" style="margin-top:8px">🍳 ใช้เพิ่มนอกเมนู</label>
+        <div class="st-tip" id="stc-uses-tip"></div>
+        <div id="stc-uses-lines"></div>
+        <button class="btn ghost sm" type="button" onclick="stUsesAdd()" style="margin-top:4px">+ เพิ่มรายการ</button>
+        <div class="muted" id="stc-uses-total" style="margin-top:8px;font-size:13px"></div>
+      </div>
       <label class="page-label" style="margin-top:8px">📝 หมายเหตุ</label>
       <textarea id="stc-note" rows="3" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
       <button class="btn" id="stc-send" onclick="sendStockCat()">ส่งข้อมูล</button>
@@ -1041,7 +1048,10 @@ const STOCK_GROUPS=[
   ]},
   // ไข่ไก่ซื้อเป็นแผง — กรอก "แผง + ฟอง" ระบบคูณ 30 ให้เอง ; "ใช้ไป" ส่งเข้าชีทเป็นจำนวนฟองล้วน
   // ลำดับที่ 2 ต่อจากปลาดิบ (เจ้าของสั่ง 13 ส.ค. 2026) — เป็นของที่นับทุกวันเหมือนกัน
-  {name:'ไข่', icon:'🥚', cut:false, tip:'กรอกเป็นแผง + ฟอง · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ', items:[
+  // uses = ช่องพิมพ์เองว่าไข่ที่ใช้เกินเมนูปกติ ไปใช้ทำอะไร กี่ฟอง (เจ้าของสั่ง 15 ส.ค. 2026)
+  {name:'ไข่', icon:'🥚', cut:false, tip:'กรอกเป็นแผง + ฟอง · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ',
+   uses:{unit:'ฟอง', tip:'ไข่ที่ใช้นอกเมนูปกติ — พิมพ์เองได้เลยว่าใช้ทำอะไร กี่ฟอง เช่น ของทอด · ทำไส้ซูชิ · พนักงานกิน (ไม่มีก็เว้นว่าง)'},
+   items:[
     {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
   ]},
   {name:'เครื่องดื่ม', icon:'🥤', count:true, items:[
@@ -1171,6 +1181,7 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
       : g.items.map(function(item,k){ return stItemCard(item,start+k,g); }).join('');
     form.style.display='';
     document.getElementById('stc-note').value='';
+    stUsesInit(g);
     clearMsg(document.getElementById('stc-msg'));
     calcStockUsed();
     if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
@@ -1325,6 +1336,55 @@ function stCell(pfx){
     return pk.value+(m.packU||'แผง')+' '+pcs.value+(m.pieceU||'ฟอง'); }
   return stRaw(pfx);
 }
+/* ---------- "ใช้เพิ่มนอกเมนู" (หมวดที่ตั้ง uses ไว้ — ตอนนี้คือไข่) ----------
+   ที่มา: รายงาน SSS บอกได้แค่ "ใช้ 20 / เมนูควรใช้ 5 (ต่าง +15)" แต่ตอบไม่ได้ว่า 15 ฟองไปไหน
+   ให้ครัวพิมพ์เองตอนนับ = ได้คำตอบจากคนที่รู้จริง ตอนที่ยังจำได้ */
+let STC_USES = null;
+function stUsesInit(g){
+  var box=document.getElementById('stc-uses'); if(!box) return;
+  STC_USES = g.uses || null;
+  box.className = STC_USES ? '' : 'hidden';
+  document.getElementById('stc-uses-lines').innerHTML='';
+  if(!STC_USES) return;
+  document.getElementById('stc-uses-tip').textContent = STC_USES.tip || '';
+  stUsesAdd();
+  stUsesCalc();
+}
+function stUsesLineHtml(name,qty){
+  var u=(STC_USES&&STC_USES.unit)||'';
+  return '<div class="st-uline" style="display:flex;gap:8px;margin-bottom:8px">'+
+    '<input type="text" class="st-uname" placeholder="ใช้ทำอะไร เช่น ของทอด" value="'+esc(name||'')+'" style="flex:1;min-width:0">'+
+    '<input type="number" inputmode="numeric" min="0" class="st-uqty" placeholder="0" value="'+(qty!=null&&qty!==''?esc(qty):'')+'" oninput="stUsesCalc()" style="width:80px;flex:0 0 auto">'+
+    '<span class="muted" style="align-self:center;flex:0 0 auto;font-size:13px">'+esc(u)+'</span>'+
+    '<button type="button" class="btn ghost sm" title="ลบ" onclick="this.parentNode.remove();stUsesCalc()" style="flex:0 0 auto;padding:9px 12px">✕</button>'+
+  '</div>';
+}
+function stUsesAdd(name,qty){
+  var box=document.getElementById('stc-uses-lines'); if(!box) return;
+  box.insertAdjacentHTML('beforeend', stUsesLineHtml(name,qty));
+}
+function stUsesCollect(){
+  var out=[];
+  document.querySelectorAll('#stc-uses-lines .st-uline').forEach(function(ln){
+    var n=ln.querySelector('.st-uname').value.trim();
+    var q=parseFloat(ln.querySelector('.st-uqty').value)||0;
+    if(n||q) out.push({name:n, qty:q});
+  });
+  return out;
+}
+function stUsesCalc(){
+  var el=document.getElementById('stc-uses-total'); if(!el) return;
+  var t=stUsesCollect().reduce(function(s,x){ return s+(x.qty||0); },0);
+  el.textContent = t ? ('รวมใช้เพิ่ม '+t.toLocaleString('en-US')+' '+((STC_USES&&STC_USES.unit)||'')) : '';
+}
+// รูปแบบคงที่ ให้รายงาน SSS/WWW อ่านต่อได้ทีหลัง: "ใช้เพิ่ม: ของทอด 6 ฟอง, ทำไส้ซูชิ 4 ฟอง"
+function stUsesText(){
+  if(!STC_USES) return '';
+  var u=STC_USES.unit||'';
+  var parts=stUsesCollect().map(function(x){ return (x.name||'ไม่ระบุ')+' '+(x.qty||0)+(u?(' '+u):''); });
+  return parts.length ? ('ใช้เพิ่ม: '+parts.join(', ')) : '';
+}
+
 function buildStockCapture(rows,date,note,by,cat){
   const cap=document.getElementById('st-capture');
   const tr=rows.map(r=>'<tr><td class="it">'+esc(r.item)+'</td><td>'+esc(r.old||'')+'</td><td>'+esc(r.in||'')+'</td><td>'+esc(r.cut||'')+'</td><td>'+esc(r.rem||'')+'</td><td class="u">'+esc(r.used||'')+'</td></tr>').join('');
@@ -1341,7 +1401,8 @@ async function sendStockCat(){
     if(g.count){ var v=stRaw('rem_'+i); return {item:meta.name, old:'', in:'', cut:'', rem:(v!==''?(v+' '+meta.unit):''), used:''}; }
     return {item:meta.name, old:stCell('old_'+i), in:stCell('in_'+i),
       cut:(meta.cut&&!meta.hotate&&!meta.boxg)?stRaw('cut_'+i):'', rem:stCell('rem_'+i), used:computeUsed(i).used}; });
-  const note=document.getElementById('stc-note').value;
+  const typed=document.getElementById('stc-note').value.trim(), uses=stUsesText();
+  const note = uses ? (uses + (typed ? (' · '+typed) : '')) : typed;   // "ใช้เพิ่ม" นำหน้าเสมอ → เห็นในรูปสรุป + ลงคอลัมน์หมายเหตุในชีท
   const date=document.getElementById('stc-date').textContent;
   const by=(ME&&(ME.nickname||ME.name))||'';
   busy(btn,true);
