@@ -338,6 +338,7 @@
   .editbar{margin:2px 0 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;
     background:rgba(227,178,60,.14);border:1px solid rgba(227,178,60,.45)}
   .editbar.lock{background:rgba(127,127,127,.14);border-color:var(--line);color:var(--muted)}
+  .editbar.night{background:rgba(90,140,220,.14);border-color:rgba(90,140,220,.45)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -605,6 +606,7 @@
     <div class="card">
       <label>วันที่</label>
       <input id="cash-date" type="date" onchange="cashOnDate()">
+      <div id="cash-nightnote" class="hidden"></div>
       <div id="cash-editbar" class="hidden"></div>
       <label>ยอดขาย (บาท)</label>
       <input id="cash-sales" type="number" inputmode="decimal" min="0" placeholder="0" oninput="cashCalc()">
@@ -1486,13 +1488,33 @@ function cashDaysBack(){ return cashIsOwner()?CASH_DAYS_OWNER:CASH_DAYS_STAFF; }
 async function openCash(){
   if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
   document.getElementById('cash-datelabel').textContent=thaiDateNow();
-  var di=document.getElementById('cash-date'); if(!di.value) di.value=todayISO();
+  var di=document.getElementById('cash-date'); if(!di.value) di.value=cashBizDate();
   CASH_DATE_CUR=''; CASH_MODE='new';
   cashClearFields(); cashRenderMode(); cashCalc();
   clearMsg(document.getElementById('cash-msg'));
   show('cash');
   await loadCashList();            // โหลดประวัติก่อน แล้วค่อยตัดสินว่าวันนี้เป็น "วันใหม่" หรือ "แก้ของเดิม"
   cashShowDate(di.value, true);
+  cashNightNote();
+}
+
+// ร้านปิดเที่ยงคืน พนักงานกรอกหลังปิดร้าน → ช่วง 00:00–02:59 ให้หมายถึงยอดของ "เมื่อวาน"
+// (กฎเดียวกับที่ระบบ Stock ใช้มาตลอด — CLAUDE.md §7.2) ; ไม่งั้นยอดคืนนี้จะไปลงวันถัดไป
+// แล้วพอวันถัดไปมากรอกจริงก็จะเจอแถวเดิมค้างอยู่ = ฟอร์มล็อกจนกรอกไม่ได้
+const CASH_NIGHT_UNTIL = 3;
+function cashBizDate(){
+  var d=new Date();
+  if(d.getHours() < CASH_NIGHT_UNTIL) d.setDate(d.getDate()-1);
+  var p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function cashNightNote(){   // อธิบายให้เห็นว่าทำไมวันที่ไม่ตรงกับวันในปฏิทิน (กันงงว่าแอปเติมผิด)
+  var el=document.getElementById('cash-nightnote'); if(!el) return;
+  var cur=document.getElementById('cash-date').value;
+  var show=((new Date()).getHours() < CASH_NIGHT_UNTIL) && cur===cashBizDate();
+  el.className = show ? 'editbar night' : 'hidden';
+  el.innerHTML = show ? ('🌙 ตอนนี้เลยเที่ยงคืนแล้ว — กำลังกรอกยอดของ <b>วันที่ '+esc(cashDMY(cur))+
+    '</b> (วันที่ร้านเพิ่งปิด) ถ้าไม่ใช่ เปลี่ยนวันที่ด้านบนได้') : '';
 }
 
 function cashClearFields(){
@@ -1568,6 +1590,7 @@ function carryForDate(dateStr){   // ยอดยกมา = ยอด "รว�
 }
 function cashOnDate(){   // เปลี่ยนวัน → วันที่มีข้อมูลแล้วให้โหลดของเดิมมาแก้ ; วันใหม่ให้เติม "ยอดยกมา" อัตโนมัติ
   cashShowDate(document.getElementById('cash-date').value);
+  cashNightNote();          // เลือกวันเองแล้วไม่ใช่ "วันที่ร้านเพิ่งปิด" → ซ่อนคำอธิบายกลางคืน
 }
 function cashCarryEdited(){ document.getElementById('cash-carry').dataset.touched='1'; cashCalc(); }
 function cashLineHtml(note,amt){
