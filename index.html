@@ -647,7 +647,8 @@
     <div class="page-label" id="recv-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
     <div class="card">
       <label>วันที่รับของ</label>
-      <input id="rv-date" type="date">
+      <input id="rv-date" type="date" onchange="rvDateWarn()">
+      <div id="rv-datewarn" class="hidden"></div>
 
       <!-- ถ่ายรูปก่อน → AI อ่านเป็นรายการให้ → พนักงานตรวจ/แก้ แล้วค่อยบันทึก
            แนบได้หลายรูป: ใบเสร็จหลายหน้า + รูปสินค้า (พฤติกรรมจริงเหมือนที่เคยส่งใน LINE กลุ่ม) -->
@@ -1771,6 +1772,7 @@ function openRecv(){
   document.getElementById('rv-ocr-btn').classList.toggle('hidden', !(OCR_READY && RV_PHOTOS.length));
   if(!RV_PHOTOS.length) clearMsg(document.getElementById('rv-ocr-msg'));
   clearMsg(document.getElementById('rv-msg'));
+  rvDateWarn();
   rvCalc();
   loadRecvList();
   show('recv');
@@ -1899,12 +1901,44 @@ async function runRecvOcr(manual){
   busy(btn,false,'✨ ให้ AI อ่านบิลอีกครั้ง');
   if(!r.ok){ msg(m,(r.error||'AI อ่านไม่สำเร็จ')+' — พิมพ์รายการเองได้ตามปกติ'); return; }
   rvFillFromOcr(r);
-  msg(m,'⚠️ AI อ่านให้ '+(r.items||[]).length+' รายการ — กรุณาตรวจทุกบรรทัดกับใบจริงก่อนกดบันทึก','warn');
+  var warn='⚠️ AI อ่านให้ '+(r.items||[]).length+' รายการ — กรุณาตรวจทุกบรรทัดกับใบจริงก่อนกดบันทึก';
+  if(RV_OCR_BADDATE) warn+=' · AI อ่านวันที่ในบิลได้ '+rvDMY(RV_OCR_BADDATE)+' ซึ่งห่างจากวันนี้มาก ระบบจึงคงวันที่เดิมไว้ (ถ้าบิลเป็นวันนั้นจริง เลือกวันที่เองได้)';
+  msg(m,warn,'warn');
   rvCheckDup();   // ได้ร้าน/วันที่/ยอดจาก AI แล้ว → เช็คซ้ำอีกรอบ (จับใบเดิมที่ถ่ายใหม่ ซึ่งแฮชรูปไม่ตรง)
+}
+// ---- วันที่รับของ: กันปีเพี้ยน ----
+// เจอจริง ส.ค. 2026: AI อ่านวันที่จากบิลแล้วได้ "ปี" ผิด (2023/2024/2025/2006) แล้วทับวันที่ที่ระบบเติมให้
+// ผลคือแถวนั้นหลุดจากสรุป "รับของเข้าวันนี้" ที่บอทส่งในกลุ่ม (กรองตามวันที่) และประวัติเรียงมั่ว
+const RV_DATE_BACK = 14;   // ย้อนหลังได้ 14 วัน = เผื่อเอาบิลเก่ามาลงย้อน
+const RV_DATE_FWD  = 1;    // ล่วงหน้าได้ 1 วัน = เผื่อกรอกคาบเกี่ยวเที่ยงคืน
+let RV_OCR_BADDATE = '';   // วันที่ที่ AI อ่านมาแล้วไม่ผ่านเกณฑ์ (ไว้บอกพนักงานว่าทำไมไม่เปลี่ยนให้)
+function rvDateOff(d){     // ห่างจากวันนี้กี่วัน (+ = อนาคต) ; null = รูปแบบวันที่ใช้ไม่ได้
+  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d||'')); if(!m) return null;
+  var a=new Date(+m[1], +m[2]-1, +m[3]);
+  // JS เลื่อนวันที่ไม่มีจริงให้เอง (2026-02-30 → 2 มี.ค.) → ต้องทานกลับว่าตรงกับที่กรอกจริง
+  if(a.getFullYear()!==+m[1] || a.getMonth()!==+m[2]-1 || a.getDate()!==+m[3]) return null;
+  var t=new Date(); t.setHours(0,0,0,0); a.setHours(0,0,0,0);
+  return Math.round((a - t) / 86400000);
+}
+function rvDateSane(d){ var o=rvDateOff(d); return o!==null && o<=RV_DATE_FWD && o>=-RV_DATE_BACK; }
+function rvDMY(d){ var p=String(d||'').split('-'); return p.length===3 ? ((+p[2])+'/'+(+p[1])+'/'+p[0]) : String(d||''); }
+function rvDateWarn(){     // เตือนใต้ช่องวันที่ ทั้งกรณี AI เติมให้และกรณีพนักงานเลือกเอง
+  var el=document.getElementById('rv-datewarn'); if(!el) return;
+  var v=document.getElementById('rv-date').value, o=rvDateOff(v);
+  if(!v || rvDateSane(v)){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar';
+  el.innerHTML='⚠️ วันที่รับของเป็น <b>'+esc(rvDMY(v))+'</b> '+
+    (o===null ? '(วันที่ไม่ถูกต้อง)' : (o>0 ? '(ล่วงหน้า '+o+' วัน)' : '(ย้อนหลัง '+(-o)+' วัน)'))+
+    ' — ถ้าไม่ได้ตั้งใจ แก้เป็นวันที่รับของจริงก่อนกดบันทึก';
 }
 function rvFillFromOcr(r){
   if(r.supplier) document.getElementById('rv-supplier').value=r.supplier;
-  if(r.date) document.getElementById('rv-date').value=r.date;
+  RV_OCR_BADDATE='';
+  // AI อ่านปีมั่วบ่อย → รับเฉพาะวันที่ที่สมเหตุสมผล ; นอกช่วง = ไม่ทับ คงวันที่ที่ระบบเติมไว้แล้วบอกพนักงาน
+  if(r.date){
+    if(rvDateSane(r.date)) document.getElementById('rv-date').value=r.date;
+    else RV_OCR_BADDATE=r.date;
+  }
   if(r.note && !document.getElementById('rv-note').value) document.getElementById('rv-note').value=r.note;
   var box=document.getElementById('rv-items');
   box.innerHTML='';
@@ -1920,11 +1954,14 @@ function rvFillFromOcr(r){
   });
   rvAddLine();          // เว้นบรรทัดว่างไว้ 1 แถว เผื่อ AI อ่านตกไปรายการหนึ่ง
   rvCalc();
+  rvDateWarn();
 }
 async function sendRecv(){
   var m=document.getElementById('rv-msg'); clearMsg(m);
   var date=document.getElementById('rv-date').value;
   if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
+  // ด่านสุดท้ายก่อนบันทึก: วันที่ห่างจากวันนี้ผิดปกติ = ให้ยืนยันด้วยตาอีกครั้ง (เตือน ไม่บล็อก)
+  if(!rvDateSane(date) && !confirm('⚠️ วันที่รับของเป็น '+rvDMY(date)+' ซึ่งห่างจากวันนี้มาก\n\nถ้าถูกต้องจริง กด OK เพื่อบันทึก\nถ้าอยากแก้วันที่ กด Cancel')) return;
   var items=rvCollect();
   if(!items.length){ msg(m,'กรุณากรอกรายการของอย่างน้อย 1 รายการ'); return; }
   if(!items.some(function(x){return x.name;})){ msg(m,'กรุณากรอกชื่อของ'); return; }
