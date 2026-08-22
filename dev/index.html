@@ -482,6 +482,7 @@
       </div>
       <div class="avatar" id="ho-avatar">M</div>
     </div>
+    <div id="ho-verwarn" class="msg"></div>
 
     <div class="sect-title">ระบบงาน</div>
     <div class="grid">
@@ -527,7 +528,7 @@
       <button class="btn ghost" onclick="openChangePin()">เปลี่ยน PIN ของฉัน</button>
       <button class="btn ghost" style="margin-top:12px" onclick="logout()">ออกจากระบบ</button>
     </div>
-    <div class="footnote">Mana Mana Back Office</div>
+    <div class="footnote">Mana Mana Back Office<br><span id="ho-vertext"></span></div>
   </section>
 
   <!-- ============ ADMIN: EMPLOYEES ============ -->
@@ -852,6 +853,8 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
+const APP_VER = 1;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
+let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
 const SHEET_URL = (IS_DEV ? ENV.dev : ENV.prod).stock;
@@ -936,8 +939,22 @@ async function showRecvTileIfReady(){
   if(RECV_READY===false) return;
   const r=await api('ping',{});
   if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); }
-  else { RECV_READY = null; return; }
+  else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
+  BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
+}
+
+// เลขรุ่นเว็บ vs หลังบ้าน — ไม่ได้บล็อกอะไร (ฟีเจอร์แต่ละตัวยังกันด้วยธง ping ของตัวเองเหมือนเดิม) แค่เตือนกันงงเวลาเว็บใหม่กว่าหลังบ้านที่ยัง deploy ไม่ทัน
+function updateVerBadge(){
+  const vt=document.getElementById('ho-vertext');
+  if(vt) vt.textContent = 'เว็บ v'+APP_VER+(BACKEND_VER!=null ? (' · หลังบ้าน v'+BACKEND_VER) : '');
+  const el=document.getElementById('ho-verwarn');
+  if(!el) return;
+  if(BACKEND_VER!=null && BACKEND_VER<APP_VER){
+    msg(el, '⚠️ เว็บอัปเดตใหม่กว่าหลังบ้าน — บางฟีเจอร์อาจยังไม่ทำงาน กำลังรอผู้ดูแลอัปเดตหลังบ้าน', 'warn');
+  } else {
+    clearMsg(el);
+  }
 }
 
 function logout(){
@@ -2071,6 +2088,14 @@ const HELP_TOPICS = [
       '<b>Ikura</b> กรอกเป็น <b>กล่อง + เศษกรัม</b> (1 กล่อง = 500 ก. ระบบคูณให้เอง) · <b>Hotate</b> กรอกเป็น <b>กล่อง + ตัว</b> (1 กล่อง = 35 ตัว)',
       'ใส่หมายเหตุถ้ามี → กด <b>ส่งข้อมูล</b> (บันทึกลงชีท + ส่งรูปสรุปเข้า LINE กลุ่ม Staff)'
     ], tip:'💡 กรอกรอบเดียวตอนปิดร้านจะแม่นที่สุด · ถ้า “ใช้ไป” ขึ้นสีแดง/ติดลบ = กรอกผิดตรงไหนสักช่อง ให้นับใหม่ก่อนส่ง · วันที่แล่ปลาต่อ ให้ลงช่อง <b>ตัดแต่ง</b> ไม่ใช่ปล่อยไปกอง “ใช้ไป”' },
+
+  { id:'egg', ico:'🥚', name:'Stock ไข่', sub:'กรอกไข่ไก่ประจำวัน', steps:[
+      'หน้าหลัก → แตะ <b>Stock</b> → เลือกหมวด <b>🥚 ไข่</b>',
+      'ช่อง <b>ของเดิม</b> ระบบเติมให้เองจากยอดเหลือครั้งก่อน — ถ้านับจริงไม่ตรง <b>แก้ทับได้เลย</b> (ยึดของที่นับจริง)',
+      'กรอก <b>ของเข้า</b> และ <b>เหลือ</b> เป็น <b>แผง + ฟอง</b> (1 แผง = 30 ฟอง ระบบคูณให้เอง) → ช่อง <b>ใช้ไป</b> คิดให้เองเป็นจำนวนฟองล้วน',
+      'ถ้าวันนั้นใช้ไข่นอกเมนูปกติ (เช่น ของทอด · ทำไส้ซูชิ · พนักงานกิน) — เลื่อนลงไปที่ <b>🍳 ใช้เพิ่มนอกเมนู</b> กด <b>+ เพิ่มรายการ</b> แล้วพิมพ์เองว่าใช้ทำอะไร กี่ฟอง (ไม่มีก็เว้นว่างได้)',
+      'ใส่หมายเหตุถ้ามี → กด <b>ส่งข้อมูล</b>'
+    ], tip:'💡 ไข่ไม่มีช่อง “ตัดแต่ง” (ไข่ไม่มีการแล่) · ถ้า “ใช้ไป” ขึ้นสีแดง/ติดลบ = กรอกผิด ให้นับใหม่ก่อนส่ง · แจ้ง “ใช้เพิ่ม” ไว้ตอนยังจำได้ จะช่วยให้รายงานเทียบยอดแม่นขึ้นมาก' },
 
   { id:'recv', ico:'📥', name:'รับของเข้า', sub:'บันทึกของที่รับ + ถ่ายบิล', clip:'recv.gif', steps:[
       'หน้าหลัก → แตะ <b>รับของเข้า</b> → เลือก <b>วันที่รับของ</b>',
