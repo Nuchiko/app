@@ -679,10 +679,20 @@
     <div class="topbar" style="padding-top:0"><div class="who">📥 รับของเข้า</div></div>
     <div class="page-label" id="recv-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
     <div class="card">
+      <div id="rv-editbar" class="hidden"></div>
       <label>วันที่รับของ</label>
       <input id="rv-date" type="date" onchange="rvDateWarn()">
       <div id="rv-datewarn" class="hidden"></div>
 
+      <!-- à¹à¸«à¸¡à¸à¹à¸à¹à¹à¸: à¸¢à¸­à¸à¸£à¸§à¸¡à¸à¸£à¸´à¸à¸à¸²à¸¡à¸à¸´à¸¥ (à¸à¸²à¸à¸à¸´à¸¥à¸¡à¸µà¸ªà¹à¸§à¸à¸¥à¸/à¸à¸±à¸à¹à¸¨à¸© à¸à¸³à¹à¸«à¹à¹à¸¡à¹à¹à¸à¹à¸²à¸à¸¥à¸£à¸§à¸¡à¸£à¸²à¸¢à¸à¸²à¸£) -->
+      <div id="rv-edittotal" class="hidden">
+        <label style="margin-top:14px">à¸¢à¸­à¸à¸£à¸§à¸¡à¸à¸£à¸´à¸à¸à¸²à¸¡à¸à¸´à¸¥ (à¸à¸²à¸)</label>
+        <input id="rv-total-edit" type="number" inputmode="decimal" min="0" placeholder="0">
+        <div class="muted" style="font-size:12px;margin-top:6px">à¹à¸§à¹à¸à¸§à¹à¸²à¸ = à¹à¸à¹à¸à¸¥à¸£à¸§à¸¡à¸à¸­à¸à¸£à¸²à¸¢à¸à¸²à¸£à¸à¹à¸²à¸à¸¥à¹à¸²à¸</div>
+      </div>
+
+      <!-- ซ่อนทั้งบล็อกตอนแก้บิลเก่า: การแก้ไขเปลี่ยนรูปไม่ได้ (ต้องลบแล้วบันทึกใหม่) -->
+      <div id="rv-photoblock">
       <!-- ถ่ายรูปก่อน → AI อ่านเป็นรายการให้ → พนักงานตรวจ/แก้ แล้วค่อยบันทึก
            แนบได้หลายรูป: ใบเสร็จหลายหน้า + รูปสินค้า (พฤติกรรมจริงเหมือนที่เคยส่งใน LINE กลุ่ม) -->
       <label style="margin-top:14px">รูปใบส่งของ / ใบเสร็จ / รูปสินค้า (แนบได้หลายรูป)</label>
@@ -691,6 +701,7 @@
       <div class="msg" id="rv-dup-msg"></div>
       <div class="msg" id="rv-ocr-msg"></div>
       <button class="btn ghost sm hidden" type="button" id="rv-ocr-btn" onclick="runRecvOcr(true)" style="margin-top:8px">✨ ให้ AI อ่านบิลอีกครั้ง</button>
+      </div>
 
       <label style="margin-top:14px">ร้าน / ผู้ขาย</label>
       <input id="rv-supplier" type="text" list="rv-suppliers" placeholder="เช่น เจ๊หมวย, ตลาดไท, สหกรณ์">
@@ -885,7 +896,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 2;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
+const APP_VER = 3;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -1918,6 +1929,11 @@ async function loadCashList(){
     var items=(x.payouts||[]).map(function(o){return esc(o.note||'-')+' '+Number(o.amt||0).toLocaleString('en-US');}).join(', ');
     if(!items) items='-';
     if(x.note) items+=' <span style="opacity:.65">· '+esc(x.note)+'</span>';
+    // ใครกรอก / ใครมาแก้ทีหลัง — เดิมไม่เคยเห็นในแอปเลย ต้องเปิดชีทดูเอง
+    var who=[];
+    if(x.by) who.push('กรอก: '+esc(x.by));
+    if(x.edited_by) who.push('✏️ แก้: '+esc(x.edited_by)+(x.edited_at?(' '+esc(cashHHMM(x.edited_at))):''));
+    if(who.length) items+=' <span style="opacity:.55;font-size:11px">· '+who.join(' · ')+'</span>';
     var d=esc(cashDMY(x.date)), key=esc(x.date);
     return '<tr>'+
       '<td class="d">'+(canEdit?'<u onclick="cashPick(\''+key+'\')">'+d+'</u>':d)+'</td>'+
@@ -1956,7 +1972,8 @@ function rvItemNames(){        // ชื่อของที่มีในร�
 function openRecv(){
   document.getElementById('recv-datelabel').textContent=thaiDateNow();
   // ถ้ามีร่างค้าง (พิมพ์ไว้แล้วเผลอกดกลับ) ไม่ล้าง — เก็บให้กรอกต่อ ; เริ่มใหม่เมื่อไม่มีร่าง
-  var hasDraft = document.querySelectorAll('#rv-items .rv-line').length && (rvCollect().length || RV_PHOTOS.length);
+  var hasDraft = document.querySelectorAll("#rv-items .rv-line").length && (rvCollect().length || RV_PHOTOS.length);
+  if(RV_EDIT_ID) hasDraft=true;   // กำลังแก้บิลเก่าค้างอยู่ = อย่าล้างฟอร์มทิ้ง
   if(!hasDraft){
     RV_CLIENT_ID=uuid();
     document.getElementById('rv-date').value=bizDateISO();   // กฎเที่ยงคืนกลาง: กรอกตอนตี 1 = ของเมื่อวาน (เปลี่ยนเองได้)
@@ -1969,6 +1986,7 @@ function openRecv(){
   document.getElementById('rv-ocr-btn').classList.toggle('hidden', !(OCR_READY && RV_PHOTOS.length));
   if(!RV_PHOTOS.length) clearMsg(document.getElementById('rv-ocr-msg'));
   clearMsg(document.getElementById('rv-msg'));
+  rvEditRender();
   rvDateWarn();
   rvCalc();
   loadRecvList();
@@ -2161,6 +2179,7 @@ function rvFillFromOcr(r){
   rvDateWarn();
 }
 async function sendRecv(){
+  if(RV_EDIT_ID) return rvSaveEdit();   // อยู่ในโหมดแก้บิลเก่า = ไปทางแก้ไข ไม่สร้างแถวใหม่
   var m=document.getElementById('rv-msg'); clearMsg(m);
   var date=document.getElementById('rv-date').value;
   if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
@@ -2206,6 +2225,109 @@ async function sendRecv(){
   loadRecvList();
   todayRefresh();
 }
+
+/* ---------- แก้ / ลบ บิลรับของที่บันทึกแล้ว (เฟส 2 — เจ้าของเท่านั้น) ----------
+   แก้ = โหลดบิลขึ้นฟอร์มเดิม (พนักงานคุ้นหน้าตาอยู่แล้ว) แล้วบันทึกผ่าน recvSetDate + recvSetInfo
+   ลบ = ย้ายทั้งแถวไปแท็บถังขยะ (กู้คืนได้ รูปใน Drive ไม่ถูกลบ) */
+let RV_EDIT_ID = null;         // recv_id ที่กำลังแก้ (null = บันทึกรายการใหม่ตามปกติ)
+let RV_EDIT_ROW = null;        // ข้อมูลเดิมของแถวนั้น (ไว้เทียบว่าวันที่เปลี่ยนไหม)
+let RECVDEL_READY = null;      // หลังบ้านรองรับ recvDelete แล้วหรือยัง (null = ยังไม่รู้)
+function rvIsOwner(){ return !!(ME && ME.role==='owner'); }
+
+function rvEditStart(id){
+  var row=(RECV_ROWS||[]).filter(function(x){ return x.recv_id===id; })[0];
+  if(!row){ alert('ไม่พบรายการนี้ ลองรีเฟรชหน้าใหม่'); return; }
+  if(RV_PHOTOS.length && !confirm('กำลังมีรูปที่แนบค้างไว้ — เปลี่ยนไปแก้บิลเก่าเลยไหม? (รูปที่แนบจะถูกทิ้ง)')) return;
+  RV_EDIT_ID=id; RV_EDIT_ROW=row;
+  RV_PHOTOS=[]; rvRenderPhotos();
+  document.getElementById('rv-date').value=row.date||'';
+  document.getElementById('rv-supplier').value=row.supplier||'';
+  document.getElementById('rv-note').value=row.note||'';
+  var box=document.getElementById('rv-items'); box.innerHTML='';
+  (row.items||[]).forEach(function(o){
+    box.insertAdjacentHTML('beforeend', rvLineHtml());
+    var ln=box.lastElementChild;
+    ln.querySelector('.rv-name').value=o.name||'';
+    ln.querySelector('.rv-qty').value=(o.qty||'');
+    var us=ln.querySelector('.rv-unit'); if(us && o.unit) us.value=o.unit;
+    ln.querySelector('.rv-uprice').value=(o.unit_price||'');
+    ln.querySelector('.rv-price').value=(o.price||'');
+  });
+  if(!(row.items||[]).length) rvAddLine();
+  // ยอดบิลกับผลรวมรายการไม่ตรงกันได้ (ส่วนลด/ค่าส่ง) → ให้แก้ยอดจริงได้ตรง ๆ ไม่ให้ระบบทับ
+  document.getElementById('rv-total-edit').value = row.total || '';
+  rvEditRender(); rvCalc();
+  clearMsg(document.getElementById('rv-msg'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function rvEditCancel(){
+  RV_EDIT_ID=null; RV_EDIT_ROW=null;
+  RV_CLIENT_ID=uuid();
+  document.getElementById('rv-date').value=bizDateISO();
+  document.getElementById('rv-supplier').value='';
+  document.getElementById('rv-note').value='';
+  document.getElementById('rv-total-edit').value='';
+  document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
+  rvEditRender(); rvCalc(); rvDateWarn();
+  clearMsg(document.getElementById('rv-msg'));
+}
+function rvEditRender(){
+  var on=!!RV_EDIT_ID, bar=document.getElementById('rv-editbar');
+  document.getElementById('rv-photoblock').classList.toggle('hidden', on);   // แก้บิลเก่าเปลี่ยนรูปไม่ได้
+  document.getElementById('rv-edittotal').classList.toggle('hidden', !on);
+  document.getElementById('rv-send').textContent = on ? '💾 บันทึกการแก้ไข' : 'บันทึกการรับของ';
+  if(!on){ bar.className='hidden'; bar.innerHTML=''; return; }
+  var r=RV_EDIT_ROW||{};
+  bar.className='editbar';
+  bar.innerHTML='✏️ <b>กำลังแก้บิลของวันที่ '+esc(cashDMY(r.date))+(r.supplier?(' · '+esc(r.supplier)):'')+'</b>'+
+    '<div style="margin-top:4px;opacity:.75">แก้ได้ทั้งวันที่ / ร้าน / รายการ / ยอด / หมายเหตุ — <b>รูปแก้ไม่ได้</b> (ถ้ารูปผิด ให้ลบบิลนี้แล้วบันทึกใหม่)</div>'+
+    '<div style="margin-top:8px"><button type="button" class="btn ghost sm" onclick="rvEditCancel()">✕ ยกเลิกการแก้ไข</button></div>';
+}
+
+// บันทึกการแก้ไข: วันที่แยก route (recvSetDate) จากเนื้อหา (recvSetInfo) — คนบันทึก/รูป/created_at ไม่ถูกแตะ
+async function rvSaveEdit(){
+  var m=document.getElementById('rv-msg'); clearMsg(m);
+  var items=rvCollect();
+  if(!items.length || !items.some(function(x){return x.name;})){ msg(m,'กรุณากรอกชื่อของอย่างน้อย 1 รายการ'); return; }
+  var date=document.getElementById('rv-date').value;
+  if(!date){ msg(m,'กรุณาเลือกวันที่รับของ'); return; }
+  if(!rvDateSane(date) && !confirm('วันที่ '+rvDMY(date)+' ดูผิดปกติ (ห่างจากวันนี้มาก) — ยืนยันจะใช้วันที่นี้ไหม?')) return;
+  var btn=document.getElementById('rv-send'); busy(btn,true);
+  var id=RV_EDIT_ID;
+  if(date!==(RV_EDIT_ROW&&RV_EDIT_ROW.date)){
+    var rd=await api('recvSetDate',{recv_id:id, date:date});
+    if(!rd.ok){ busy(btn,false,'💾 บันทึกการแก้ไข'); msg(m, rd.error||'แก้วันที่ไม่สำเร็จ'); return; }
+  }
+  var tot=document.getElementById('rv-total-edit').value;
+  var r=await api('recvSetInfo',{
+    recv_id:id,
+    supplier:document.getElementById('rv-supplier').value,
+    note:document.getElementById('rv-note').value,
+    items:items,
+    total:(tot===''?null:parseFloat(tot)||0)
+  });
+  busy(btn,false,'💾 บันทึกการแก้ไข');
+  if(!r.ok){ msg(m, r.error||'บันทึกการแก้ไขไม่สำเร็จ'); return; }
+  msg(m,'✅ แก้บิลเรียบร้อย · รวม '+Number(r.total||0).toLocaleString('en-US')+' บาท','ok');
+  rvEditCancel();
+  await loadRecvList();
+  todayRefresh();
+}
+
+async function rvDelete(id){
+  if(!rvIsOwner()) return;
+  var row=(RECV_ROWS||[]).filter(function(x){ return x.recv_id===id; })[0] || {};
+  if(!confirm('ลบบิลนี้?\n'+cashDMY(row.date)+(row.supplier?(' · '+row.supplier):'')+' · รวม '+Number(row.total||0).toLocaleString('en-US')+' บาท'+
+     '\n\nระบบจะย้ายไปแท็บ "ถังขยะ" ในชีท (รูปยังอยู่) — ถ้าลบผิด บอกผู้ดูแลให้ย้ายกลับได้')) return;
+  var m=document.getElementById('rv-msg'); clearMsg(m);
+  var r=await api('recvDelete',{recv_id:id});
+  if(!r.ok){ msg(m, r.error||'ลบไม่สำเร็จ'); return; }
+  msg(m,'🗑 ย้ายบิลวันที่ '+cashDMY(r.date)+' ไปถังขยะแล้ว','ok');
+  if(RV_EDIT_ID===id) rvEditCancel();
+  await loadRecvList();
+  todayRefresh();
+}
+
 async function loadRecvList(){
   var box=document.getElementById('rv-history');
   box.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>';
@@ -2215,6 +2337,12 @@ async function loadRecvList(){
   var seen={}, sup=[];
   RECV_ROWS.forEach(function(x){ if(x.supplier && !seen[x.supplier]){ seen[x.supplier]=1; sup.push(x.supplier); } });
   document.getElementById('rv-suppliers').innerHTML=sup.map(function(s){return '<option value="'+esc(s)+'">';}).join('');
+  // ปุ่มแก้/ลบ: เจ้าของเท่านั้น ; ปุ่มลบโผล่เมื่อหลังบ้านรองรับแล้ว (อัปเว็บก่อน deploy GAS ได้ ไม่ทำให้กดแล้ว error)
+  var canEdit=rvIsOwner(), canDel=false;
+  if(canEdit){
+    if(RECVDEL_READY===null){ var pg=await api('ping',{}); if(pg && pg.ok) RECVDEL_READY=(pg.recvdel===true); }
+    canDel=(RECVDEL_READY===true);
+  }
   if(!RECV_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึกการรับของ</div>'; return; }
   box.innerHTML=RECV_ROWS.slice(0,10).map(function(x){
     var items=x.items||[];
@@ -2237,8 +2365,13 @@ async function loadRecvList(){
       '</div>'+
       tbl+
       (x.note?'<div class="meta" style="margin-top:6px;opacity:.75">📝 '+esc(x.note)+'</div>':'')+
-      '<div class="meta" style="margin-top:6px;opacity:.7">โดย '+esc(x.by||'—')+'</div>'+
-      (x.has_photo?'<button class="btn ghost sm" style="margin-top:8px" onclick="viewRecvPhoto(this,\''+esc(x.recv_id)+'\',0)">🧾 ดูรูป'+((x.photo_count||1)>1?(' ('+x.photo_count+' รูป)'):'')+'</button>':'')+
+      '<div class="meta" style="margin-top:6px;opacity:.7">โดย '+esc(x.by||'—')+
+        (x.edited_by?(' · ✏️ แก้โดย '+esc(x.edited_by)+(x.edited_at?(' '+esc(cashHHMM(x.edited_at))):'')):'')+'</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+
+      (x.has_photo?'<button class="btn ghost sm" onclick="viewRecvPhoto(this,\''+esc(x.recv_id)+'\',0)">🧾 ดูรูป'+((x.photo_count||1)>1?(' ('+x.photo_count+' รูป)'):'')+'</button>':'')+
+      (canEdit?'<button class="btn ghost sm" onclick="rvEditStart(\''+esc(x.recv_id)+'\')">✏️ แก้</button>':'')+
+      (canDel?'<button class="btn ghost sm" style="color:var(--danger);border-color:rgba(216,69,63,.45)" onclick="rvDelete(\''+esc(x.recv_id)+'\')">🗑 ลบ</button>':'')+
+      '</div>'+
     '</div>';
   }).join('');
 }
@@ -2291,7 +2424,8 @@ const HELP_TOPICS = [
       'แนบเสร็จ <b>AI จะอ่านบิลให้อัตโนมัติ</b> แล้วเติมรายการลงฟอร์ม — <b>ต้องตรวจทุกบรรทัดก่อนบันทึก</b> (AI อ่านผิดได้ โดยเฉพาะลายมือ)',
       'แก้/เพิ่มรายการเอง: ชื่อของ · จำนวน · หน่วย · <b>ราคา/หน่วย</b> → ช่อง <b>ราคารวม</b> คิดให้เอง (ถ้าบิลมีส่วนลด/ปัดเศษ พิมพ์ทับได้)',
       'ถ้าบิลใบนี้เคยบันทึกไปแล้ว ระบบจะขึ้น <b>เตือนบิลซ้ำ</b> — ถ้าของมาจริง 2 รอบ กดยืนยันแล้วบันทึกซ้ำได้',
-      'ใส่หมายเหตุ/สภาพของ (เช่น ผักช้ำ 1 ถุง) → กด <b>บันทึกการรับของ</b>'
+      'ใส่หมายเหตุ/สภาพของ (เช่น ผักช้ำ 1 ถุง) → กด <b>บันทึกการรับของ</b>',
+      'บันทึกผิด/บิลตามมาทีหลัง → <b>บอกเจ้าของ</b> ให้แก้ให้ (เจ้าของกด ✏️ แก้ หรือ 🗑 ลบ ได้ที่รายการใน “รับของล่าสุด” — ลบแล้วยังกู้คืนได้)'
     ], tip:'💡 ถ้าไม่มีปุ่ม AI หรือ AI อ่านไม่ออก — <b>พิมพ์รายการเองได้ตามปกติ</b> ของที่พิมพ์ไว้จะไม่หาย · ดูของที่เคยรับย้อนหลังได้ที่หัวข้อ “รับของล่าสุด” ท้ายหน้า (แตะ 🧾 เพื่อดูรูปบิล)' },
 
   { id:'cash', ico:'💵', name:'เงินสด', sub:'บันทึกเงินสดรายวัน', clip:'cash.gif', cashOnly:true, steps:[
