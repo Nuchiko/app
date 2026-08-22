@@ -183,6 +183,15 @@
   .st-prev:empty{display:none}
   .st-prev{margin:0 2px 10px;padding:8px 11px;border-radius:10px;font-size:12.5px;line-height:1.45;
     color:#0b3d2c;background:rgba(46,160,110,.16);border:1px solid rgba(46,160,110,.45)}
+  /* เตือน "เศษวันรับของเกิน 40%" ก่อนกดส่ง (เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 14) */
+  .st-warnbar:empty{display:none}
+  .st-warnbar{margin:0 2px 10px;padding:8px 11px;border-radius:10px;font-size:12.5px;line-height:1.5;
+    color:#8a6a00;background:rgba(227,178,60,.18);border:1px solid rgba(227,178,60,.55)}
+  /* ตัวช่วยตอนกรอก 2 ระบบ (แอป + ฟอร์มเว็บเก่า) — ย้ำลำดับ ไม่งั้นตัวเลข Ikura กลับไปพอง */
+  .st-dual:empty{display:none}
+  .st-dual{margin:12px 2px 0;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.55;
+    color:var(--muted);background:var(--bg2);border:1px solid var(--line)}
+  .st-dual a{color:var(--accent2);font-weight:700;text-decoration:none}
   /* ป้ายเตือนขนาดกล่อง (Ikura 500 ก.) — เคยกรอกผิดคิดว่ากล่องละ 1,000 ก. */
   .st-boxnote{font-size:11.5px;line-height:1.4;color:#8a6a00;background:rgba(227,178,60,.16);
     border:1px solid rgba(227,178,60,.5);border-radius:9px;padding:6px 9px;margin:0 0 8px}
@@ -335,6 +344,20 @@
   .rv-tb td.nm{word-break:break-word}
   .rv-tb td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
   .rv-tb td.pr{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+  /* แถบ "วันนี้" หน้าหลัก — คืนนี้ส่งอะไรไปแล้วบ้าง ใครส่ง กี่โมง (เฟส 1) */
+  .today{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;margin-top:14px}
+  .today-h{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:700}
+  .today-h .rf{background:none;border:0;color:var(--muted);font-size:17px;line-height:1;padding:2px 6px;cursor:pointer}
+  .today-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .tchip{display:flex;align-items:center;gap:7px;font-size:12.5px;padding:7px 11px;border-radius:999px;
+    border:1px solid var(--line);background:var(--bg2);color:var(--text);cursor:pointer;max-width:100%}
+  .tchip:active{transform:scale(.97)}
+  .tchip.done{background:rgba(76,175,114,.13);border-color:rgba(76,175,114,.4)}
+  .tchip .w{color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tchip.done .w{color:#b6e7c6}
+  .health{margin-top:11px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted);line-height:1.65}
+  .health b{color:var(--text);font-weight:600}
+  .health .bad{color:#ffb4a6;font-weight:600}
   .editbar{margin:2px 0 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;
     background:rgba(227,178,60,.14);border:1px solid rgba(227,178,60,.45)}
   .editbar.lock{background:rgba(127,127,127,.14);border-color:var(--line);color:var(--muted)}
@@ -483,6 +506,13 @@
       <div class="avatar" id="ho-avatar">M</div>
     </div>
     <div id="ho-verwarn" class="msg"></div>
+    <!-- แถบ "วันนี้" — โผล่เมื่อหลังบ้านรองรับ (ping.today) เท่านั้น -->
+    <div id="ho-today" class="today hidden">
+      <div class="today-h"><span id="ho-today-t">วันนี้</span><button type="button" class="rf" title="รีเฟรช" onclick="loadToday(1)">⟳</button></div>
+      <div class="today-chips" id="ho-today-chips"></div>
+      <div class="msg" id="ho-today-warn"></div>
+      <div class="health hidden" id="ho-health"></div>
+    </div>
 
     <div class="sect-title">ระบบงาน</div>
     <div class="grid">
@@ -557,6 +587,7 @@
     <div class="muted" id="stc-date" style="margin:-6px 2px 2px">—</div>
     <div class="st-tip" id="stc-tip">กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ</div>
     <div class="st-prev" id="stc-prev"></div>
+    <div class="st-warnbar" id="stc-warn"></div>
     <input type="file" id="dphoto-file" accept="image/*" capture="environment" style="display:none" onchange="onDrinkPhotoFile(this)">
     <div id="stc-cards"></div>
     <div id="stc-form">
@@ -571,6 +602,7 @@
       <textarea id="stc-note" rows="3" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"></textarea>
       <button class="btn" id="stc-send" onclick="sendStockCat()">ส่งข้อมูล</button>
       <div class="msg" id="stc-msg"></div>
+      <div class="st-dual" id="stc-dual"></div>
     </div>
     <div class="footnote">บันทึกลงชีท + ส่งรูปเข้า LINE กลุ่ม Staff</div>
   </section>
@@ -853,7 +885,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 1;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
+const APP_VER = 2;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -927,8 +959,8 @@ function enterHome(){
   chip.className = 'chip ' + ME.role;
   document.getElementById('ho-admin-sect').classList.toggle('hidden', !ME.is_admin);
   document.getElementById('ho-cash-tile').classList.toggle('hidden', !(ME.is_admin || ME.team === 'service'));
-  showRecvTileIfReady();
-  show('home');
+  showRecvTileIfReady().then(function(){ if(TODAY_READY) loadToday(); });   // แถบ "วันนี้" โผล่หลังรู้ว่าหลังบ้านรองรับ
+  show("home");
 }
 
 // เมนู "รับของเข้า" โผล่เมื่อหลังบ้านรองรับแล้วเท่านั้น (เว็บอัปก่อน GAS ได้ ไม่ทำให้พนักงานกดแล้วเจอ error)
@@ -938,7 +970,7 @@ async function showRecvTileIfReady(){
   if(RECV_READY===true){ tile.classList.remove('hidden'); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
@@ -955,6 +987,89 @@ function updateVerBadge(){
   } else {
     clearMsg(el);
   }
+}
+
+/* ---------- กฎเที่ยงคืน: ใช้ค่าเดียวกันทั้งแอป (เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 4) ----------
+   ร้านปิดเที่ยงคืน พนักงานกรอกหลังปิดร้าน → 00:00–03:59 ยังหมายถึง "ของเมื่อวาน"
+   เดิมเงินสดใช้ถึงตี 3 (เผลอกรอกตอนตี 3 ครึ่งแล้ววันที่เพี้ยน) ส่วน Stock/บอทใช้ตี 4 มาตลอด — รวมเป็นตี 4 ให้ตรงกัน
+   หลังบ้านมี _bizDate() ที่ใช้กติกาเดียวกัน (BIZ_NIGHT_UNTIL) */
+const NIGHT_UNTIL = 4;
+function bizDateISO(){
+  var d=new Date();
+  if(d.getHours() < NIGHT_UNTIL) d.setDate(d.getDate()-1);
+  var p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function isNightShift(){ return (new Date()).getHours() < NIGHT_UNTIL; }
+
+
+/* ---------- แถบ "วันนี้" (เฟส 1) ----------
+   ตอบคำถามเดียวที่ทุกคนอยากรู้ตอนเปิดแอป: คืนนี้ส่งอะไรไปแล้วบ้าง ใครส่ง กี่โมง
+   เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 1: ให้ทุกคนเห็นชื่อคนส่ง+เวลา ; แถบเงินสดเห็นเฉพาะคนที่เข้าเมนูเงินสดได้ */
+let TODAY_READY=null, TODAY=null, TODAY_BUSY=false;
+function stockGroupIndex(name){ for(var i=0;i<STOCK_GROUPS.length;i++) if(STOCK_GROUPS[i].name===name) return i; return -1; }
+function tChip(ico,label,doneTxt,pendTxt,go){
+  var done=!!doneTxt;
+  return '<div class="tchip'+(done?' done':'')+'" onclick="'+go+'">'+
+    '<span>'+ico+' '+esc(label)+'</span><span class="w">'+(done?('✓ '+esc(doneTxt)):esc(pendTxt))+'</span></div>';
+}
+function tWho(c){   // "นก 23:40" — ฟอร์มเว็บเก่าไม่บันทึกชื่อคน จะเหลือแค่เวลา
+  var s=[(c.by||''), (c.time||'')].filter(function(x){return x;}).join(' ');
+  return s || 'ส่งแล้ว';
+}
+function todayRefresh(){ if(TODAY_READY) loadToday(1); }   // บันทึกอะไรเสร็จ → แถบ "วันนี้" ต้องอัปเดตทันที
+async function loadToday(force){
+  var box=document.getElementById('ho-today'); if(!box) return;
+  if(TODAY_READY===false){ box.classList.add('hidden'); return; }
+  if(TODAY_BUSY) return;
+  TODAY_BUSY=true;
+  var r=await api('todayStatus', force?{nocache:1}:{});
+  TODAY_BUSY=false;
+  if(!r || !r.ok){ box.classList.add('hidden'); return; }   // หลังบ้านรุ่นเก่า/เน็ตมีปัญหา = ซ่อนเงียบ ๆ ไม่ขวางการใช้งาน
+  TODAY=r;
+  box.classList.remove('hidden');
+  renderToday();
+}
+function renderToday(){
+  var r=TODAY||{}, st=r.stock||{}, cats={};
+  (st.cats||[]).forEach(function(c){ cats[c.cat]=c; });
+  document.getElementById('ho-today-t').textContent='วันนี้ · '+cashDMY(r.date)+(isNightShift()?' (คืนที่ร้านเพิ่งปิด)':'');
+  var chips=[];
+  ['ปลาดิบ','ไข่','เครื่องดื่ม'].forEach(function(n){
+    var gi=stockGroupIndex(n); if(gi<0) return;
+    var c=cats[n];
+    chips.push(tChip(STOCK_GROUPS[gi].icon, n, c?tWho(c):'', 'ยังไม่ส่ง', 'openStockCat('+gi+')'));
+  });
+  if(r.cash) chips.push(tChip('💵','เงินสด', r.cash.saved?[r.cash.by,r.cash.time].filter(function(x){return x;}).join(' '):'', 'ยังไม่กรอก','openCash()'));
+  var rc=r.recv||{};
+  chips.push(tChip('📥','รับของเข้า', rc.count?((rc.count+' ครั้ง')+(rc.by&&rc.by.length?(' · '+rc.by.join(', ')):'')):'', 'ยังไม่มี','openRecv()'));
+  document.getElementById('ho-today-chips').innerHTML=chips.join('');
+  // เตือนเฉพาะรายการที่มีปัญหาจริง — Ikura ที่ตัวเลขล่าสุดมาจากฟอร์มเว็บเก่า (ฟอร์มเก่าไม่คูณ 500 ก./กล่อง)
+  var w=document.getElementById('ho-today-warn');
+  if(st.ikura && st.ikura.from==='old'){
+    var gi=stockGroupIndex('ปลาดิบ');
+    msg(w,'⚠️ ตัวเลข Ikura ล่าสุด'+(st.ikura.time?(' ('+st.ikura.time+')'):'')+' มาจากฟอร์มเว็บเก่า ซึ่งไม่ได้คูณ 500 ก./กล่อง'+
+      (gi>=0?' — เปิดหมวดปลาดิบในแอปแล้วกรอก Ikura ซ้ำอีกครั้ง ตัวเลขจะถูกต้อง':''),'warn');
+  } else clearMsg(w);
+  renderHealth(r.health);
+}
+// 🩺 สุขภาพระบบ — ผู้ดูแลเท่านั้น (หลังบ้านส่ง health มาให้เฉพาะผู้ดูแล ไม่ได้ซ่อนแค่ฝั่งหน้าเว็บ)
+function renderHealth(h){
+  var el=document.getElementById('ho-health'); if(!el) return;
+  if(!h){ el.className='health hidden'; el.innerHTML=''; return; }
+  var parts=[];
+  var pos=h.pos||{};
+  if(pos.error) parts.push('🖥 POS: <span class="bad">'+esc(pos.error)+'</span>');
+  else if(!pos.date) parts.push('🖥 POS: <span class="bad">ไม่มีไฟล์ยอดขายย้อนหลัง 8 วัน</span> — เช็คว่าเครื่อง POS ที่ร้านเปิดอยู่ไหม');
+  else parts.push('🖥 POS ส่งยอดล่าสุด <b>'+esc(cashDMY(pos.date))+'</b>'+(pos.synced_at?(' ('+esc(String(pos.synced_at).slice(11))+' น.)'):'')+
+    (pos.days>=2?(' <span class="bad">— ค้างมา '+pos.days+' วัน</span>'):''));
+  var o=h.ocr||{};
+  parts.push('🤖 AI อ่านบิลวันนี้ <b>'+(o.used||0)+'</b>/'+(o.max||0)+(o.key?'':' <span class="bad">(ยังไม่ได้ใส่คีย์)</span>'));
+  if(h.pending>0) parts.push('👤 <span class="bad">รออนุมัติ '+h.pending+' คน</span> — จัดการพนักงาน → แก้ไข → สถานะ "ใช้งาน"');
+  var g=(TODAY&&TODAY.recv&&TODAY.recv.gaps)||0;
+  if(g>0) parts.push('🧾 <span class="bad">บิลรับของที่ยังไม่มีร้าน/ยอด '+g+' ใบ</span> (7 วันล่าสุด)');
+  el.className='health';
+  el.innerHTML=parts.join('<br>');
 }
 
 function logout(){
@@ -1192,6 +1307,8 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
                                                 : 'กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ';
   if(!g.items.length){
     document.getElementById('stc-cards').innerHTML='<div class="st-empty">ยังไม่มีรายการในหมวดนี้ — เดี๋ยวเพิ่มทีหลัง</div>';
+    document.getElementById('stc-warn').innerHTML='';   // ล้างคำเตือนของหมวดก่อนหน้า
+    document.getElementById('stc-dual').innerHTML='';
     form.style.display='none';
   }else{
     document.getElementById('stc-cards').innerHTML = g.count
@@ -1203,6 +1320,7 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     clearMsg(document.getElementById('stc-msg'));
     calcStockUsed();
     if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
+    stRenderDual(g);   // เตือนลำดับการกรอกเมื่อยังใช้ 2 ระบบควบคู่กัน
     if(g.count && DRINK_UPLOAD_ON){ loadDrinkPhotos().then(applyDrinkPhotos); }   // โหลดรูปที่อัปไว้แล้วแปะทับ (เปิดหลัง deploy หลังบ้าน)
   }
   show('stockcat');
@@ -1337,12 +1455,54 @@ function computeUsed(i){
                    : (stGv('old_'+i)+stGv('in_'+i)-stGv('rem_'+i));
   return {num:u, used:String(u), pill:'ใช้ '+u.toLocaleString('en-US')};
 }
+/* ---------- เตือน "เศษวันรับของเกิน 40%" (เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 14) ----------
+   กฎเดียวกับบอทเทียบยอด: เศษ = ตัดแต่ง ÷ ของเข้า ; วันรับปลาปกติเหลือเศษราว 24–37% (CLAUDE.md §7.4.5)
+   เกินเกณฑ์ = เตือน ไม่บล็อก — บางวันปลาเสียจริงต้องเฉือนทิ้งเยอะ */
+const TRIM_WARN_PCT=40;
+function stTrimOver(){
+  var g=STOCK_GROUPS[stCurrentGroup]||{items:[]}, start=groupStart(stCurrentGroup), out=[];
+  if(g.count) return out;                       // หมวดนับจำนวน (เครื่องดื่ม) ไม่มีช่องตัดแต่ง
+  g.items.forEach(function(item,k){
+    var i=start+k, meta=STOCK_FLAT[i];
+    if(!meta || !meta.cut || meta.hotate || meta.boxg || meta.pack) return;   // เฉพาะของที่ชั่งเป็นกรัมและมีช่องตัดแต่ง
+    var inc=stGv('in_'+i), cut=stGv('cut_'+i);
+    if(inc<=0 || cut<=0) return;                // ไม่ใช่วันรับของ = ไม่ต้องคิด
+    var pct=Math.round(100*cut/inc);
+    if(pct>TRIM_WARN_PCT) out.push({name:meta.name, pct:pct, inc:inc, cut:cut});
+  });
+  return out;
+}
+function stTrimText(list){
+  return list.map(function(x){ return '• '+x.name+' '+x.pct+'% (ของเข้า '+x.inc.toLocaleString('en-US')+
+    ' · ตัดแต่ง '+x.cut.toLocaleString('en-US')+')'; }).join('\n');
+}
+/* ---------- ตัวช่วยตอนกรอก 2 ระบบ (เจ้าของสั่ง 13 ส.ค. 2026: ให้ใช้ควบคู่กันไปก่อน) ----------
+   ทั้งแอปและฟอร์มเว็บเก่าเขียนลงชีท Stock_YYYY-MM-DD แผ่นเดียวกัน และรายงานยึด "แถวที่ส่งทีหลัง"
+   → ต้องกรอกแอปเป็นตัวสุดท้ายเสมอ ไม่งั้นตัวเลข Ikura กลับไปพองเท่าตัว (ฟอร์มเก่าไม่คูณ 500 ก./กล่อง) */
+const OLD_STOCK_FORM='https://nuchiko.github.io/Stock/';
+function stRenderDual(g){
+  var el=document.getElementById('stc-dual'); if(!el) return;
+  if(!g || g.name!=='ปลาดิบ'){ el.innerHTML=''; return; }   // ฟอร์มเก่ามีแต่หมวดปลาดิบ
+  el.innerHTML='ℹ️ ถ้าคืนนี้ต้องกรอก<b>ฟอร์มเว็บเก่า</b>ด้วย ให้กรอก<b>ฟอร์มเก่าก่อน แล้วปิดท้ายด้วยแอปเสมอ</b> '+
+    '(ระบบใช้ตัวที่ส่งทีหลัง — ถ้าส่งฟอร์มเก่าทีหลัง ตัวเลข Ikura จะพองเท่าตัว)'+
+    '<div style="margin-top:7px"><a href="'+OLD_STOCK_FORM+'" target="_blank" rel="noopener">↗ เปิดฟอร์มเว็บเก่า</a></div>';
+}
+function stRenderTrimWarn(){
+  var el=document.getElementById('stc-warn'); if(!el) return;
+  var over=stTrimOver();
+  el.innerHTML = over.length
+    ? ('⚠️ เศษ (ตัดแต่ง) เกิน '+TRIM_WARN_PCT+'% ของ “ของเข้า”:<br>'+
+       over.map(function(x){ return '<b>'+esc(x.name)+' '+x.pct+'%</b>'; }).join(' · ')+
+       '<br>ปกติแล่ปลาเหลือเศษราว 24–37% — เช็คว่ากรอกช่อง “ของเข้า/ตัดแต่ง” ถูกช่องไหม')
+    : '';
+}
 function calcStockUsed(){
   STOCK_FLAT.forEach((meta,i)=>{
     const cell=document.getElementById('used_'+i); if(!cell) return;
     const c=computeUsed(i);
     cell.textContent=c.pill; cell.className='st-u'+(c.num<0?' neg':'');
   });
+  stRenderTrimWarn();
 }
 function stCell(pfx){
   const b=document.getElementById(pfx+'_box');
@@ -1414,6 +1574,13 @@ async function sendStockCat(){
   const m=document.getElementById('stc-msg'); clearMsg(m);
   const btn=document.getElementById('stc-send');
   if(String(SHEET_URL).indexOf('PASTE')===0){ msg(m,'โหมดทดลอง: ยังไม่ตั้งปลายทาง Stock — ไม่ได้ส่งข้อมูล (กันเขียนทับ Stock จริง)'); return; }
+  // เตือนก่อนส่ง ไม่บล็อก — บางวันปลาเสียจริงต้องเฉือนทิ้งเยอะ ยืนยันแล้วส่งได้ตามปกติ
+  var over=stTrimOver();
+  if(over.length){
+    var q='⚠️ เศษ (ตัดแต่ง) เกิน '+TRIM_WARN_PCT+'% ของ "ของเข้า":\n'+stTrimText(over)+
+          '\n\nปกติแล่ปลาเหลือเศษราว 24–37%\nถ้าตัวเลขถูกแล้ว กด ตกลง เพื่อส่งต่อ';
+    if(!confirm(q)) return;
+  }
   const g=STOCK_GROUPS[stCurrentGroup], start=groupStart(stCurrentGroup);
   const rows=g.items.map(function(item,k){ var i=start+k, meta=STOCK_FLAT[i];
     if(g.count){ var v=stRaw('rem_'+i); return {item:meta.name, old:'', in:'', cut:'', rem:(v!==''?(v+' '+meta.unit):''), used:''}; }
@@ -1577,20 +1744,12 @@ async function openCash(){
   cashNightNote();
 }
 
-// ร้านปิดเที่ยงคืน พนักงานกรอกหลังปิดร้าน → ช่วง 00:00–02:59 ให้หมายถึงยอดของ "เมื่อวาน"
-// (กฎเดียวกับที่ระบบ Stock ใช้มาตลอด — CLAUDE.md §7.2) ; ไม่งั้นยอดคืนนี้จะไปลงวันถัดไป
-// แล้วพอวันถัดไปมากรอกจริงก็จะเจอแถวเดิมค้างอยู่ = ฟอร์มล็อกจนกรอกไม่ได้
-const CASH_NIGHT_UNTIL = 3;
-function cashBizDate(){
-  var d=new Date();
-  if(d.getHours() < CASH_NIGHT_UNTIL) d.setDate(d.getDate()-1);
-  var p=n=>String(n).padStart(2,'0');
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
-}
+// กฎเที่ยงคืนของฟอร์มเงินสด = กฎกลางของแอป (bizDateISO / NIGHT_UNTIL ตี 4) — เดิมแยกเป็นตี 3 ของตัวเอง
+function cashBizDate(){ return bizDateISO(); }
 function cashNightNote(){   // อธิบายให้เห็นว่าทำไมวันที่ไม่ตรงกับวันในปฏิทิน (กันงงว่าแอปเติมผิด)
   var el=document.getElementById('cash-nightnote'); if(!el) return;
   var cur=document.getElementById('cash-date').value;
-  var show=((new Date()).getHours() < CASH_NIGHT_UNTIL) && cur===cashBizDate();
+  var show=isNightShift() && cur===cashBizDate();
   el.className = show ? 'editbar night' : 'hidden';
   el.innerHTML = show ? ('🌙 ตอนนี้เลยเที่ยงคืนแล้ว — กำลังกรอกยอดของ <b>วันที่ '+esc(cashDMY(cur))+
     '</b> (วันที่ร้านเพิ่งปิด) ถ้าไม่ใช่ เปลี่ยนวันที่ด้านบนได้') : '';
@@ -1645,8 +1804,27 @@ function cashRenderMode(){
       '<div style="margin-top:4px;opacity:.75">ยอด “รวม” ของวันถัด ๆ ไปจะไม่ถูกคิดใหม่ให้ ถ้าต้องการก็เปิดวันนั้นแล้วกดบันทึกซ้ำ</div>';
   } else {
     bar.className='editbar lock';
-    bar.innerHTML='🔒 วันที่ '+d+' บันทึกไว้แล้ว — <b>แก้ไขได้เฉพาะเจ้าของร้าน</b> (เลือกวันอื่นเพื่อบันทึกใหม่)';
+    // บอกให้ชัดว่าใครกรอกไว้แล้ว + พาไปวันที่ยังว่าง (เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 3 แบบ ก. — คงกฎ "แก้ได้เฉพาะเจ้าของ")
+    var row0=cashRowFor(CASH_DATE_CUR)||{};
+    var who=[row0.by||'', cashHHMM(row0.updated_at)].filter(function(x){return x;}).join(' ');
+    var nx=cashNextUnfilled();
+    bar.innerHTML='🔒 วันที่ '+d+' บันทึกไว้แล้ว'+(who?(' โดย <b>'+esc(who)+'</b>'):'')+
+      ' — <b>แก้ไขได้เฉพาะเจ้าของร้าน</b>'+
+      ((nx && nx!==CASH_DATE_CUR)
+        ? '<div style="margin-top:8px"><button type="button" class="btn ghost sm" onclick="cashPick(\''+esc(nx)+'\')">📅 ไปวันที่ยังไม่ได้กรอก ('+esc(cashDMY(nx))+')</button></div>'
+        : '<div style="margin-top:4px;opacity:.75">ย้อนหลัง '+cashDaysBack()+' วัน กรอกครบทุกวันแล้ว — ถ้าตัวเลขผิด บอกเจ้าของให้แก้ให้</div>');
   }
+}
+function cashShiftISO(d,n){ var p=String(d||'').split('-'); if(p.length!==3) return '';
+  var dt=new Date(+p[0],+p[1]-1,+p[2]); dt.setDate(dt.getDate()+n);
+  var q=x=>String(x).padStart(2,'0'); return dt.getFullYear()+'-'+q(dt.getMonth()+1)+'-'+q(dt.getDate()); }
+function cashHHMM(v){ var m=/(\d{2}:\d{2})/.exec(String(v||'')); return m?m[1]:''; }
+// วันล่าสุดที่ยังไม่มีใครกรอก (ไล่ย้อนจากวันธุรกิจวันนี้) — ใช้กับปุ่ม "ไปวันที่ยังไม่ได้กรอก" ตอนเจอวันที่ล็อก
+function cashNextUnfilled(){
+  var have={}; (CASH_ROWS||[]).forEach(function(r){ have[r.date]=true; });
+  var d=cashBizDate();
+  for(var i=0;i<cashDaysBack();i++){ if(!have[d]) return d; d=cashShiftISO(d,-1); if(!d) break; }
+  return '';
 }
 function cashPick(d){ document.getElementById('cash-date').value=d; cashShowDate(d); window.scrollTo({top:0,behavior:'smooth'}); }
 async function cashDelete(dateStr){
@@ -1658,6 +1836,7 @@ async function cashDelete(dateStr){
   if(!r.ok){ msg(m, r.error||'ลบไม่สำเร็จ'); return; }
   msg(m,'🗑 ลบบันทึกวันที่ '+cashDMY(dateStr)+' แล้ว','ok');
   await loadCashList();
+  todayRefresh();
   cashShowDate(document.getElementById('cash-date').value, true);
 }
 function todayISO(){ var d=new Date(),p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
@@ -1715,6 +1894,7 @@ async function sendCash(){
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
   msg(m,'✅ บันทึกวันที่ '+r.date+' แล้ว · รวม '+Number(r.total||0).toLocaleString('en-US')+(r.updated?' (แก้ของเดิม)':''),'ok');
   await loadCashList();
+  todayRefresh();
   cashShowDate(date, true);       // โหลดค่าที่บันทึกจริงกลับขึ้นฟอร์ม + สลับเป็นโหมดแก้ไข
 }
 async function loadCashList(){
@@ -1779,7 +1959,7 @@ function openRecv(){
   var hasDraft = document.querySelectorAll('#rv-items .rv-line').length && (rvCollect().length || RV_PHOTOS.length);
   if(!hasDraft){
     RV_CLIENT_ID=uuid();
-    document.getElementById('rv-date').value=todayISO();
+    document.getElementById('rv-date').value=bizDateISO();   // กฎเที่ยงคืนกลาง: กรอกตอนตี 1 = ของเมื่อวาน (เปลี่ยนเองได้)
     document.getElementById('rv-supplier').value='';
     document.getElementById('rv-note').value='';
     document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
@@ -1942,7 +2122,14 @@ function rvDMY(d){ var p=String(d||'').split('-'); return p.length===3 ? ((+p[2]
 function rvDateWarn(){     // เตือนใต้ช่องวันที่ ทั้งกรณี AI เติมให้และกรณีพนักงานเลือกเอง
   var el=document.getElementById('rv-datewarn'); if(!el) return;
   var v=document.getElementById('rv-date').value, o=rvDateOff(v);
-  if(!v || rvDateSane(v)){ el.className='hidden'; el.innerHTML=''; return; }
+  if(!v || rvDateSane(v)){
+    // ไม่ผิดปกติ — แต่ถ้าเลยเที่ยงคืนแล้วระบบเติมวันที่ "เมื่อวาน" ให้ ต้องบอกด้วย ไม่งั้นดูเหมือนแอปเติมผิด
+    if(v && isNightShift() && v===bizDateISO()){
+      el.className='editbar night';
+      el.innerHTML='🌙 ตอนนี้เลยเที่ยงคืนแล้ว — ใส่วันที่ <b>'+esc(rvDMY(v))+'</b> (วันที่ร้านเพิ่งปิด) ให้ ถ้าของมาถึงหลังเที่ยงคืนจริง ๆ เปลี่ยนวันที่ได้เลย';
+    } else { el.className='hidden'; el.innerHTML=''; }
+    return;
+  }
   el.className='editbar';
   el.innerHTML='⚠️ วันที่รับของเป็น <b>'+esc(rvDMY(v))+'</b> '+
     (o===null ? '(วันที่ไม่ถูกต้อง)' : (o>0 ? '(ล่วงหน้า '+o+' วัน)' : '(ย้อนหลัง '+(-o)+' วัน)'))+
@@ -2017,6 +2204,7 @@ async function sendRecv(){
   clearMsg(document.getElementById('rv-ocr-msg')); clearMsg(document.getElementById('rv-dup-msg'));
   rvCalc();
   loadRecvList();
+  todayRefresh();
 }
 async function loadRecvList(){
   var box=document.getElementById('rv-history');
@@ -2172,6 +2360,19 @@ async function openAdmin(){
   renderEmployees();
 }
 
+// "เข้าใช้ล่าสุด" (เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 8) — ตอบได้ว่าใครยังไม่เคยเปิดแอปเลย
+function lastLoginText(v){
+  var s=String(v||'').trim();
+  if(!s) return '🕐 ยังไม่เคยเข้าใช้แอป';
+  var m=/(\d{4})-(\d{2})-(\d{2})[ T]?(\d{2}:\d{2})?/.exec(s);
+  if(m) return '🕐 เข้าใช้ล่าสุด '+(+m[3])+'/'+(+m[2])+'/'+m[1]+(m[4]?(' '+m[4]+' น.'):'');
+  var d=new Date(s);                       // เผื่อชีทเก็บเป็น Date แล้วคืนมาเป็น "Mon Aug 24 2026 21:05:00 ..."
+  if(!isNaN(d.getTime())){
+    var p=n=>String(n).padStart(2,'0');
+    return '🕐 เข้าใช้ล่าสุด '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes())+' น.';
+  }
+  return '🕐 เข้าใช้ล่าสุด '+esc(s);
+}
 function renderEmployees(){
   const box = document.getElementById('emp-list');
   if(!EMP_CACHE.length){ box.innerHTML = '<div class="card center muted">ยังไม่มีพนักงาน</div>'; return; }
@@ -2186,6 +2387,7 @@ function renderEmployees(){
           <div class="nm">${esc(nm)}</div>
           <div class="meta">📱 ${esc(fmtPhone(e.phone))}</div>
           <div class="meta">${TEAM_TH[e.team]||'—'} · ${EMPTYPE_TH[e.emp_type]||'—'}${e.position?(' · '+esc(e.position)):''}${e.has_id_doc?' · 📇 มีรูปบัตร':''}</div>
+          <div class="meta">${lastLoginText(e.last_login)}</div>
           <div class="meta"><span class="dot ${e.active?'on':'off'}"></span>${e.active?'ใช้งาน':'⏳ รออนุมัติ'}</div>
         </div>
         <span class="chip ${e.role}">${ROLE_TH[e.role]||e.role}</span>
