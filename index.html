@@ -664,6 +664,7 @@
           <span class="muted">ยอดยกมา (จากวันก่อน)</span>
           <input id="cash-carry" type="number" inputmode="decimal" placeholder="0" oninput="cashCarryEdited()" style="width:130px;padding:8px 10px;text-align:right;font-size:16px;margin:0">
         </div>
+        <div id="cash-carrynote" class="hidden" style="font-size:12px;margin-top:6px;line-height:1.5"></div>
         <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">+ ยอดขาย</span><b id="cash-sales-d">0</b></div>
         <div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">− รายจ่าย</span><b id="cash-ptotal">0</b></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><b>= รวม (ยอดสะสม)</b><b id="cash-total" style="font-size:22px;color:var(--accent2)">0</b></div>
@@ -1161,7 +1162,7 @@ function offRestoreCash(){
   document.getElementById('cash-sign').value=d.sign||'';
   document.getElementById('cash-note').value=d.note||'';
   if(String(d.carry||'')!==''){ var c=document.getElementById('cash-carry'); c.value=d.carry; c.dataset.touched='1'; }
-  cashCalc(); CASH_SNAP=cashSnapshot();
+  cashCalc(); CASH_SNAP=cashSnapshot(); cashCarryNote();
   OFF_HIDE[offCashKey()]=1; offCashBar();
 }
 function offDropCashDraft(){ offDraftClear(offCashKey()); OFF_HIDE[offCashKey()]=1; offCashBar(); }
@@ -2132,6 +2133,7 @@ function cashShowDate(dateStr, force){
   else { cashClearFields(); document.getElementById('cash-carry').value=carryForDate(dateStr); CASH_MODE='new'; }
   cashRenderMode(); cashCalc();
   CASH_SNAP=cashSnapshot();
+  cashCarryNote();       // อธิบายถ้ายอดยกมาถูกตั้งเป็น 0 เพราะเพิ่งเก็บเงินไป
   offCashBar();          // มีร่างที่กรอกค้างไว้ของวันนี้ไหม (เฟส 3)
 }
 function cashRenderMode(){
@@ -2187,16 +2189,39 @@ async function cashDelete(dateStr){
 }
 function todayISO(){ var d=new Date(),p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function cashDMY(d){ var p=String(d||'').split('-'); return p.length===3 ? ((+p[2])+'/'+(+p[1])) : String(d||''); }   // 2026-06-22 → 22/6
-function carryForDate(dateStr){   // ยอดยกมา = ยอด "รวม" ของวันล่าสุดที่ก่อนวันนี้
+// ยอดยกมา = ยอด "รวม" ของวันล่าสุดที่ก่อนวันนี้
+// ยกเว้นวันก่อนหน้ามีลายเซ็น = เงินถูกเบิกออกไปหมดแล้ว → เริ่มรอบใหม่ที่ 0 (กติกาสมุดของร้าน)
+// เดิมต้องมาแก้เป็น 0 เองทุกรอบเก็บเงิน แล้วมีคนลืม/เข้าใจผิดจริง (24 ส.ค. 2026)
+function carryPrevRow(dateStr){
   var best=null;
   (CASH_ROWS||[]).forEach(function(r){ if(r.date < dateStr && (!best || r.date > best.date)) best=r; });
-  return best ? best.total : 0;
+  return best;
+}
+function carryCollected(dateStr){   // วันก่อนหน้ามีเซ็นไหม (= เพิ่งเก็บเงินไป)
+  var p=carryPrevRow(dateStr);
+  return !!(p && String(p.sign||'').trim());
+}
+function carryForDate(dateStr){
+  if(carryCollected(dateStr)) return 0;
+  var p=carryPrevRow(dateStr);
+  return p ? p.total : 0;
+}
+// อธิบายให้เห็นว่าทำไมยอดยกมาถึงเป็น 0 (ไม่ใช่ระบบเติมพลาด) — โผล่เฉพาะวันใหม่ที่ยังไม่ได้แก้เอง
+function cashCarryNote(){
+  var el=document.getElementById('cash-carrynote'); if(!el) return;
+  var c=document.getElementById('cash-carry');
+  var show = (CASH_MODE==='new') && CASH_DATE_CUR && carryCollected(CASH_DATE_CUR) && c && c.dataset.touched!=='1';
+  el.className = show ? 'muted' : 'hidden';
+  if(!show){ el.textContent=''; return; }
+  var p=carryPrevRow(CASH_DATE_CUR);
+  el.textContent = '🔒 วันที่ ' + cashDMY(p.date) + ' มีเซ็น (' + String(p.sign).trim() + ') = เก็บเงินไปแล้ว ' +
+                   Number(p.total||0).toLocaleString('en-US') + ' — เริ่มรอบใหม่ที่ 0 ให้แล้ว ถ้าไม่ใช่แก้ทับได้';
 }
 function cashOnDate(){   // เปลี่ยนวัน → วันที่มีข้อมูลแล้วให้โหลดของเดิมมาแก้ ; วันใหม่ให้เติม "ยอดยกมา" อัตโนมัติ
   cashShowDate(document.getElementById('cash-date').value);
   cashNightNote();          // เลือกวันเองแล้วไม่ใช่ "วันที่ร้านเพิ่งปิด" → ซ่อนคำอธิบายกลางคืน
 }
-function cashCarryEdited(){ document.getElementById('cash-carry').dataset.touched='1'; cashCalc(); }
+function cashCarryEdited(){ document.getElementById('cash-carry').dataset.touched='1'; cashCalc(); cashCarryNote(); }
 function cashLineHtml(note,amt){
   return '<div class="cash-line" style="display:flex;gap:8px;margin-bottom:8px">'+
     '<input type="text" class="cash-pnote" placeholder="รายการ เช่น ค่ามะเขือ" value="'+esc(note||'')+'" style="flex:1;min-width:0">'+
