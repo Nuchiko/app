@@ -506,6 +506,8 @@
       <div class="avatar" id="ho-avatar">M</div>
     </div>
     <div id="ho-verwarn" class="msg"></div>
+    <!-- ของค้างส่ง (เฟส 3) — โผล่เมื่อมีข้อมูลที่เน็ตหลุดตอนกดส่ง -->
+    <div id="ho-outbox" class="msg"></div>
     <!-- แถบ "วันนี้" — โผล่เมื่อหลังบ้านรองรับ (ping.today) เท่านั้น -->
     <div id="ho-today" class="today hidden">
       <div class="today-h"><span id="ho-today-t">วันนี้</span><button type="button" class="rf" title="รีเฟรช" onclick="loadToday(1)">⟳</button></div>
@@ -588,6 +590,7 @@
     <div class="st-tip" id="stc-tip">กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ</div>
     <div class="st-prev" id="stc-prev"></div>
     <div class="st-warnbar" id="stc-warn"></div>
+    <div id="stc-draftbar" class="hidden"></div>
     <input type="file" id="dphoto-file" accept="image/*" capture="environment" style="display:none" onchange="onDrinkPhotoFile(this)">
     <div id="stc-cards"></div>
     <div id="stc-form">
@@ -648,6 +651,7 @@
       <input id="cash-date" type="date" onchange="cashOnDate()">
       <div id="cash-nightnote" class="hidden"></div>
       <div id="cash-editbar" class="hidden"></div>
+      <div id="cash-draftbar" class="hidden"></div>
       <label>ยอดขาย (บาท)</label>
       <input id="cash-sales" type="number" inputmode="decimal" min="0" placeholder="0" oninput="cashCalc()">
       <label>รายการ (รายจ่ายเงินสด)</label>
@@ -680,15 +684,16 @@
     <div class="page-label" id="recv-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
     <div class="card">
       <div id="rv-editbar" class="hidden"></div>
+      <div id="rv-draftbar" class="hidden"></div>
       <label>วันที่รับของ</label>
       <input id="rv-date" type="date" onchange="rvDateWarn()">
       <div id="rv-datewarn" class="hidden"></div>
 
-      <!-- à¹à¸«à¸¡à¸à¹à¸à¹à¹à¸: à¸¢à¸­à¸à¸£à¸§à¸¡à¸à¸£à¸´à¸à¸à¸²à¸¡à¸à¸´à¸¥ (à¸à¸²à¸à¸à¸´à¸¥à¸¡à¸µà¸ªà¹à¸§à¸à¸¥à¸/à¸à¸±à¸à¹à¸¨à¸© à¸à¸³à¹à¸«à¹à¹à¸¡à¹à¹à¸à¹à¸²à¸à¸¥à¸£à¸§à¸¡à¸£à¸²à¸¢à¸à¸²à¸£) -->
+      <!-- โหมดแก้ไข: ยอดรวมจริงตามบิล (บางบิลมีส่วนลด/ปัดเศษ ทำให้ไม่เท่าผลรวมรายการ) -->
       <div id="rv-edittotal" class="hidden">
-        <label style="margin-top:14px">à¸¢à¸­à¸à¸£à¸§à¸¡à¸à¸£à¸´à¸à¸à¸²à¸¡à¸à¸´à¸¥ (à¸à¸²à¸)</label>
+        <label style="margin-top:14px">ยอดรวมจริงตามบิล (บาท)</label>
         <input id="rv-total-edit" type="number" inputmode="decimal" min="0" placeholder="0">
-        <div class="muted" style="font-size:12px;margin-top:6px">à¹à¸§à¹à¸à¸§à¹à¸²à¸ = à¹à¸à¹à¸à¸¥à¸£à¸§à¸¡à¸à¸­à¸à¸£à¸²à¸¢à¸à¸²à¸£à¸à¹à¸²à¸à¸¥à¹à¸²à¸</div>
+        <div class="muted" style="font-size:12px;margin-top:6px">เว้นว่าง = ใช้ผลรวมของรายการด้านล่าง</div>
       </div>
 
       <!-- ซ่อนทั้งบล็อกตอนแก้บิลเก่า: การแก้ไขเปลี่ยนรูปไม่ได้ (ต้องลบแล้วบันทึกใหม่) -->
@@ -896,7 +901,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 3;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
+const APP_VER = 4;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -921,9 +926,323 @@ async function api(action, data){
     const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(data) });
     return await res.json();
   }catch(e){
-    return { ok:false, error:'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ตรวจอินเทอร์เน็ต/URL' };
+    // netfail = ส่งไม่ถึงเซิร์ฟเวอร์เลย (เน็ตหลุด/สัญญาณอ่อน) — ต่างจาก "เซิร์ฟเวอร์ตอบว่าไม่ให้บันทึก"
+    // ตัวที่ทนเน็ตหลุด (เฟส 3) ใช้ธงนี้ตัดสินว่าจะเก็บไว้ส่งซ้ำ หรือแจ้ง error ไปเลย
+    return { ok:false, netfail:true, error:'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ตรวจอินเทอร์เน็ต/URL' };
   }
 }
+
+/* ============ เฟส 3: ทนเน็ตหลุด — ร่างในเครื่อง + ส่งซ้ำอัตโนมัติ (25 ส.ค. 2026) ============
+   เจ้าของเลือกไว้: เก็บของค้างในเครื่อง 3 วัน · เน็ตกลับมาแล้วส่งเองเลย · เก็บรูปที่แนบไว้ด้วย
+   มี 2 ส่วนที่ทำงานคู่กัน
+     1) กล่องส่งค้าง (outbox) — กดส่งแล้วเน็ตไม่มา = เก็บไว้ก่อน แล้วแอปส่งให้เองเมื่อเน็ตกลับมา
+     2) ร่างในเครื่อง (draft) — พิมพ์ค้างไว้แล้วแอปปิด/เผลอกดกลับ = เปิดมาใหม่แล้วกู้คืนได้
+   ทั้งคู่เก็บใน localStorage ของเครื่องนั้นเอง ไม่ได้ส่งไปไหน และผูกกับ emp_id ของคนที่ล็อกอินตอนนั้น
+   (คนอื่นมาล็อกอินเครื่องเดียวกัน จะไม่เห็น/ไม่ส่งของค้างของอีกคน) */
+const OFF_TTL_MS    = 3*24*3600*1000;   // เก็บ 3 วัน (เจ้าของเลือก 25 ส.ค. 2026)
+const OFF_QKEY      = 'mana_outbox_v1';
+const OFF_DKEY      = 'mana_drafts_v1';
+const OFF_MAX_TRIES = 5;                // ล้มเพราะเซิร์ฟเวอร์ปฏิเสธเกินนี้ = หยุดลองเอง รอคนกดปุ่ม (กันยิงซ้ำไม่รู้จบ)
+const OFF_EVERY_MS  = 60000;            // เช็คของค้างทุก 1 นาทีระหว่างเปิดแอป
+let OFF_TIMER=null, OFF_BUSY=false, OFF_HIDE={};
+
+function offVal(id){ var e=document.getElementById(id); return e?e.value:''; }
+function offNz(v){ return (v===0||v==null||v==='')?'':v; }
+function offGet(k,def){ try{ var s=localStorage.getItem(k); if(!s) return def; var v=JSON.parse(s); return (v==null)?def:v; }catch(e){ return def; } }
+function offPut(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+function offQ(){ var q=offGet(OFF_QKEY,[]); return Array.isArray(q)?q:[]; }
+function offD(){ var d=offGet(OFF_DKEY,{}); return (d&&typeof d==='object'&&!Array.isArray(d))?d:{}; }
+
+// รูปที่แนบกินพื้นที่มากที่สุด — ถ้าเครื่องเต็มจริง ๆ ยอมทิ้งรูป แต่ต้องไม่ทิ้งตัวเลข
+function offStrip(it){
+  var p=it&&it.payload; if(!p) return false;
+  var had=false;
+  if(p.photos&&p.photos.length){ delete p.photos; had=true; }
+  if(p.imageBase64){ delete p.imageBase64; had=true; }
+  if(had) it.nophoto=true;
+  return had;
+}
+function offPutQ(q){
+  if(offPut(OFF_QKEY,q)) return true;
+  offPut(OFF_DKEY,{});                                  // พื้นที่เต็ม: ทิ้ง "ร่าง" ที่ยังไม่ได้กดส่งก่อน (ของค้างสำคัญกว่า)
+  if(offPut(OFF_QKEY,q)) return true;
+  for(var i=0;i<q.length;i++){ if(offStrip(q[i]) && offPut(OFF_QKEY,q)) return true; }   // แล้วค่อยตัดรูปจากรายการเก่าสุด
+  return false;
+}
+function offPurge(){
+  var now=Date.now(), q=offQ(), q2=q.filter(function(it){ return (now-(it.ts||0)) < OFF_TTL_MS; });
+  if(q2.length!==q.length) offPutQ(q2);
+  var d=offD(), ch=false;
+  Object.keys(d).forEach(function(k){ if(now-((d[k]||{}).ts||0) >= OFF_TTL_MS){ delete d[k]; ch=true; } });
+  if(ch) offPut(OFF_DKEY,d);
+  return q2;
+}
+function offMine(){ var e=(ME&&ME.emp_id)||''; return offPurge().filter(function(it){ return it.emp===e; }); }
+
+/* เก็บเข้ากล่องส่งค้าง — key = คีย์กันซ้ำของงานชิ้นนั้น (กดส่งซ้ำหลายรอบตอนเน็ตยังไม่มา = ทับของเดิม ไม่กองเป็นหลายชิ้น)
+   ของเดิมมี client_id อยู่แล้วให้ใช้ของเดิมต่อ เพื่อให้หลังบ้านรู้ว่าเป็น "การกรอกครั้งเดียวกัน" */
+function offAdd(kind, key, label, payload){
+  var q=offPurge(), old=null;
+  for(var i=0;i<q.length;i++){ if(q[i].kind===kind && q[i].key===key){ old=q[i]; break; } }
+  if(old){
+    if(old.payload && old.payload.client_id) payload.client_id=old.payload.client_id;
+    old.payload=payload; old.label=label; old.ts=Date.now(); old.tries=0; old.err=''; old.hold=''; old.nophoto=false;
+  } else {
+    q.push({id:uuid(), kind:kind, key:key, label:label, payload:payload, ts:Date.now(), tries:0, err:'', hold:'', emp:(ME&&ME.emp_id)||''});
+  }
+  var ok=offPutQ(q);
+  offRender();
+  return ok;
+}
+function offUpd(id, fn){ var q=offQ(); q.forEach(function(x){ if(x.id===id) fn(x); }); offPutQ(q); offRender(); }
+function offDrop(id){ offPutQ(offQ().filter(function(x){ return x.id!==id; })); offRender(); }
+function offDropAll(){
+  var mine=offMine(); if(!mine.length) return;
+  if(!confirm('ทิ้งข้อมูลที่ค้างส่ง '+mine.length+' รายการ?\n\nข้อมูลจะหายถาวร ต้องกรอกใหม่')) return;
+  var ids={}; mine.forEach(function(x){ ids[x.id]=1; });
+  offPutQ(offQ().filter(function(x){ return !ids[x.id]; }));
+  offRender();
+}
+
+async function offStockPost(p){
+  if(String(SHEET_URL).indexOf('PASTE')===0) return {ok:false, error:'โหมดทดลอง: ยังไม่ตั้งปลายทาง Stock'};
+  try{ await fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(p)}); return {ok:true}; }
+  catch(e){ return {ok:false, netfail:true, error:'ส่งไม่สำเร็จ: '+(e.message||e)}; }
+}
+async function offSend(it){
+  if(it.kind==='cash')  return await api('cashSave', it.payload);
+  if(it.kind==='recv')  return await api('recvSave', it.payload);
+  if(it.kind==='stock') return await offStockPost(it.payload);
+  return {ok:false, error:'ไม่รู้จักชนิดข้อมูล'};
+}
+
+async function offFlush(manual){
+  if(OFF_BUSY) return;
+  if(!(ME && ME.emp_id)) return;                          // ยังไม่ล็อกอิน = ยังส่งแทนใครไม่ได้
+  if(!manual && navigator.onLine===false) return;
+  var mine=offMine().filter(function(it){ return !it.hold && (manual || (it.tries||0) < OFF_MAX_TRIES); });
+  if(!mine.length){ offRender(); return; }
+  OFF_BUSY=true;
+  var doneIds={}, upd={}, sent=[], kinds={};
+  try{
+    for(var i=0;i<mine.length;i++){
+      var it=mine[i], r=null;
+      try{ r=await offSend(it); }catch(e){ r={ok:false, error:(e&&e.message)||'ส่งไม่สำเร็จ'}; }
+      if(r && r.ok){ doneIds[it.id]=1; sent.push(it); kinds[it.kind]=1; continue; }
+      if(r && r.netfail) break;                           // เน็ตยังไม่มา — ที่เหลือรอรอบหน้า ไม่ต้องไล่ยิงให้เปลือง
+      if(r && r.dup && r.dups && r.dups.length){          // บิลซ้ำ = ต้องให้คนตัดสิน ห้ามบันทึกซ้อนให้เอง
+        upd[it.id]={hold:'dup', dups:r.dups, err:''}; continue;
+      }
+      upd[it.id]={tries:(it.tries||0)+1, err:(r&&r.error)||'บันทึกไม่สำเร็จ'};
+    }
+  } finally { OFF_BUSY=false; }
+  var cur=offQ().filter(function(x){ return !doneIds[x.id]; });   // อ่านใหม่จากเครื่อง กันชนกับของที่เพิ่งเข้าคิวระหว่างส่ง
+  cur.forEach(function(x){ if(upd[x.id]) Object.keys(upd[x.id]).forEach(function(k){ x[k]=upd[x.id][k]; }); });
+  offPutQ(cur);
+  offRender();
+  if(sent.length){
+    offToast('✅ ส่งข้อมูลที่ค้างไว้เรียบร้อย '+sent.length+' รายการ — '+sent.map(function(s){ return s.label; }).join(' · '));
+    try{ todayRefresh(); }catch(e){}
+    if(kinds.cash && !document.getElementById('screen-cash').classList.contains('hidden')) loadCashList();
+    if(kinds.recv && !document.getElementById('screen-recv').classList.contains('hidden')) loadRecvList();
+  }
+}
+function offConfirmDup(){
+  var it=offMine().filter(function(x){ return x.hold==='dup'; })[0]; if(!it) return;
+  var d=(it.dups&&it.dups[0])||{};
+  var head=(d.reason==='photo')?'รูปใบเสร็จนี้เคยอัปโหลดแล้ว':'เคยบันทึกบิลของร้านนี้ วันที่นี้ ยอดเท่ากันแล้ว';
+  var lines=(it.dups||[]).slice(0,3).map(function(x){ return '• '+rvDupText(x); }).join('\n');
+  if(confirm('⚠️ '+head+'\n\n'+lines+'\n\nถ้าเป็นคนละใบจริง กด OK เพื่อบันทึกซ้อน\nถ้าเผลออัปซ้ำ กด Cancel เพื่อทิ้งของค้างชิ้นนี้')){
+    offUpd(it.id, function(x){ x.hold=''; x.tries=0; x.err=''; x.payload.dup_ok=1; });
+    offFlush(1);
+  } else { offDrop(it.id); }
+}
+function offToast(text){
+  var el=document.getElementById('off-toast');
+  if(!el){
+    el=document.createElement('div'); el.id='off-toast';
+    el.style.cssText='position:fixed;left:12px;right:12px;bottom:14px;z-index:99;background:#11341f;color:#fff;padding:12px 14px;border-radius:12px;font-size:14px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.28)';
+    document.body.appendChild(el);
+  }
+  el.textContent=text; el.style.display='';
+  clearTimeout(offToast._t); offToast._t=setTimeout(function(){ el.style.display='none'; }, 8000);
+}
+function offRender(){
+  var el=document.getElementById('ho-outbox'); if(!el) return;
+  var mine=offMine();
+  if(!mine.length){ el.className='msg'; el.innerHTML=''; return; }
+  var hasDup=mine.some(function(x){ return x.hold==='dup'; });
+  var rows=mine.slice(0,4).map(function(x){
+    var tail = (x.hold==='dup') ? ' — ต้องยืนยันว่าเป็นบิลซ้ำหรือไม่'
+             : ((x.tries||0)>=OFF_MAX_TRIES && x.err) ? (' — '+x.err)
+             : ' — รอส่ง';
+    return '<div style="margin-top:2px">• '+esc(x.label)+esc(tail)+(x.nophoto?' (รูปเก็บไม่ไหว ต้องถ่ายใหม่)':'')+'</div>';
+  }).join('');
+  el.className='msg show warn';
+  el.innerHTML='📤 <b>มีข้อมูลค้างส่ง '+mine.length+' รายการ</b> — แอปจะส่งให้เองเมื่อเน็ตกลับมา'+rows+
+    (mine.length>4?('<div style="margin-top:2px">• …และอีก '+(mine.length-4)+' รายการ</div>'):'')+
+    '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button type="button" class="btn ghost sm" onclick="offFlush(1)">ส่งเดี๋ยวนี้</button>'+
+      (hasDup?'<button type="button" class="btn ghost sm" onclick="offConfirmDup()">ตรวจสอบบิลซ้ำ</button>':'')+
+      '<button type="button" class="btn ghost sm" onclick="offDropAll()">ทิ้งทั้งหมด</button>'+
+    '</div>';
+}
+function offStart(){
+  offWatch(); offRender();
+  if(!OFF_TIMER){
+    try{ window.addEventListener('online', function(){ offFlush(); }); }catch(e){}
+    OFF_TIMER=setInterval(function(){ offFlush(); }, OFF_EVERY_MS);
+  }
+  offFlush();
+}
+
+/* ---------- ร่างในเครื่อง (draft) ---------- */
+function offDraftSet(kind, data){
+  var d=offD();
+  d[kind]={ts:Date.now(), emp:(ME&&ME.emp_id)||'', data:data};
+  if(!offPut(OFF_DKEY,d)){ var only={}; only[kind]=d[kind]; if(!offPut(OFF_DKEY,only)) offPut(OFF_DKEY,{}); }
+}
+function offDraftGet(kind){
+  offPurge();
+  var it=offD()[kind];
+  if(!it) return null;
+  if(ME && it.emp && it.emp!==ME.emp_id) return null;   // ร่างของคนอื่นบนเครื่องเดียวกัน = ไม่แตะ
+  return it;
+}
+function offDraftClear(kind){ var d=offD(); if(d[kind]){ delete d[kind]; offPut(OFF_DKEY,d); } }
+function offWhen(ts){
+  var d=new Date(ts), p=function(n){ return String(n).padStart(2,'0'); };
+  var a=new Date(); a.setHours(0,0,0,0);
+  var b=new Date(ts); b.setHours(0,0,0,0);
+  var diff=Math.round((a-b)/86400000), t=p(d.getHours())+':'+p(d.getMinutes());
+  return diff<=0 ? ('เมื่อ '+t+' น.') : (diff===1 ? ('เมื่อวาน '+t+' น.') : (d.getDate()+'/'+(d.getMonth()+1)+' '+t+' น.'));
+}
+function offBarHtml(ts, restoreFn, dropFn){
+  return '↩️ <b>มีข้อมูลที่กรอกค้างไว้</b> '+esc(offWhen(ts))+' — ยังไม่ได้บันทึก'+
+    '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button type="button" class="btn ghost sm" onclick="'+restoreFn+'()">กู้คืนข้อมูล</button>'+
+      '<button type="button" class="btn ghost sm" onclick="'+dropFn+'()">ทิ้ง</button>'+
+    '</div>';
+}
+// เฝ้าฟอร์มทั้ง 3 หน้า: พิมพ์อะไรก็เก็บร่างให้เอง (หน่วง 0.7 วิ กันเขียนถี่เกิน)
+function offWatch(){
+  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock]].forEach(function(p){
+    var el=document.getElementById(p[0]); if(!el || el.dataset.offw) return;
+    el.dataset.offw='1';
+    var t=null, h=function(){ clearTimeout(t); t=setTimeout(function(){ try{ p[1](); }catch(e){} }, 700); };
+    el.addEventListener('input', h); el.addEventListener('change', h);
+  });
+}
+
+/* --- เงินสด --- */
+function offCashKey(){ return 'cash:'+(CASH_DATE_CUR||''); }
+function offCashHas(d){ return !!(String(d.sales||'').trim() || String(d.sign||'').trim() || String(d.note||'').trim() || (d.payouts||[]).length); }
+function offCashSnap(){ return {sales:offVal('cash-sales'), payouts:cashCollect(), carry:offVal('cash-carry'), sign:offVal('cash-sign'), note:offVal('cash-note')}; }
+function offDraftSaveCash(){
+  if(!CASH_DATE_CUR || CASH_MODE==='locked') return;
+  var d=offCashSnap();
+  if(!offCashHas(d)){ offDraftClear(offCashKey()); return; }
+  offDraftSet(offCashKey(), d);
+}
+function offCashBar(){
+  var el=document.getElementById('cash-draftbar'); if(!el) return;
+  var k=offCashKey();
+  var it=(CASH_MODE==='new' && CASH_DATE_CUR && !OFF_HIDE[k]) ? offDraftGet(k) : null;
+  if(!it || !offCashHas(it.data||{})){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar'; el.innerHTML=offBarHtml(it.ts, 'offRestoreCash', 'offDropCashDraft');
+}
+function offRestoreCash(){
+  var it=offDraftGet(offCashKey()); if(!it) return;
+  var d=it.data||{};
+  document.getElementById('cash-sales').value=offNz(d.sales);
+  document.getElementById('cash-payouts').innerHTML='';
+  (d.payouts||[]).forEach(function(o){ cashAddLine(o.note, o.amt); });
+  if(!(d.payouts||[]).length) cashAddLine();
+  document.getElementById('cash-sign').value=d.sign||'';
+  document.getElementById('cash-note').value=d.note||'';
+  if(String(d.carry||'')!==''){ var c=document.getElementById('cash-carry'); c.value=d.carry; c.dataset.touched='1'; }
+  cashCalc(); CASH_SNAP=cashSnapshot();
+  OFF_HIDE[offCashKey()]=1; offCashBar();
+}
+function offDropCashDraft(){ offDraftClear(offCashKey()); OFF_HIDE[offCashKey()]=1; offCashBar(); }
+
+/* --- รับของเข้า --- */
+function offDraftSaveRecv(){
+  if(RV_EDIT_ID) return;                       // กำลังแก้บิลเก่า (เจ้าของ) ไม่ใช่ร่างใหม่
+  var items=rvCollect();
+  if(!items.length && !RV_PHOTOS.length){ offDraftClear('recv'); return; }
+  offDraftSet('recv', {date:offVal('rv-date'), supplier:offVal('rv-supplier'), note:offVal('rv-note'),
+                       items:items, photos:RV_PHOTOS, client_id:RV_CLIENT_ID});
+}
+function offRecvBar(){
+  var el=document.getElementById('rv-draftbar'); if(!el) return;
+  var it=(!RV_EDIT_ID && !OFF_HIDE['recv']) ? offDraftGet('recv') : null;
+  var d=it&&it.data;
+  if(!d || (!(d.items||[]).length && !(d.photos||[]).length)){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar';
+  el.innerHTML=offBarHtml(it.ts, 'offRestoreRecv', 'offDropRecvDraft')+
+    '<div style="margin-top:4px;opacity:.75">'+(d.items||[]).length+' รายการ'+((d.photos||[]).length?(' · '+(d.photos||[]).length+' รูป'):'')+'</div>';
+}
+function offRestoreRecv(){
+  var it=offDraftGet('recv'); if(!it) return;
+  var d=it.data||{};
+  if(d.date) document.getElementById('rv-date').value=d.date;
+  document.getElementById('rv-supplier').value=d.supplier||'';
+  document.getElementById('rv-note').value=d.note||'';
+  document.getElementById('rv-items').innerHTML='';
+  (d.items||[]).forEach(function(x){
+    rvAddLine();
+    var ls=document.querySelectorAll('#rv-items .rv-line'), ln=ls[ls.length-1]; if(!ln) return;
+    ln.querySelector('.rv-name').value=x.name||'';
+    ln.querySelector('.rv-qty').value=offNz(x.qty);
+    ln.querySelector('.rv-unit').value=x.unit||'';
+    ln.querySelector('.rv-uprice').value=offNz(x.unit_price);
+    ln.querySelector('.rv-price').value=offNz(x.price);
+  });
+  if(!(d.items||[]).length){ rvAddLine(); rvAddLine(); }
+  RV_PHOTOS=(d.photos||[]).slice(0, RV_MAX_PHOTOS);
+  RV_CLIENT_ID=d.client_id||uuid();
+  rvRenderPhotos(); rvCalc(); rvDateWarn();
+  OFF_HIDE['recv']=1; offRecvBar();
+}
+function offDropRecvDraft(){ offDraftClear('recv'); OFF_HIDE['recv']=1; offRecvBar(); }
+
+/* --- Stock (แยกร่างตามหมวด) --- */
+function offStockKey(){ return 'stock:'+stCurrentGroup; }
+function offDraftSaveStock(){
+  if(stCurrentGroup==null) return;
+  var vals={}, typed=0;
+  Array.prototype.forEach.call(document.querySelectorAll('#stc-cards input'), function(el){
+    if(!el.id || String(el.value||'').trim()==='') return;
+    vals[el.id]=el.value;
+    if(el.id.indexOf('old_')!==0) typed++;      // "ของเดิม" ระบบเติมให้เอง ไม่นับว่าพนักงานกรอกแล้ว
+  });
+  var note=offVal('stc-note'), uses=(typeof stUsesCollect==='function')?stUsesCollect():[];
+  if(!typed && !note && !uses.length){ offDraftClear(offStockKey()); return; }
+  offDraftSet(offStockKey(), {gi:stCurrentGroup, vals:vals, note:note, uses:uses});
+}
+function offStockBar(){
+  var el=document.getElementById('stc-draftbar'); if(!el) return;
+  var k=offStockKey();
+  var it=OFF_HIDE[k] ? null : offDraftGet(k);
+  if(!it || !it.data || it.data.gi!==stCurrentGroup){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar'; el.innerHTML=offBarHtml(it.ts, 'offRestoreStock', 'offDropStockDraft');
+}
+function offRestoreStock(){
+  var it=offDraftGet(offStockKey()); if(!it || !it.data) return;
+  var d=it.data;
+  Object.keys(d.vals||{}).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=d.vals[id]; });
+  var n=document.getElementById('stc-note'); if(n) n.value=d.note||'';
+  if(STC_USES){
+    document.getElementById('stc-uses-lines').innerHTML='';
+    (d.uses||[]).forEach(function(u){ stUsesAdd(u.name, u.qty); });
+    if(!(d.uses||[]).length) stUsesAdd();
+    stUsesCalc();
+  }
+  calcStockUsed();
+  OFF_HIDE[offStockKey()]=1; offStockBar();
+}
+function offDropStockDraft(){ offDraftClear(offStockKey()); OFF_HIDE[offStockKey()]=1; offStockBar(); }
 
 function show(id){
   ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','help'].forEach(s=>{
@@ -971,6 +1290,7 @@ function enterHome(){
   document.getElementById('ho-admin-sect').classList.toggle('hidden', !ME.is_admin);
   document.getElementById('ho-cash-tile').classList.toggle('hidden', !(ME.is_admin || ME.team === 'service'));
   showRecvTileIfReady().then(function(){ if(TODAY_READY) loadToday(); });   // แถบ "วันนี้" โผล่หลังรู้ว่าหลังบ้านรองรับ
+  offStart();   // ของค้างส่ง + เฝ้าร่างในเครื่อง (เฟส 3)
   show("home");
 }
 
@@ -1320,6 +1640,7 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     document.getElementById('stc-cards').innerHTML='<div class="st-empty">ยังไม่มีรายการในหมวดนี้ — เดี๋ยวเพิ่มทีหลัง</div>';
     document.getElementById('stc-warn').innerHTML='';   // ล้างคำเตือนของหมวดก่อนหน้า
     document.getElementById('stc-dual').innerHTML='';
+    document.getElementById('stc-draftbar').className='hidden';
     form.style.display='none';
   }else{
     document.getElementById('stc-cards').innerHTML = g.count
@@ -1333,6 +1654,8 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
     stRenderDual(g);   // เตือนลำดับการกรอกเมื่อยังใช้ 2 ระบบควบคู่กัน
     if(g.count && DRINK_UPLOAD_ON){ loadDrinkPhotos().then(applyDrinkPhotos); }   // โหลดรูปที่อัปไว้แล้วแปะทับ (เปิดหลัง deploy หลังบ้าน)
+    OFF_HIDE['stock:'+gi]=0;
+    offWatch(); offStockBar();   // มีร่างที่กรอกค้างไว้ของหมวดนี้ไหม (เฟส 3)
   }
   show('stockcat');
 }
@@ -1603,14 +1926,25 @@ async function sendStockCat(){
   const by=(ME&&(ME.nickname||ME.name))||'';
   busy(btn,true);
   buildStockCapture(rows,date,note,by,g.name);
+  let payload=null;
   try{
     const canvas=await html2canvas(document.getElementById('st-capture'),{scale:1.4,backgroundColor:'#ffffff',logging:false});
     const imageBase64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
     const noteFull='['+g.name+'] '+(by?('ผู้กรอก '+by+' · '):'')+note;
-    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({date:date,rows:rows,note:noteFull,imageBase64:imageBase64})});
+    payload={date:date,rows:rows,note:noteFull,imageBase64:imageBase64};
+    await fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
     busy(btn,false,'ส่งข้อมูล');
+    offDraftClear('stock:'+stCurrentGroup);
     msg(m,'✅ ส่ง '+g.name+' เรียบร้อย','ok');
-  }catch(e){ busy(btn,false,'ส่งข้อมูล'); msg(m,'ส่งไม่สำเร็จ: '+(e.message||e)); }
+  }catch(e){
+    busy(btn,false,'ส่งข้อมูล');
+    // เน็ตหลุดตอนส่ง = เก็บไว้ในเครื่องแล้วส่งให้เองเมื่อเน็ตกลับมา (เฟส 3) ; ถ้าพังก่อนสร้างรูปสรุปได้ ก็บอกให้ลองใหม่
+    if(!payload){ msg(m,'ส่งไม่สำเร็จ: '+(e.message||e)); return; }
+    var kept=offAdd('stock', 'stock:'+stCurrentGroup+':'+date, 'Stock '+g.name, payload);
+    offDraftClear('stock:'+stCurrentGroup);
+    msg(m, kept ? ('📤 เน็ตมีปัญหา — เก็บ '+g.name+' ไว้ให้แล้ว จะส่งให้เองเมื่อเน็ตกลับมา (ไม่ต้องกรอกใหม่)')
+                : ('❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ — อย่าเพิ่งปิดแอป ลองกดส่งใหม่เมื่อเน็ตกลับมา'), kept?'ok':'err');
+  }
 }
 /* ---------- รูปเครื่องดื่ม (โหลด/อัปโหลด) ---------- */
 async function loadDrinkPhotos(force){
@@ -1746,7 +2080,7 @@ async function openCash(){
   if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
   document.getElementById('cash-datelabel').textContent=thaiDateNow();
   var di=document.getElementById('cash-date'); if(!di.value) di.value=cashBizDate();
-  CASH_DATE_CUR=''; CASH_MODE='new';
+  CASH_DATE_CUR=''; CASH_MODE='new'; OFF_HIDE={}; offWatch();
   cashClearFields(); cashRenderMode(); cashCalc();
   clearMsg(document.getElementById('cash-msg'));
   show('cash');
@@ -1798,6 +2132,7 @@ function cashShowDate(dateStr, force){
   else { cashClearFields(); document.getElementById('cash-carry').value=carryForDate(dateStr); CASH_MODE='new'; }
   cashRenderMode(); cashCalc();
   CASH_SNAP=cashSnapshot();
+  offCashBar();          // มีร่างที่กรอกค้างไว้ของวันนี้ไหม (เฟส 3)
 }
 function cashRenderMode(){
   var bar=document.getElementById('cash-editbar'), btn=document.getElementById('cash-send');
@@ -1893,16 +2228,27 @@ async function sendCash(){
   if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
   if(CASH_MODE==='locked'){ msg(m,'วันที่นี้บันทึกไว้แล้ว — แก้ไขได้เฉพาะเจ้าของร้าน'); return; }
   var btn=document.getElementById('cash-send'); busy(btn,true);
-  var r=await api('cashSave',{
+  var payload={
     date:date,
     sales:parseFloat(document.getElementById('cash-sales').value)||0,
     payouts:cashCollect(),
     carry:parseFloat(document.getElementById('cash-carry').value)||0,
     sign:document.getElementById('cash-sign').value,
-    note:document.getElementById('cash-note').value
-  });
+    note:document.getElementById('cash-note').value,
+    client_id:uuid()      // คีย์ประจำการกรอกครั้งนี้ — ถ้าต้องส่งซ้ำทีหลัง หลังบ้านจะรู้ว่าเป็นชุดเดิม (เฟส 3)
+  };
+  var r=await api('cashSave', payload);
   busy(btn,false,(CASH_MODE==='edit')?'💾 บันทึกการแก้ไข':'บันทึกเงินสด');
+  // เน็ตหลุด = ไม่ทิ้งข้อมูล เก็บเข้ากล่องส่งค้างแล้วแอปส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
+  if(!r.ok && r.netfail){
+    var kept=offAdd('cash', date, 'เงินสด '+cashDMY(date), payload);
+    offDraftClear('cash:'+date);
+    msg(m, kept ? ('📤 เน็ตมีปัญหา — เก็บยอดวันที่ '+cashDMY(date)+' ไว้ให้แล้ว จะส่งให้เองเมื่อเน็ตกลับมา (ไม่ต้องกรอกใหม่)')
+                : ('❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ — กรุณาลองใหม่เมื่อเน็ตกลับมา'), kept?'ok':'err');
+    return;
+  }
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
+  offDraftClear('cash:'+date);
   msg(m,'✅ บันทึกวันที่ '+r.date+' แล้ว · รวม '+Number(r.total||0).toLocaleString('en-US')+(r.updated?' (แก้ของเดิม)':''),'ok');
   await loadCashList();
   todayRefresh();
@@ -1989,6 +2335,8 @@ function openRecv(){
   rvEditRender();
   rvDateWarn();
   rvCalc();
+  if(!hasDraft) OFF_HIDE['recv']=0;
+  offWatch(); offRecvBar();      // มีบิลที่กรอกค้างไว้ในเครื่องไหม (เฟส 3)
   loadRecvList();
   show('recv');
 }
@@ -2199,6 +2547,26 @@ async function sendRecv(){
   };
   if(RV_PHOTOS.length){ payload.photos=RV_PHOTOS.map(function(p){return {imageBase64:p.b64, mime:p.mime};}); }
   var r=await api('recvSave', payload);
+  // เน็ตหลุด = เก็บทั้งบิล (รวมรูปที่แนบ) ไว้ในเครื่อง แล้วแอปส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
+  if(!r.ok && r.netfail){
+    busy(btn,false,'บันทึกการรับของ');
+    var sup=document.getElementById('rv-supplier').value.trim();
+    var kept=offAdd('recv', RV_CLIENT_ID, 'รับของเข้า '+rvDMY(date)+(sup?(' · '+sup):''), payload);
+    offDraftClear('recv');
+    if(kept){
+      msg(m,'📤 เน็ตมีปัญหา — เก็บบิลนี้ไว้ให้แล้ว ('+items.length+' รายการ'+(RV_PHOTOS.length?(' · '+RV_PHOTOS.length+' รูป'):'')+') จะส่งให้เองเมื่อเน็ตกลับมา','ok');
+      RV_CLIENT_ID=uuid();
+      document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
+      document.getElementById('rv-supplier').value=''; document.getElementById('rv-note').value='';
+      RV_PHOTOS=[]; rvRenderPhotos();
+      document.getElementById('rv-ocr-btn').classList.add('hidden');
+      clearMsg(document.getElementById('rv-ocr-msg')); clearMsg(document.getElementById('rv-dup-msg'));
+      rvCalc();
+    } else {
+      msg(m,'❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ (พื้นที่เต็ม) — อย่าเพิ่งปิดแอป ลองกดบันทึกใหม่เมื่อเน็ตกลับมา');
+    }
+    return;
+  }
   // หลังบ้านเจอบิลซ้ำ → ถามยืนยันก่อน (เตือน ไม่บล็อก) ; ยืนยันแล้วส่งซ้ำพร้อม dup_ok
   if(r.dup && r.dups && r.dups.length){
     busy(btn,false,'บันทึกการรับของ');
@@ -2215,6 +2583,7 @@ async function sendRecv(){
   busy(btn,false,'บันทึกการรับของ');
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
   msg(m,'✅ บันทึกแล้ว · '+items.length+' รายการ · รวม '+Number(r.total||0).toLocaleString('en-US')+' บาท','ok');
+  offDraftClear('recv');
   RV_CLIENT_ID=uuid();   // รายการถัดไป = คีย์ใหม่
   document.getElementById('rv-items').innerHTML=''; rvAddLine(); rvAddLine();
   document.getElementById('rv-supplier').value=''; document.getElementById('rv-note').value='';
