@@ -157,6 +157,7 @@
     border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-bottom:12px;cursor:pointer;
     box-shadow:0 8px 24px rgba(3,18,50,.18);transition:transform .08s}
   .stcat-btn:active{transform:scale(.99)}
+  .stcat-btn.sel{border-color:rgba(46,160,110,.8);background:rgba(46,160,110,.12)}   /* ปุ่มเลือกวัตถุดิบในหน้าทำแพค — ตัวที่เลือกอยู่ */
   .stcat-btn .ico{font-size:30px;line-height:1}
   .stcat-btn .nm{font-weight:800;font-size:18px}
   .stcat-btn .ct{font-size:13px;color:var(--muted);margin-top:2px}
@@ -526,6 +527,11 @@
         <div class="ico">📥</div>
         <div><div class="tname">รับของเข้า</div><div class="tdesc">บันทึกของที่รับเข้าร้าน + รูปใบส่งของ</div></div>
       </div>
+      <!-- ทำแพค = โผล่เมื่อหลังบ้านรองรับ (ping.pack) เท่านั้น — อัปเว็บก่อน deploy GAS ได้ -->
+      <div class="tile hidden" id="ho-pack-tile" onclick="openPack()" style="grid-column:1/-1">
+        <div class="ico">🧊</div>
+        <div><div class="tname">ทำแพค</div><div class="tdesc">ตัดแต่ง/แพควัตถุดิบ — บันทึกว่าได้กี่แพค</div></div>
+      </div>
       <div class="tile hidden" id="ho-cash-tile" onclick="openCash()" style="grid-column:1/-1">
         <div class="ico">💵</div>
         <div><div class="tname">เงินสด</div><div class="tdesc">บันทึกเงินสดรายวัน · ทีม Service</div></div>
@@ -589,6 +595,7 @@
     <div class="muted" id="stc-date" style="margin:-6px 2px 2px">—</div>
     <div class="st-tip" id="stc-tip">กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ</div>
     <div class="st-prev" id="stc-prev"></div>
+    <div class="st-prev" id="stc-packin"></div>   <!-- หมวดของแพค: บอกว่าช่อง "เข้า" เติมจากบันทึกทำแพควันนี้ -->
     <div class="st-warnbar" id="stc-warn"></div>
     <div id="stc-draftbar" class="hidden"></div>
     <input type="file" id="dphoto-file" accept="image/*" capture="environment" style="display:none" onchange="onDrinkPhotoFile(this)">
@@ -733,6 +740,46 @@
     </div>
     <div class="sect-title">รับของล่าสุด</div>
     <div id="rv-history"></div>
+  </section>
+
+  <!-- ============ ทำแพค (ตัดแต่ง/แพควัตถุดิบ) ============ -->
+  <section id="screen-pack" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">🧊 ทำแพค</div></div>
+    <div class="page-label" id="pk-datelabel" style="margin:-6px 2px 8px;font-size:14px">—</div>
+    <div class="card">
+      <div id="pk-draftbar" class="hidden"></div>
+      <label>วันที่ทำแพค</label>
+      <input id="pk-date" type="date" onchange="pkDateChanged()">
+      <div id="pk-night" class="hidden"></div>
+      <label style="margin-top:14px">ทำแพคอะไร (แตะเลือก)</label>
+      <div id="pk-mats" style="margin-top:6px"></div>
+      <!-- บิลรับของล่าสุดของของตัวนั้น — ระบบจับคู่ให้เองเงียบ ๆ ไม่มีอะไรให้กดเลือก -->
+      <div class="st-prev hidden" id="pk-recvinfo" style="margin:4px 0 0"></div>
+      <div id="pk-form" class="hidden">
+        <label style="margin-top:14px">ได้กี่แพค <span style="color:#d8453f">*</span></label>
+        <input id="pk-count" type="number" inputmode="numeric" min="0" placeholder="0">
+        <label style="margin-top:14px">แพคละประมาณ <span class="muted" style="font-weight:400">(รอบนี้ไม่เท่าค่าปกติ แก้ได้)</span></label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input id="pk-size" type="number" inputmode="decimal" min="0" placeholder="0" style="flex:1;min-width:0">
+          <span class="muted" id="pk-sizeu" style="flex:0 0 auto">—</span>
+        </div>
+        <label style="margin-top:14px">ใช้วัตถุดิบไป <span class="muted" style="font-weight:400">(ระบบเติมจากบิลรับของให้ แก้ได้)</span></label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input id="pk-raw" type="number" inputmode="decimal" min="0" placeholder="0" style="flex:1;min-width:0">
+          <span class="muted" id="pk-rawu" style="flex:0 0 auto">—</span>
+        </div>
+        <label style="margin-top:14px">เศษที่ตัดทิ้ง (กรัม)</label>
+        <input id="pk-scrap" type="number" inputmode="decimal" min="0" placeholder="0">
+        <label style="margin-top:14px">หมายเหตุ</label>
+        <textarea id="pk-note" rows="2" placeholder="เช่น กุ้งตัวเล็กกว่าปกติ · ปลาช้ำ 1 ตัว"></textarea>
+        <button class="btn" id="pk-send" onclick="sendPack()">บันทึกการทำแพค</button>
+      </div>
+      <div class="msg" id="pk-msg"></div>
+    </div>
+    <div class="st-prev" id="pk-today" style="margin-top:10px"></div>
+    <div class="sect-title">ทำแพคล่าสุด</div>
+    <div id="pk-history"></div>
   </section>
 
   <!-- ============ วิธีใช้งาน (คลิปสอน) ============ -->
@@ -902,7 +949,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 4;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง
+const APP_VER = 5;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v5 = ทำแพค)
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -1013,6 +1060,7 @@ async function offStockPost(p){
 async function offSend(it){
   if(it.kind==='cash')  return await api('cashSave', it.payload);
   if(it.kind==='recv')  return await api('recvSave', it.payload);
+  if(it.kind==='pack')  return await api('packSave', it.payload);
   if(it.kind==='stock') return await offStockPost(it.payload);
   return {ok:false, error:'ไม่รู้จักชนิดข้อมูล'};
 }
@@ -1127,7 +1175,7 @@ function offBarHtml(ts, restoreFn, dropFn){
 }
 // เฝ้าฟอร์มทั้ง 3 หน้า: พิมพ์อะไรก็เก็บร่างให้เอง (หน่วง 0.7 วิ กันเขียนถี่เกิน)
 function offWatch(){
-  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock]].forEach(function(p){
+  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock], ['screen-pack', offDraftSavePack]].forEach(function(p){
     var el=document.getElementById(p[0]); if(!el || el.dataset.offw) return;
     el.dataset.offw='1';
     var t=null, h=function(){ clearTimeout(t); t=setTimeout(function(){ try{ p[1](); }catch(e){} }, 700); };
@@ -1245,8 +1293,48 @@ function offRestoreStock(){
 }
 function offDropStockDraft(){ offDraftClear(offStockKey()); OFF_HIDE[offStockKey()]=1; offStockBar(); }
 
+/* --- ทำแพค --- */
+function offDraftSavePack(){
+  if(!PK_MAT){ offDraftClear('pack'); return; }
+  var d={mat:PK_MAT.n, date:offVal('pk-date'), count:offVal('pk-count'), size:offVal('pk-size'),
+         raw:offVal('pk-raw'), scrap:offVal('pk-scrap'), note:offVal('pk-note'), client_id:PK_CLIENT_ID};
+  // ยังไม่ได้พิมพ์อะไรที่เป็นของพนักงานเอง (size ระบบเติมให้) = ไม่นับเป็นร่าง
+  if(!String(d.count).trim() && !String(d.raw).trim() && !String(d.scrap).trim() && !String(d.note).trim()){ offDraftClear('pack'); return; }
+  offDraftSet('pack', d);
+}
+function offPackBar(){
+  var el=document.getElementById('pk-draftbar'); if(!el) return;
+  var it=OFF_HIDE['pack'] ? null : offDraftGet('pack');
+  var d=it&&it.data;
+  if(!d || !String((d.count||'')+(d.raw||'')+(d.scrap||'')+(d.note||'')).trim()){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar';
+  el.innerHTML=offBarHtml(it.ts, 'offRestorePack', 'offDropPackDraft')+
+    '<div style="margin-top:4px;opacity:.75">'+esc(d.mat||'')+(String(d.count||'').trim()?(' · '+esc(d.count)+' แพค'):'')+'</div>';
+}
+function offRestorePack(){
+  var it=offDraftGet('pack'); if(!it) return;
+  var d=it.data||{};
+  var i=-1; PACK_ITEMS.forEach(function(p,k){ if(p.n===d.mat) i=k; });
+  if(i>=0){
+    PK_MAT=PACK_ITEMS[i]; pkRenderMats();
+    document.getElementById('pk-form').classList.remove('hidden');
+    document.getElementById('pk-sizeu').textContent=PK_MAT.sizeU+'/แพค';
+    document.getElementById('pk-rawu').textContent=PK_MAT.rawU;
+  }
+  if(d.date) document.getElementById('pk-date').value=d.date;
+  document.getElementById('pk-count').value=offNz(d.count);
+  document.getElementById('pk-size').value=offNz(d.size);
+  document.getElementById('pk-raw').value=offNz(d.raw);
+  document.getElementById('pk-scrap').value=offNz(d.scrap);
+  document.getElementById('pk-note').value=d.note||'';
+  PK_CLIENT_ID=d.client_id||uuid();
+  if(i>=0) pkMatchRecv();   // เติมเฉพาะช่องที่ยังว่าง — ไม่ทับค่าที่กู้คืนมา
+  OFF_HIDE['pack']=1; offPackBar();
+}
+function offDropPackDraft(){ offDraftClear('pack'); OFF_HIDE['pack']=1; offPackBar(); }
+
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','help'].forEach(s=>{
+  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','pack','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -1299,13 +1387,18 @@ function enterHome(){
 // เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
 async function showRecvTileIfReady(){
   const tile=document.getElementById('ho-recv-tile');
-  if(RECV_READY===true){ tile.classList.remove('hidden'); return; }
+  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
+  showPackTile();
+}
+function showPackTile(){
+  if(PACK_READY!==true) return;   // หลังบ้านยังไม่มีเมนูทำแพค → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
+  var t=document.getElementById('ho-pack-tile'); if(t) t.classList.remove('hidden');
 }
 
 // เลขรุ่นเว็บ vs หลังบ้าน — ไม่ได้บล็อกอะไร (ฟีเจอร์แต่ละตัวยังกันด้วยธง ping ของตัวเองเหมือนเดิม) แค่เตือนกันงงเวลาเว็บใหม่กว่าหลังบ้านที่ยัง deploy ไม่ทัน
@@ -1507,6 +1600,15 @@ async function viewEmpDoc(){
 }
 
 /* ---------- MODULE TILES ---------- */
+/* ---------- ทำแพค: ของที่ตัดแต่งแล้วแพคเป็นหน่วยขาย (เจ้าของสั่ง 25 ส.ค. 2026) ----------
+   เพิ่มของใหม่ = เพิ่ม 1 บรรทัดตรงนี้ที่เดียว (หมวด "ของแพค" ในหน้า Stock สร้างจากลิสต์นี้ให้เอง)
+   n = ชื่อที่ใช้ในเมนูทำแพค · stockName = ชื่อแถวในชีท Stock (ห้ามเปลี่ยนทีหลัง — บอทเทียบยอดจะยึดชื่อนี้)
+   size/sizeU = ขนาดแพคปกติ (ไม่ตายตัว — เจ้าของยืนยัน — ครัวแก้ตอนบันทึกได้) · rawU = หน่วยวัตถุดิบดิบ
+   match = คำที่ใช้จับคู่กับชื่อของในบิลรับของ (AI ตั้งชื่อไม่ตรงเป๊ะ เช่น "กุ้งขาว (26-30)" → จับด้วยคำว่า "กุ้ง") */
+const PACK_ITEMS=[
+  {n:'กุ้งสด',   e:'🦐', stockName:'กุ้งสด(แพค)',   size:3,  sizeU:'ตัว', rawU:'กก.', match:['กุ้ง']},
+  {n:'ปลาหิมะ', e:'🐟', stockName:'ปลาหิมะ(แพค)', size:80, sizeU:'ก.',  rawU:'ตัว', match:['หิมะ']}
+];
 const STOCK_GROUPS=[
   {name:'ปลาดิบ', icon:'🐟', cut:true, items:[
     'Salmon','Maguro','Madai','ShimaAji','Kanpachi','Aori Ika','Hokkigai',{n:'Ikura',boxg:500},{n:'Hotate',hotate:true}
@@ -1519,6 +1621,9 @@ const STOCK_GROUPS=[
    items:[
     {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
   ]},
+  // ของแพค = นับเป็นแพค (จำนวนเต็ม) เดิม/เข้า/เหลือ → ใช้ไป ; ช่อง "เข้า" เติมอัตโนมัติจากบันทึกในเมนูทำแพค (แก้ทับได้)
+  {name:'ของแพค', icon:'🧊', cut:false, packs:true, tip:'นับเป็นแพค · ช่อง "เข้า" เติมให้เองจากบันทึกทำแพควันนี้ · ช่อง "ใช้ไป" คำนวณให้อัตโนมัติ',
+   items:PACK_ITEMS.map(function(p){ return {n:p.stockName, u:'แพค', e:p.e}; })},
   {name:'เครื่องดื่ม', icon:'🥤', count:true, items:[
     // 🍺 เบียร์
     {n:'เบียร์สดสิงห์',u:'ถัง',img:'singha-draft',e:'🍺',sub:'เบียร์'},
@@ -1637,6 +1742,7 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
   if(tipEl) tipEl.textContent = g.tip ? g.tip
                                       : g.count ? 'แตะกลุ่มเพื่อกางรายการ · ใส่จำนวนคงเหลือ (มีรูปช่วยดู)'
                                                 : 'กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ';
+  var pkin=document.getElementById('stc-packin'); if(pkin) pkin.innerHTML='';   // ล้างป้ายของหมวดก่อนหน้า
   if(!g.items.length){
     document.getElementById('stc-cards').innerHTML='<div class="st-empty">ยังไม่มีรายการในหมวดนี้ — เดี๋ยวเพิ่มทีหลัง</div>';
     document.getElementById('stc-warn').innerHTML='';   // ล้างคำเตือนของหมวดก่อนหน้า
@@ -1653,6 +1759,7 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     clearMsg(document.getElementById('stc-msg'));
     calcStockUsed();
     if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
+    if(g.packs) fillPackIn(start,g);       // หมวดของแพค: เติมช่อง "เข้า" จากบันทึกทำแพควันนี้ (แก้ทับได้)
     stRenderDual(g);   // เตือนลำดับการกรอกเมื่อยังใช้ 2 ระบบควบคู่กัน
     if(g.count && DRINK_UPLOAD_ON){ loadDrinkPhotos().then(applyDrinkPhotos); }   // โหลดรูปที่อัปไว้แล้วแปะทับ (เปิดหลัง deploy หลังบ้าน)
     OFF_HIDE['stock:'+gi]=0;
@@ -1707,6 +1814,23 @@ async function fillPrevStock(start,g){
   calcStockUsed();
   if(box && n) box.innerHTML='↩️ ใส่ "ของเดิม" ให้แล้วจากยอดเหลือวันที่ '+esc(cashDMY(r.date))+' — ถ้านับจริงไม่ตรง แก้ทับได้เลย';
 }
+/* หมวดของแพค: ช่อง "เข้า" = แพคที่ทำวันนี้ (จากเมนูทำแพค) — เติมเฉพาะช่องที่ยังว่าง ไม่ทับที่พนักงานพิมพ์เอง
+   หลังบ้านรุ่นเก่ายังไม่มี packToday → เงียบ ๆ ให้กรอกเองตามปกติ (ยอดนับยังถูก แค่ไม่รู้ yield ของรอบ) */
+async function fillPackIn(start,g){
+  var box=document.getElementById('stc-packin'); if(box) box.innerHTML='';
+  var r=await api('packToday');
+  if(!r || !r.ok || !r.sum) return;
+  if(stCurrentGroup!==stockGroupIndex(g.name)) return;   // สลับหมวดไปแล้วระหว่างรอ — อย่าไปเติมช่องของหมวดอื่น
+  var n=0, det=[];
+  g.items.forEach(function(item,k){
+    var i=start+k, meta=STOCK_FLAT[i];
+    var pi=PACK_ITEMS.filter(function(p){ return p.stockName===meta.name; })[0];
+    var tot=pi ? (r.sum[pi.n]||0) : 0;
+    if(tot>0 && stSetIfEmpty('in_'+i, tot)){ n++; det.push(pi.n+' '+tot+' แพค'); }
+  });
+  calcStockUsed();
+  if(box && n) box.innerHTML='↩️ ช่อง "เข้า" เติมให้แล้วจากบันทึกทำแพควันนี้ ('+esc(det.join(' · '))+') — ถ้าไม่ตรง แก้ทับได้เลย';
+}
 function stItemCard(item,i,group){
   var meta=STOCK_FLAT[i], name=meta.name, unit=meta.unit, icon=group.icon;
   if(meta.hotate){
@@ -1758,7 +1882,7 @@ function stItemCard(item,i,group){
         '<div class="st-f"><label>เหลือ</label>'+stNi('rem_'+i)+'</div>'+
       '</div></div>';
   }
-  return '<div class="st-card"><div class="st-top"><span class="st-n">'+icon+' '+name+uTag+'</span><span class="st-u" id="used_'+i+'">'+u0+'</span></div>'+
+  return '<div class="st-card"><div class="st-top"><span class="st-n">'+(meta.e||icon)+' '+name+uTag+'</span><span class="st-u" id="used_'+i+'">'+u0+'</span></div>'+
     '<div class="st-row" style="grid-template-columns:repeat(3,1fr)">'+
       '<div class="st-f"><label>เดิม</label>'+stNi('old_'+i)+'</div>'+
       '<div class="st-f"><label>เข้า</label>'+stNi('in_'+i)+'</div>'+
@@ -1788,7 +1912,8 @@ function computeUsed(i){
   }
   const u=meta.cut ? (stGv('old_'+i)+stGv('in_'+i)-stGv('cut_'+i)-stGv('rem_'+i))
                    : (stGv('old_'+i)+stGv('in_'+i)-stGv('rem_'+i));
-  return {num:u, used:String(u), pill:'ใช้ '+u.toLocaleString('en-US')};
+  // ปลาไม่มี unit (pill เดิมไม่เปลี่ยน) ; ของแพคมี unit='แพค' → โชว์หน่วยให้รู้ว่านับเป็นแพค
+  return {num:u, used:String(u), pill:'ใช้ '+u.toLocaleString('en-US')+(meta.unit?(' '+meta.unit):'')};
 }
 /* ---------- เตือน "เศษวันรับของเกิน 40%" (เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 14) ----------
    กฎเดียวกับบอทเทียบยอด: เศษ = ตัดแต่ง ÷ ของเข้า ; วันรับปลาปกติเหลือเศษราว 24–37% (CLAUDE.md §7.4.5)
@@ -2336,6 +2461,7 @@ const RV_UNITS=['กก.','ขีด','ก.','ตัว','กล่อง','ข�
 function rvItemNames(){        // ชื่อของที่มีในระบบ (ปลาดิบ + เครื่องดื่ม) ไว้ให้เลือกตอนพิมพ์
   var out=[];
   STOCK_GROUPS.forEach(function(g){
+    if(g.packs) return;        // "กุ้งสด(แพค)" เป็นหน่วยหลังแปรรูป — ของที่รับเข้าคือของดิบ ไม่ใช่แพค
     (g.items||[]).forEach(function(it){ var n=(typeof it==='string')?it:(it.n||''); if(n) out.push(n); });
   });
   return out;
@@ -2790,6 +2916,191 @@ function rvLbNav(id, idx, count){
   document.getElementById('lightbox').appendChild(d);
 }
 
+/* ---------- ทำแพค (ตัดแต่ง/แพควัตถุดิบ — เจ้าของสั่ง 25 ส.ค. 2026) ----------
+   ครัวกดทันทีที่ทำเสร็จ (ทำแพคช้ากว่ารับของ ~3-5 ชม. — เจ้าของยืนยัน) : ช่องบังคับมีช่องเดียวคือ "ได้กี่แพค"
+   ระบบจับคู่บิลรับของล่าสุดของของตัวนั้นให้เองเงียบ ๆ (ไม่มี dropdown ให้เลือก) + เติม "ใช้วัตถุดิบไป" จากบิล
+   นับสต็อกกลางคืน (หมวดของแพค) คือความจริงสูงสุด — ลืมบันทึกที่นี่ ยอดแพคยังถูก แค่เสียข้อมูล yield ของรอบ */
+let PACK_READY=null;      // หลังบ้านรองรับเมนูทำแพคแล้วหรือยัง (มาจาก ping.pack)
+let PK_MAT=null;          // ตัวที่เลือกอยู่ (object จาก PACK_ITEMS)
+let PK_RECV=null;         // บิลรับของที่จับคู่ได้ {recv_id, date, supplier, item}
+let PK_CLIENT_ID=null;    // คีย์กันบันทึกซ้ำ (เน็ตหลุดแล้วกดใหม่ = อัปเดตทับ ไม่เกิดแถวใหม่)
+let PK_ROWS=[];
+const PACK_RECV_DAYS=7;   // จับคู่กับบิลรับของย้อนหลังกี่วัน
+
+function openPack(){
+  document.getElementById('pk-datelabel').textContent=thaiDateNow();
+  // มีของกรอกค้าง (เผลอกดกลับ) = ไม่ล้าง เก็บให้กรอกต่อ
+  var hasDraft = !!(PK_MAT && (offVal('pk-count')||offVal('pk-raw')||offVal('pk-scrap')||offVal('pk-note')));
+  if(!hasDraft){
+    PK_CLIENT_ID=uuid(); PK_MAT=null; PK_RECV=null;
+    document.getElementById('pk-date').value=bizDateISO();   // กฎเที่ยงคืนกลาง: กรอกตอนตี 1 = ของเมื่อวาน (แก้ได้)
+    ['pk-count','pk-size','pk-raw','pk-scrap','pk-note'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+    document.getElementById('pk-form').classList.add('hidden');
+    OFF_HIDE['pack']=0;
+  }
+  pkRenderMats(); pkRecvInfo(); pkNightNote();
+  clearMsg(document.getElementById('pk-msg'));
+  offWatch(); offPackBar();
+  pkLoadList();
+  show('pack');
+}
+function pkRenderMats(){
+  document.getElementById('pk-mats').innerHTML=PACK_ITEMS.map(function(p,i){
+    var on=!!(PK_MAT && PK_MAT.n===p.n);
+    return '<button type="button" class="stcat-btn'+(on?' sel':'')+'" onclick="pkPick('+i+')">'+
+      '<span class="ico">'+p.e+'</span>'+
+      '<div><div class="nm">'+esc(p.n)+'</div><div class="ct">แพคละ ~'+p.size+' '+esc(p.sizeU)+'</div></div>'+
+      '<span class="arrow">'+(on?'✓':'›')+'</span></button>';
+  }).join('');
+}
+function pkPick(i){
+  var p=PACK_ITEMS[i], changed=!PK_MAT || PK_MAT.n!==p.n;
+  PK_MAT=p;
+  pkRenderMats();
+  document.getElementById('pk-form').classList.remove('hidden');
+  document.getElementById('pk-sizeu').textContent=p.sizeU+'/แพค';
+  document.getElementById('pk-rawu').textContent=p.rawU;
+  if(changed){   // สลับไปทำของอีกตัว — ตัวเลขของตัวเก่าห้ามติดมา
+    document.getElementById('pk-size').value=p.size;   // ค่าปกติ (ขนาดแพคไม่ตายตัว — แก้ได้)
+    ['pk-count','pk-raw','pk-scrap'].forEach(function(id){ document.getElementById(id).value=''; });
+    PK_RECV=null; pkRecvInfo();
+    pkMatchRecv();
+  }
+}
+function pkDateChanged(){ pkNightNote(); if(PK_MAT) pkMatchRecv(); }
+function pkNightNote(){
+  var el=document.getElementById('pk-night'); if(!el) return;
+  if(isNightShift()){
+    el.className='editbar night';
+    el.innerHTML='🌙 ตอนนี้เลยเที่ยงคืนแล้ว — เติมวันที่เป็นของ <b>เมื่อวาน ('+esc(cashDMY(bizDateISO()))+')</b> ให้ ถ้าไม่ใช่แก้ได้เลย';
+  } else { el.className='hidden'; el.innerHTML=''; }
+}
+function pkDaysBetween(a,b){   // จำนวนวันจาก a → b (b หลัง a = บวก) ; null = รูปแบบวันที่ใช้ไม่ได้
+  var pa=String(a||'').split('-'), pb=String(b||'').split('-');
+  if(pa.length!==3||pb.length!==3) return null;
+  var da=new Date(+pa[0],+pa[1]-1,+pa[2]), db=new Date(+pb[0],+pb[1]-1,+pb[2]);
+  if(isNaN(da.getTime())||isNaN(db.getTime())) return null;
+  return Math.round((db-da)/86400000);
+}
+// จับคู่บิลรับของล่าสุดของของตัวนี้ (≤7 วันก่อนวันทำแพค) — เงียบ ๆ อัตโนมัติ ไม่มีอะไรให้พนักงานกดเลือก
+async function pkMatchRecv(){
+  var box=document.getElementById('pk-recvinfo');
+  if(box){ box.classList.remove('hidden'); box.innerHTML='<span class="spinner"></span>'; }
+  var mat=PK_MAT; if(!mat) return;
+  var r=await api('recvList',{limit:30});
+  if(PK_MAT!==mat) return;   // เลือกตัวอื่นไปแล้วระหว่างรอ
+  var hit=null, item=null;
+  if(r && r.ok){
+    var pdate=offVal('pk-date')||bizDateISO();
+    (r.rows||[]).some(function(row){   // rows เรียงใหม่→เก่าอยู่แล้ว → ตัวแรกที่เข้าเงื่อนไข = บิลล่าสุด
+      var off=pkDaysBetween(row.date, pdate);
+      if(off==null || off<0 || off>PACK_RECV_DAYS) return false;   // บิลต้องมาก่อน (หรือวันเดียวกับ) วันทำแพค
+      var it=(row.items||[]).filter(function(o){
+        return mat.match.some(function(kw){ return String(o.name||'').indexOf(kw)>=0; });
+      })[0];
+      if(!it) return false;
+      hit=row; item=it; return true;
+    });
+  }
+  PK_RECV = hit ? {recv_id:hit.recv_id, date:hit.date, supplier:hit.supplier, item:item} : null;
+  pkRecvInfo();
+  if(item){
+    if(item.qty){ var raw=document.getElementById('pk-raw'); if(raw && raw.value==='') raw.value=item.qty; }
+    if(item.unit) document.getElementById('pk-rawu').textContent=item.unit;   // หน่วยตามบิลจริง (เช่น บิลชั่งเป็น กก.)
+  }
+}
+function pkRecvInfo(){
+  var box=document.getElementById('pk-recvinfo'); if(!box) return;
+  if(!PK_MAT){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  box.classList.remove('hidden');
+  if(PK_RECV){
+    var it=PK_RECV.item||{};
+    box.innerHTML='📥 รับล่าสุด: '+esc(it.name||PK_MAT.n)+
+      (it.qty?(' '+Number(it.qty).toLocaleString('en-US')+' '+esc(it.unit||'')):'')+
+      ' · '+esc(cashDMY(PK_RECV.date))+(PK_RECV.supplier?(' · '+esc(PK_RECV.supplier)):'')+
+      ' — ระบบผูกรอบนี้ให้เอง';
+  } else {
+    box.innerHTML='📥 ไม่พบบิลรับของ "'+esc(PK_MAT.n)+'" ใน '+PACK_RECV_DAYS+' วันล่าสุด — บันทึกได้ตามปกติ';
+  }
+}
+async function sendPack(){
+  var m=document.getElementById('pk-msg'); clearMsg(m);
+  if(!PK_MAT){ msg(m,'กรุณาแตะเลือกก่อนว่าทำแพคอะไร'); return; }
+  var date=offVal('pk-date');
+  if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
+  var packs=parseInt(offVal('pk-count'),10)||0;
+  if(packs<1){ msg(m,'กรุณากรอกว่าได้กี่แพค'); return; }
+  // เจ้าของอยากได้ "เศษที่ตัดทิ้ง" ด้วย (25 ส.ค.) — ลืมกรอกจะถามย้ำ แต่ไม่บล็อก (บางรอบไม่มีเศษจริง ๆ)
+  if(String(offVal('pk-scrap')).trim()==='' &&
+     !confirm('ยังไม่ได้กรอก "เศษที่ตัดทิ้ง"\n\nถ้ารอบนี้ไม่มีเศษ หรือไม่ได้ชั่ง กด OK บันทึกได้เลย\nถ้าจะกลับไปชั่งก่อน กด Cancel')) return;
+  if(!PK_CLIENT_ID) PK_CLIENT_ID=uuid();
+  var payload={
+    date:date, material:PK_MAT.n, packs_made:packs,
+    pack_size:offVal('pk-size'), size_unit:PK_MAT.sizeU,
+    raw_used:offVal('pk-raw'), raw_unit:(document.getElementById('pk-rawu').textContent||PK_MAT.rawU),
+    scrap_g:offVal('pk-scrap'),
+    recv_id:(PK_RECV&&PK_RECV.recv_id)||'',
+    note:offVal('pk-note'), client_id:PK_CLIENT_ID
+  };
+  var btn=document.getElementById('pk-send'); busy(btn,true);
+  var r=await api('packSave', payload);
+  busy(btn,false,'บันทึกการทำแพค');
+  // เน็ตหลุด = เก็บไว้ในเครื่อง แล้วแอปส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
+  if(!r.ok && r.netfail){
+    var kept=offAdd('pack', PK_CLIENT_ID, 'ทำแพค '+PK_MAT.n+' '+packs+' แพค', payload);
+    offDraftClear('pack');
+    if(kept){ msg(m,'📤 เน็ตมีปัญหา — เก็บไว้ให้แล้ว จะส่งให้เองเมื่อเน็ตกลับมา (ไม่ต้องกรอกใหม่)','ok'); pkReset(); }
+    else msg(m,'❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ — อย่าเพิ่งปิดแอป ลองกดใหม่เมื่อเน็ตกลับมา');
+    return;
+  }
+  if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
+  msg(m,'✅ '+PK_MAT.n+': ได้ '+packs+' แพค'+
+    (String(payload.raw_used).trim()!==''?(' (ใช้ '+payload.raw_used+' '+payload.raw_unit+')'):'')+' — บันทึกแล้ว','ok');
+  offDraftClear('pack');
+  pkReset();
+  pkLoadList();
+}
+function pkReset(){
+  PK_CLIENT_ID=uuid(); PK_MAT=null; PK_RECV=null;
+  ['pk-count','pk-size','pk-raw','pk-scrap','pk-note'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('pk-form').classList.add('hidden');
+  pkRenderMats(); pkRecvInfo();
+}
+async function pkLoadList(){
+  var box=document.getElementById('pk-history');
+  box.innerHTML='<div class="center muted" style="padding:14px"><span class="spinner"></span></div>';
+  var r=await api('packList',{limit:15});
+  if(!r.ok){ box.innerHTML='<div class="card center muted">'+esc(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
+  PK_ROWS=r.rows||[];
+  // สรุป "วันนี้ทำไปแล้ว" — กันคนที่สองเผลอบันทึกก้อนเดียวกันซ้ำ
+  var today=bizDateISO(), tsum={}, torder=[];
+  PK_ROWS.forEach(function(x){
+    if(x.date!==today) return;
+    if(tsum[x.material]==null){ tsum[x.material]=0; torder.push(x.material); }
+    tsum[x.material]+=x.packs_made||0;
+  });
+  var tEl=document.getElementById('pk-today');
+  if(tEl) tEl.innerHTML = torder.length
+    ? ('วันนี้ทำไปแล้ว: '+torder.map(function(k){ return esc(k)+' '+tsum[k]+' แพค'; }).join(' · '))
+    : '';
+  if(!PK_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึกการทำแพค</div>'; return; }
+  box.innerHTML=PK_ROWS.map(function(x){
+    var det=[];
+    if(x.raw_used!=='' && x.raw_used!=null) det.push('ใช้ '+Number(x.raw_used).toLocaleString('en-US')+' '+esc(x.raw_unit||''));
+    if(x.pack_size!=='' && x.pack_size!=null && x.pack_size) det.push('แพคละ ~'+x.pack_size+' '+esc(x.size_unit||''));
+    if(x.scrap_g!=='' && x.scrap_g!=null) det.push('เศษ '+Number(x.scrap_g).toLocaleString('en-US')+' ก.');
+    return '<div class="card" style="margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'+
+        '<b style="min-width:0;word-break:break-word">'+esc(cashDMY(x.date))+(x.time?(' '+esc(x.time)):'')+' · '+esc(x.material)+'</b>'+
+        '<b style="color:var(--accent2);flex:0 0 auto">'+Number(x.packs_made||0).toLocaleString('en-US')+' แพค</b>'+
+      '</div>'+
+      (det.length?('<div class="meta" style="margin-top:6px">'+det.join(' · ')+'</div>'):'')+
+      (x.note?('<div class="meta" style="margin-top:4px;opacity:.75">📝 '+esc(x.note)+'</div>'):'')+
+      '<div class="meta" style="margin-top:4px;opacity:.7">โดย '+esc(x.by||'—')+(x.recv_id?' · 🔗 ผูกกับบิลรับของแล้ว':'')+'</div>'+
+    '</div>';
+  }).join('');
+}
+
 /* ---------- วิธีใช้งาน (คลิปสอน) ----------
    ไฟล์คลิปอยู่โฟลเดอร์ help/ ของเว็บ (repo Nuchiko/app) — คลิปชุดเดียว ใช้ทั้งแอปจริงและ /app/dev/
    หน้า dev อยู่ลึกลงไป 1 ชั้น จึงต้องถอยขึ้นมาก่อน (ดูจาก path จริง ไม่ใช้ IS_DEV เพราะ ?dev บนแอปจริงจะพาไปผิดที่)
@@ -2821,6 +3132,15 @@ const HELP_TOPICS = [
       'ใส่หมายเหตุ/สภาพของ (เช่น ผักช้ำ 1 ถุง) → กด <b>บันทึกการรับของ</b>',
       'บันทึกผิด/บิลตามมาทีหลัง → <b>บอกเจ้าของ</b> ให้แก้ให้ (เจ้าของกด ✏️ แก้ หรือ 🗑 ลบ ได้ที่รายการใน “รับของล่าสุด” — ลบแล้วยังกู้คืนได้)'
     ], tip:'💡 ถ้าไม่มีปุ่ม AI หรือ AI อ่านไม่ออก — <b>พิมพ์รายการเองได้ตามปกติ</b> ของที่พิมพ์ไว้จะไม่หาย · ดูของที่เคยรับย้อนหลังได้ที่หัวข้อ “รับของล่าสุด” ท้ายหน้า (แตะ 🧾 เพื่อดูรูปบิล)' },
+
+  { id:'pack', ico:'🧊', name:'ทำแพค', sub:'ตัดแต่ง/แพควัตถุดิบ — ได้กี่แพค', steps:[
+      'ตัดแต่ง/แพคของเสร็จเมื่อไหร่ → หน้าหลัก → แตะ <b>ทำแพค</b> (ใช้เวลาไม่ถึงครึ่งนาที)',
+      'แตะเลือกของที่ทำ เช่น <b>🦐 กุ้งสด</b> — ระบบจะโชว์บิลรับของล่าสุดของของตัวนั้น และผูกรอบให้เอง',
+      'กรอก <b>ได้กี่แพค</b> (ช่องเดียวที่บังคับ) · <b>แพคละประมาณ</b> ระบบเติมค่าปกติให้ ถ้ารอบนี้ไม่เท่าเดิม (เช่น กุ้งตัวเล็ก ใส่ 4-5 ตัว) แก้ตัวเลขได้',
+      '<b>ใช้วัตถุดิบไป</b> ระบบเติมจากบิลรับของให้ — ถ้าทำแค่ครึ่งเดียว แก้เป็นจำนวนที่ใช้จริง · <b>เศษที่ตัดทิ้ง</b> (หัว/ก้าง/เปลือก) ชั่งเป็นกรัมแล้วกรอกไว้',
+      'กด <b>บันทึกการทำแพค</b> — ทำครึ่งเดียววันนี้ พรุ่งนี้ทำต่อ ก็มาบันทึกเพิ่มได้อีกรอบ ระบบนับรวมเป็นรอบเดียวกันให้เอง',
+      'ตอนนับสต็อกกลางคืน → Stock → หมวด <b>🧊 ของแพค</b> — ช่อง "เข้า" ระบบเติมจากที่บันทึกไว้ให้เอง แค่นับของจริงในตู้แล้วกรอกช่อง "เหลือ"'
+    ], tip:'💡 ลืมบันทึกตอนทำ = ไปกรอกช่อง "เข้า" เองตอนนับกลางคืนได้ ยอดแพคยังถูก แต่จะไม่รู้ว่าของรอบนั้นทำได้กี่แพค · ชั่งเศษไว้ทุกรอบ จะรู้ว่าปลา 1 ตัว/กุ้ง 1 โล ได้เนื้อกี่เปอร์เซ็นต์ และเห็นทันทีถ้ารอบไหนเปลืองผิดปกติ' },
 
   { id:'cash', ico:'💵', name:'เงินสด', sub:'บันทึกเงินสดรายวัน', clip:'cash.gif', cashOnly:true, steps:[
       'หน้าหลัก → แตะ <b>เงินสด</b> → เลือก <b>วันที่</b>',
