@@ -757,12 +757,15 @@
       <!-- บิลรับของล่าสุดของของตัวนั้น — ระบบจับคู่ให้เองเงียบ ๆ ไม่มีอะไรให้กดเลือก -->
       <div class="st-prev hidden" id="pk-recvinfo" style="margin:4px 0 0"></div>
       <div id="pk-form" class="hidden">
-        <label style="margin-top:14px">ได้กี่แพค <span style="color:#d8453f">*</span></label>
+        <label style="margin-top:14px" id="pk-count-label">ได้กี่แพค <span style="color:#d8453f">*</span></label>
         <input id="pk-count" type="number" inputmode="numeric" min="0" placeholder="0">
-        <label style="margin-top:14px">แพคละประมาณ <span class="muted" style="font-weight:400">(รอบนี้ไม่เท่าค่าปกติ แก้ได้)</span></label>
-        <div style="display:flex;gap:10px;align-items:center">
-          <input id="pk-size" type="number" inputmode="decimal" min="0" placeholder="0" style="flex:1;min-width:0">
-          <span class="muted" id="pk-sizeu" style="flex:0 0 auto">—</span>
+        <!-- ของที่นับเป็นตัว/ชิ้น (เช่น กุ้งสด) ไม่มีขนาดแพค → ซ่อนช่องนี้ทั้งบล็อก -->
+        <div id="pk-sizewrap">
+          <label style="margin-top:14px">แพคละประมาณ <span class="muted" style="font-weight:400">(รอบนี้ไม่เท่าค่าปกติ แก้ได้)</span></label>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input id="pk-size" type="number" inputmode="decimal" min="0" placeholder="0" style="flex:1;min-width:0">
+            <span class="muted" id="pk-sizeu" style="flex:0 0 auto">—</span>
+          </div>
         </div>
         <label style="margin-top:14px">ใช้วัตถุดิบไป <span class="muted" style="font-weight:400">(ระบบเติมจากบิลรับของให้ แก้ได้)</span></label>
         <div style="display:flex;gap:10px;align-items:center">
@@ -1315,12 +1318,7 @@ function offRestorePack(){
   var it=offDraftGet('pack'); if(!it) return;
   var d=it.data||{};
   var i=-1; PACK_ITEMS.forEach(function(p,k){ if(p.n===d.mat) i=k; });
-  if(i>=0){
-    PK_MAT=PACK_ITEMS[i]; pkRenderMats();
-    document.getElementById('pk-form').classList.remove('hidden');
-    document.getElementById('pk-sizeu').textContent=PK_MAT.sizeU+'/แพค';
-    document.getElementById('pk-rawu').textContent=PK_MAT.rawU;
-  }
+  if(i>=0){ PK_MAT=PACK_ITEMS[i]; pkRenderMats(); pkSyncForm(); }
   if(d.date) document.getElementById('pk-date').value=d.date;
   document.getElementById('pk-count').value=offNz(d.count);
   document.getElementById('pk-size').value=offNz(d.size);
@@ -1451,7 +1449,8 @@ async function loadToday(force){
   // ส่งรายการของทำแพค + คำจับคู่ไปด้วย → หลังบ้านใช้เช็คว่า "วันนี้รับของตัวนี้มาแล้ว แต่ยังไม่บันทึกทำแพค"
   // (config อยู่ที่เว็บที่เดียว — หลังบ้านรุ่นเก่าไม่รู้จักพารามิเตอร์นี้ก็แค่เงียบ ไม่พัง)
   var q=force?{nocache:1}:{};
-  q.pack=PACK_ITEMS.map(function(p){ return {n:p.n, kw:p.match}; });
+  // ส่งเฉพาะตัวที่ตั้งคำจับคู่ไว้ — ตัวที่ชื่อบนบิลไม่ชัดพอ ไม่เตือน (ตั้งใจ กันเตือนมั่วจนคนเลิกเชื่อ)
+  q.pack=PACK_ITEMS.filter(function(p){ return p.match && p.match.length; }).map(function(p){ return {n:p.n, kw:p.match}; });
   var r=await api('todayStatus', q);
   TODAY_BUSY=false;
   if(!r || !r.ok){ box.classList.add('hidden'); return; }   // หลังบ้านรุ่นเก่า/เน็ตมีปัญหา = ซ่อนเงียบ ๆ ไม่ขวางการใช้งาน
@@ -1618,10 +1617,81 @@ async function viewEmpDoc(){
    n = ชื่อที่ใช้ในเมนูทำแพค · stockName = ชื่อแถวในชีท Stock (ห้ามเปลี่ยนทีหลัง — บอทเทียบยอดจะยึดชื่อนี้)
    size/sizeU = ขนาดแพคปกติ (ไม่ตายตัว — เจ้าของยืนยัน — ครัวแก้ตอนบันทึกได้) · rawU = หน่วยวัตถุดิบดิบ
    match = คำที่ใช้จับคู่กับชื่อของในบิลรับของ (AI ตั้งชื่อไม่ตรงเป๊ะ เช่น "กุ้งขาว (26-30)" → จับด้วยคำว่า "กุ้ง") */
-const PACK_ITEMS=[
-  {n:'กุ้งสด',   e:'🦐', stockName:'กุ้งสด(แพค)',   size:3,  sizeU:'ตัว', rawU:'กก.', match:['กุ้ง']},
-  {n:'ปลาหิมะ', e:'🐟', stockName:'ปลาหิมะ(แพค)', size:80, sizeU:'ก.',  rawU:'ตัว', match:['หิมะ']}
+const PACK_GROUPS=[
+  {name:'ผัก/เครื่องเคียง', icon:'🥬'},
+  {name:'หมู เนื้อ ไก่',    icon:'🥩'},
+  {name:'ทะเล',            icon:'🦐'},
+  {name:'เส้น แป้ง ของทอด', icon:'🍜'}
 ];
+/* รายการจากครัว (เจ้าของส่ง 3 ก.ย. 2026 — สั่งใส่ทั้งชุดก่อน ค่อยตัดตัวที่ไม่ใช้ทีหลัง)
+   size = ขนาดแพคปกติ ; ช่วงตัวเลข (เช่น 200-250) ใช้ค่ากลาง — ครัวแก้รายรอบได้เสมอ
+   one:true = ของที่นับเป็นชิ้น/ตัวตรง ๆ ไม่มีขนาดแพค (กุ้งสด "รับเป็นโล นับเข้าสต็อกเป็นตัว" · เกี๊ยวซ่านับชิ้น)
+   pu = หน่วยที่นับเข้าสต็อก (แพค/ตัว/ไม้/ชิ้น/ถุง) — ใช้เป็นทั้งชื่อช่องกรอกและหน่วยในหน้านับ Stock
+   match = คำจับคู่ชื่อของบนบิลรับของ → ใช้เตือน "รับมาแล้วยังไม่บันทึก" (§16.3)
+     ⚠️ ใส่เฉพาะตัวที่ชื่อบนบิลชัดเจนพอ ไม่งั้นเตือนมั่ว (เช่น 'กุ้ง' เฉย ๆ จะไปโดน กุ้งแห้ง/น้ำพริกกุ้ง ด้วย) */
+const PACK_ITEMS=[
+  // ---- ผัก/เครื่องเคียง ----
+  {n:'มะเขือเผา',           e:'🍆', grp:'ผัก/เครื่องเคียง', size:225, sizeU:'ก.'},
+  {n:'มะเขือย่างมิโซะ',      e:'🍆', grp:'ผัก/เครื่องเคียง', size:275, sizeU:'ก.'},
+  {n:'ปวยเล้ง',             e:'🥬', grp:'ผัก/เครื่องเคียง', size:80,  sizeU:'ก.'},
+  {n:'กระเทียมย่าง',        e:'🧄', grp:'ผัก/เครื่องเคียง', size:110, sizeU:'ก.'},
+  {n:'มันม่วงหวานญี่ปุ่น',   e:'🍠', grp:'ผัก/เครื่องเคียง', size:120, sizeU:'ก.'},
+  {n:'ข้าวโพดเนย',          e:'🌽', grp:'ผัก/เครื่องเคียง', size:145, sizeU:'ก.'},
+  {n:'ถั่วแระ',             e:'🫛', grp:'ผัก/เครื่องเคียง', size:150, sizeU:'ก.'},
+  {n:'แปะก๊วย',             e:'🌰', grp:'ผัก/เครื่องเคียง', size:100, sizeU:'ก.'},
+  {n:'โนซาวานะ',            e:'🥬', grp:'ผัก/เครื่องเคียง', size:60,  sizeU:'ก.'},
+  {n:'นิชิกิ',              e:'🥗', grp:'ผัก/เครื่องเคียง', size:80,  sizeU:'ก.'},
+  {n:'สาหร่ายดองน้ำส้ม',    e:'🌿', grp:'ผัก/เครื่องเคียง', size:60,  sizeU:'ก.'},
+  {n:'รากบัว',              e:'🪷', grp:'ผัก/เครื่องเคียง', size:150, sizeU:'ก.'},
+  {n:'แตงกวา',              e:'🥒', grp:'ผัก/เครื่องเคียง', size:170, sizeU:'ก.'},
+  {n:'กิมจิ',               e:'🌶️', grp:'ผัก/เครื่องเคียง', size:100, sizeU:'ก.'},
+  // ---- หมู เนื้อ ไก่ ----
+  {n:'ไก่คาราเกะ',          e:'🍗', grp:'หมู เนื้อ ไก่', size:120, sizeU:'ก.'},
+  {n:'หมูผสมเนื้อ',         e:'🥩', grp:'หมู เนื้อ ไก่', size:130, sizeU:'ก.'},
+  {n:'หมูสันนอก',           e:'🐖', grp:'หมู เนื้อ ไก่', size:120, sizeU:'ก.'},
+  {n:'หมูทอดน้ำปลา',        e:'🐖', grp:'หมู เนื้อ ไก่', size:170, sizeU:'ก.'},
+  {n:'หมูคั่วพริกเกลือ',     e:'🐖', grp:'หมู เนื้อ ไก่', size:170, sizeU:'ก.'},
+  {n:'สเต็กฮารามิ',         e:'🥩', grp:'หมู เนื้อ ไก่', size:120, sizeU:'ก.'},
+  {n:'ลิ้นย่าง',            e:'🥩', grp:'หมู เนื้อ ไก่', size:80,  sizeU:'ก.'},
+  {n:'หมูสไลด์',            e:'🐖', grp:'หมู เนื้อ ไก่', size:80,  sizeU:'ก.'},
+  {n:'เนื้อสไลด์',          e:'🥩', grp:'หมู เนื้อ ไก่', size:80,  sizeU:'ก.'},
+  {n:'ไก่ย่างมิโซะ',        e:'🍗', grp:'หมู เนื้อ ไก่', size:165, sizeU:'ก.'},
+  {n:'หมูสามชั้นตุ๋น',       e:'🐖', grp:'หมู เนื้อ ไก่', size:200, sizeU:'ก.'},
+  {n:'หมูสับเสฉวน',         e:'🐖', grp:'หมู เนื้อ ไก่', size:100, sizeU:'ก.'},
+  {n:'เอ็นข้อไก่',          e:'🍗', grp:'หมู เนื้อ ไก่', size:100, sizeU:'ก.'},
+  // ---- ทะเล ----
+  {n:'กุ้งสด',              e:'🦐', grp:'ทะเล', one:true, pu:'ตัว', rawU:'กก.', match:['กุ้งขาว','กุ้งสด','กุ้งแม่น้ำ','กุ้งลาย']},
+  {n:'ปลาหิมะ',             e:'🐟', grp:'ทะเล', size:110, sizeU:'ก.', rawU:'ตัว', match:['หิมะ']},
+  {n:'หอยนางรมกระทะ',       e:'🦪', grp:'ทะเล', size:140, sizeU:'ก.'},
+  {n:'หอยนางรมพอนสึ',       e:'🦪', grp:'ทะเล', size:100, sizeU:'ก.'},
+  {n:'หนวดปลาหมึก',         e:'🦑', grp:'ทะเล', size:120, sizeU:'ก.'},
+  {n:'ปลาหมึกยักษ์เต้าหู้',  e:'🐙', grp:'ทะเล', size:80,  sizeU:'ก.'},
+  {n:'หนวดปลาหมึกถั่วแระ',   e:'🦑', grp:'ทะเล', size:120, sizeU:'ก.'},
+  {n:'ปลาหมึกยักษ์ทอดกรอบ',  e:'🐙', grp:'ทะเล', size:120, sizeU:'ก.'},
+  {n:'ปลาหมึกวาซาบิ',       e:'🦑', grp:'ทะเล', size:60,  sizeU:'ก.'},
+  {n:'ครีบปลากระเบน',       e:'🐟', grp:'ทะเล', size:60,  sizeU:'ก.'},
+  {n:'ตับปลา',              e:'🐟', grp:'ทะเล', size:50,  sizeU:'ก.'},
+  {n:'หอยหวาน',             e:'🐚', grp:'ทะเล', size:7,   sizeU:'ตัว'},
+  {n:'ลูกหอยเชลล์',         e:'🐚', grp:'ทะเล', size:12,  sizeU:'ตัว', match:['ลูกหอยเชลล์']},
+  {n:'ลูกหอยเชลล์เสียบไม้',  e:'🍢', grp:'ทะเล', size:6,   sizeU:'ตัว', pu:'ไม้'},   // สำหรับคุชิคัตสึ (เจ้าของยืนยัน 3 ก.ย.)
+  {n:'ก้างปลาทราย',         e:'🐟', grp:'ทะเล', size:50,  sizeU:'ก.'},
+  {n:'ปลาข้าวสาร',          e:'🐟', grp:'ทะเล', size:30,  sizeU:'ก.', match:['ปลาข้าวสาร']},
+  // ---- เส้น แป้ง ของทอด ----
+  {n:'มันฝรั่งเฟรนช์ฟราย',   e:'🍟', grp:'เส้น แป้ง ของทอด', size:230, sizeU:'ก.'},
+  {n:'เกี๊ยวซ่า',           e:'🥟', grp:'เส้น แป้ง ของทอด', one:true, pu:'ชิ้น'},   // 1 ที่ = 6 ชิ้น/120 ก. — นับเป็นชิ้น
+  {n:'แกงกะหรี่',           e:'🍛', grp:'เส้น แป้ง ของทอด', size:250, sizeU:'ก.', pu:'ถุง'},
+  {n:'อุด้งเย็น',           e:'🍜', grp:'เส้น แป้ง ของทอด', size:80,  sizeU:'ก.'},
+  {n:'เส้นสปาเก็ตตี้',       e:'🍝', grp:'เส้น แป้ง ของทอด', size:80,  sizeU:'ก.'},
+  {n:'เส้นชาเขียว',         e:'🍜', grp:'เส้น แป้ง ของทอด', size:70,  sizeU:'ก.'},
+  {n:'เส้นโซเมน',           e:'🍜', grp:'เส้น แป้ง ของทอด', size:80,  sizeU:'ก.'}
+];
+// เติมค่าปริยายให้ครบทุกตัว (ไม่ต้องพิมพ์ซ้ำในลิสต์ข้างบน)
+PACK_ITEMS.forEach(function(p){
+  p.pu = p.pu || (p.one ? 'ชิ้น' : 'แพค');            // หน่วยที่นับเข้าสต็อก
+  p.rawU = p.rawU || 'กก.';                            // หน่วยวัตถุดิบดิบ (บิลรับของทับให้เองถ้าจับคู่ได้)
+  p.stockName = p.stockName || (p.n+'('+p.pu+')');     // ชื่อแถวในชีท Stock — คงที่ ห้ามเปลี่ยนทีหลัง
+  p.match = p.match || [];                             // ไม่มีคำจับคู่ = ไม่เตือน (ตั้งใจ กันเตือนมั่ว)
+});
 const STOCK_GROUPS=[
   {name:'ปลาดิบ', icon:'🐟', cut:true, items:[
     'Salmon','Maguro','Madai','ShimaAji','Kanpachi','Aori Ika','Hokkigai',{n:'Ikura',boxg:500},{n:'Hotate',hotate:true}
@@ -1635,8 +1705,10 @@ const STOCK_GROUPS=[
     {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
   ]},
   // ของแพค = นับเป็นแพค (จำนวนเต็ม) เดิม/เข้า/เหลือ → ใช้ไป ; ช่อง "เข้า" เติมอัตโนมัติจากบันทึกในเมนูทำแพค (แก้ทับได้)
-  {name:'ของแพค', icon:'🧊', cut:false, packs:true, tip:'นับเป็นแพค · ช่อง "เข้า" เติมให้เองจากบันทึกทำแพควันนี้ · ช่อง "ใช้ไป" คำนวณให้อัตโนมัติ',
-   items:PACK_ITEMS.map(function(p){ return {n:p.stockName, u:'แพค', e:p.e}; })},
+  // รายการเยอะ (50 ตัว) → แบ่งเป็นกลุ่มพับได้เหมือนเครื่องดื่ม ; กรอกเฉพาะตัวที่นับจริง ตัวที่เว้นว่างไม่ถูกส่งเข้าชีท
+  {name:'ของแพค', icon:'🧊', cut:false, packs:true, subs:PACK_GROUPS,
+   tip:'แตะกลุ่มเพื่อกางรายการ · กรอกเฉพาะตัวที่นับจริง (ตัวที่เว้นว่างไม่ถูกบันทึก) · ช่อง "เข้า" เติมให้เองจากบันทึกทำแพควันนี้',
+   items:PACK_ITEMS.map(function(p){ return {n:p.stockName, u:p.pu, e:p.e, sub:p.grp}; })},
   {name:'เครื่องดื่ม', icon:'🥤', count:true, items:[
     // 🍺 เบียร์
     {n:'เบียร์สดสิงห์',u:'ถัง',img:'singha-draft',e:'🍺',sub:'เบียร์'},
@@ -1722,7 +1794,7 @@ STOCK_GROUPS.forEach(function(g){ g.items.forEach(function(it){
   var o=(typeof it==='object')?it:{};
   STOCK_FLAT.push({name:nm, unit:o.u||'', hotate:!!o.hotate||nm==='Hotate', boxg:o.boxg||0,
     pack:o.pack||0, packU:o.packU||'แผง', pieceU:o.pieceU||'ฟอง',
-    cut:!!g.cut, count:!!g.count, img:o.img||'', e:o.e||g.icon});
+    cut:!!g.cut, count:!!g.count, packs:!!g.packs, img:o.img||'', e:o.e||g.icon});
 }); });
 const DRINK_SUBS=[   // กลุ่มย่อยตามเมนูร้านจริง: Beer→Whisky→Kotsuzumi(อุเมะชุ)→ShioYuzu(ยูซุ)→Soft→Shochu→Sake + เบียร์คราฟต์(Beervana) + ไวน์
   {name:'เบียร์',icon:'🍺'},
@@ -1763,8 +1835,9 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     document.getElementById('stc-draftbar').className='hidden';
     form.style.display='none';
   }else{
-    document.getElementById('stc-cards').innerHTML = g.count
-      ? renderDrinkGroups(g,start)
+    var subs = g.subs || (g.count ? DRINK_SUBS : null);
+    document.getElementById('stc-cards').innerHTML = subs
+      ? renderSubGroups(g,start,subs)
       : g.items.map(function(item,k){ return stItemCard(item,start+k,g); }).join('');
     form.style.display='';
     document.getElementById('stc-note').value='';
@@ -1780,8 +1853,10 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
   }
   show('stockcat');
 }
-function renderDrinkGroups(g,start){   // เรนเดอร์เครื่องดื่มเป็นกลุ่มย่อยพับได้ (accordion)
-  return DRINK_SUBS.map(function(sg){
+function renderDrinkGroups(g,start){ return renderSubGroups(g,start,DRINK_SUBS); }
+// เรนเดอร์การ์ดเป็นกลุ่มย่อยพับได้ (accordion) — ใช้ทั้งเครื่องดื่มและของแพค (รายการเยอะเกินกว่าจะไล่จอเดียว)
+function renderSubGroups(g,start,subs){
+  return subs.map(function(sg){
     var rows=[];
     g.items.forEach(function(item,k){ if(typeof item==='object' && item.sub===sg.name) rows.push(stItemCard(item,start+k,g)); });
     if(!rows.length) return '';
@@ -1884,8 +1959,9 @@ function stItemCard(item,i,group){
       '<span class="st-dname">'+esc(name)+'</span>'+
       stNi('rem_'+i)+'<span class="st-cu">'+esc(unit)+'</span></div>';
   }
-  var uTag=unit?(' <span class="st-unit">('+unit+')</span>'):'';
-  var u0='0'+(unit?(' '+unit):'');
+  // หมวดของแพค: ชื่อรายการมีวงเล็บหน่วยอยู่ในตัวแล้ว ("กุ้งสด(ตัว)") — ไม่ต้องต่อท้ายซ้ำ
+  var uTag=(unit && !meta.packs)?(' <span class="st-unit">('+unit+')</span>'):'';
+  var u0=meta.packs ? '—' : ('0'+(unit?(' '+unit):''));
   if(group.cut){
     return '<div class="st-card"><div class="st-top"><span class="st-n">'+icon+' '+name+uTag+'</span><span class="st-u" id="used_'+i+'">'+u0+'</span></div>'+
       '<div class="st-row">'+
@@ -1972,6 +2048,9 @@ function stRenderTrimWarn(){
 function calcStockUsed(){
   STOCK_FLAT.forEach((meta,i)=>{
     const cell=document.getElementById('used_'+i); if(!cell) return;
+    // หมวดของแพคกรอกแค่บางตัว — ตัวที่ยังไม่ได้นับ "เหลือ" ต้องไม่ขึ้นตัวเลขใช้ไป
+    // (ไม่งั้นจะอ่านว่า "ใช้ไปหมดแล้ว" ทั้งที่ยังไม่ได้นับ — ของยังอยู่ในตู้)
+    if(meta.packs && stRaw('rem_'+i)===''){ cell.textContent='— ยังไม่นับ'; cell.className='st-u'; return; }
     const c=computeUsed(i);
     cell.textContent=c.pill; cell.className='st-u'+(c.num<0?' neg':'');
   });
@@ -2055,10 +2134,17 @@ async function sendStockCat(){
     if(!confirm(q)) return;
   }
   const g=STOCK_GROUPS[stCurrentGroup], start=groupStart(stCurrentGroup);
-  const rows=g.items.map(function(item,k){ var i=start+k, meta=STOCK_FLAT[i];
+  let rows=g.items.map(function(item,k){ var i=start+k, meta=STOCK_FLAT[i];
     if(g.count){ var v=stRaw('rem_'+i); return {item:meta.name, old:'', in:'', cut:'', rem:(v!==''?(v+' '+meta.unit):''), used:''}; }
-    return {item:meta.name, old:stCell('old_'+i), in:stCell('in_'+i),
+    return {item:meta.name, idx:i, old:stCell('old_'+i), in:stCell('in_'+i),
       cut:(meta.cut&&!meta.hotate&&!meta.boxg)?stRaw('cut_'+i):'', rem:stCell('rem_'+i), used:computeUsed(i).used}; });
+  // หมวดของแพคมี 50 รายการ แต่ละคืนนับจริงไม่กี่ตัว → ส่งเฉพาะตัวที่ "เหลือ" ถูกกรอก
+  // (ช่อง "เข้า" ระบบเติมให้เอง ถ้าส่งทั้งที่ยังไม่นับ จะกลายเป็น "ใช้ไปหมด" ทั้งที่ของยังอยู่)
+  if(g.packs){
+    rows=rows.filter(function(r){ return stRaw('rem_'+r.idx)!==''; });
+    if(!rows.length){ msg(m,'ยังไม่ได้กรอกช่อง "เหลือ" ของรายการไหนเลย — กรอกอย่างน้อย 1 รายการก่อนส่ง'); return; }
+  }
+  rows.forEach(function(r){ delete r.idx; });   // idx ใช้แค่ตอนกรอง ไม่ต้องส่งขึ้นชีท
   const typed=document.getElementById('stc-note').value.trim(), uses=stUsesText();
   const note = uses ? (uses + (typed ? (' · '+typed) : '')) : typed;   // "ใช้เพิ่ม" นำหน้าเสมอ → เห็นในรูปสรุป + ลงคอลัมน์หมายเหตุในชีท
   const date=document.getElementById('stc-date').textContent;
@@ -2957,24 +3043,49 @@ function openPack(){
   pkLoadList();
   show('pack');
 }
+function pkSpec(p){ return p.one ? ('นับเป็น'+p.pu) : ('1 '+p.pu+' ≈ '+p.size+' '+p.sizeU); }
+function pkUnitOf(name){   // ชื่อวัตถุดิบ → หน่วยที่นับ (ใช้ตอนโชว์ประวัติ/สรุปวันนี้)
+  var p=PACK_ITEMS.filter(function(x){ return x.n===name; })[0];
+  return p ? p.pu : 'แพค';
+}
+// 50 รายการ → แบ่งเป็นกลุ่มพับได้ ; กลุ่มที่มีตัวที่เลือกอยู่จะกางไว้ให้
 function pkRenderMats(){
-  document.getElementById('pk-mats').innerHTML=PACK_ITEMS.map(function(p,i){
-    var on=!!(PK_MAT && PK_MAT.n===p.n);
-    return '<button type="button" class="stcat-btn'+(on?' sel':'')+'" onclick="pkPick('+i+')">'+
-      '<span class="ico">'+p.e+'</span>'+
-      '<div><div class="nm">'+esc(p.n)+'</div><div class="ct">แพคละ ~'+p.size+' '+esc(p.sizeU)+'</div></div>'+
-      '<span class="arrow">'+(on?'✓':'›')+'</span></button>';
+  document.getElementById('pk-mats').innerHTML=PACK_GROUPS.map(function(sg){
+    var rows=[];
+    PACK_ITEMS.forEach(function(p,i){
+      if(p.grp!==sg.name) return;
+      var on=!!(PK_MAT && PK_MAT.n===p.n);
+      rows.push('<button type="button" class="stcat-btn'+(on?' sel':'')+'" onclick="pkPick('+i+')">'+
+        '<span class="ico">'+p.e+'</span>'+
+        '<div><div class="nm">'+esc(p.n)+'</div><div class="ct">'+esc(pkSpec(p))+'</div></div>'+
+        '<span class="arrow">'+(on?'✓':'›')+'</span></button>');
+    });
+    if(!rows.length) return '';
+    var open=!!(PK_MAT && PK_MAT.grp===sg.name);
+    return '<div class="st-sub" data-open="'+(open?'1':'0')+'">'+
+      '<button type="button" class="st-sub-h" onclick="toggleSub(this)">'+
+        '<span class="st-sub-t">'+sg.icon+' '+esc(sg.name)+'</span>'+
+        '<span class="st-sub-meta">'+rows.length+' รายการ <span class="st-sub-ar">▾</span></span>'+
+      '</button>'+
+      '<div class="st-sub-body">'+rows.join('')+'</div></div>';
   }).join('');
+}
+// ปรับป้าย/ช่องของฟอร์มให้ตรงกับของที่เลือก (ใช้ทั้งตอนเลือกใหม่และตอนกู้คืนร่าง)
+function pkSyncForm(){
+  var p=PK_MAT; if(!p) return;
+  document.getElementById('pk-form').classList.remove('hidden');
+  document.getElementById('pk-count-label').innerHTML='ได้กี่'+esc(p.pu)+' <span style="color:#d8453f">*</span>';
+  document.getElementById('pk-sizewrap').classList.toggle('hidden', !!p.one);   // ของที่นับเป็นตัว/ชิ้น ไม่มีขนาดแพค
+  document.getElementById('pk-sizeu').textContent=(p.sizeU||'')+'/'+p.pu;
+  document.getElementById('pk-rawu').textContent=p.rawU;
 }
 function pkPick(i){
   var p=PACK_ITEMS[i], changed=!PK_MAT || PK_MAT.n!==p.n;
   PK_MAT=p;
   pkRenderMats();
-  document.getElementById('pk-form').classList.remove('hidden');
-  document.getElementById('pk-sizeu').textContent=p.sizeU+'/แพค';
-  document.getElementById('pk-rawu').textContent=p.rawU;
+  pkSyncForm();
   if(changed){   // สลับไปทำของอีกตัว — ตัวเลขของตัวเก่าห้ามติดมา
-    document.getElementById('pk-size').value=p.size;   // ค่าปกติ (ขนาดแพคไม่ตายตัว — แก้ได้)
+    document.getElementById('pk-size').value=p.one?'':p.size;   // ค่าปกติ (ขนาดแพคไม่ตายตัว — แก้ได้)
     ['pk-count','pk-raw','pk-scrap'].forEach(function(id){ document.getElementById(id).value=''; });
     PK_RECV=null; pkRecvInfo();
     pkMatchRecv();
@@ -2998,8 +3109,10 @@ function pkDaysBetween(a,b){   // จำนวนวันจาก a → b (b �
 // จับคู่บิลรับของล่าสุดของของตัวนี้ (≤7 วันก่อนวันทำแพค) — เงียบ ๆ อัตโนมัติ ไม่มีอะไรให้พนักงานกดเลือก
 async function pkMatchRecv(){
   var box=document.getElementById('pk-recvinfo');
-  if(box){ box.classList.remove('hidden'); box.innerHTML='<span class="spinner"></span>'; }
   var mat=PK_MAT; if(!mat) return;
+  // ของที่ไม่ได้ตั้งคำจับคู่ไว้ (ชื่อบนบิลไม่ชัดพอ) = ไม่ต้องไปหาบิล ไม่ต้องขึ้นบรรทัดนี้เลย
+  if(!mat.match || !mat.match.length){ PK_RECV=null; if(box){ box.classList.add('hidden'); box.innerHTML=''; } return; }
+  if(box){ box.classList.remove('hidden'); box.innerHTML='<span class="spinner"></span>'; }
   var r=await api('recvList',{limit:30});
   if(PK_MAT!==mat) return;   // เลือกตัวอื่นไปแล้วระหว่างรอ
   var hit=null, item=null;
@@ -3024,7 +3137,7 @@ async function pkMatchRecv(){
 }
 function pkRecvInfo(){
   var box=document.getElementById('pk-recvinfo'); if(!box) return;
-  if(!PK_MAT){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  if(!PK_MAT || !PK_MAT.match || !PK_MAT.match.length){ box.classList.add('hidden'); box.innerHTML=''; return; }
   box.classList.remove('hidden');
   if(PK_RECV){
     var it=PK_RECV.item||{};
@@ -3042,14 +3155,14 @@ async function sendPack(){
   var date=offVal('pk-date');
   if(!date){ msg(m,'กรุณาเลือกวันที่'); return; }
   var packs=parseInt(offVal('pk-count'),10)||0;
-  if(packs<1){ msg(m,'กรุณากรอกว่าได้กี่แพค'); return; }
+  if(packs<1){ msg(m,'กรุณากรอกว่าได้กี่'+PK_MAT.pu); return; }
   // เจ้าของอยากได้ "เศษที่ตัดทิ้ง" ด้วย (25 ส.ค.) — ลืมกรอกจะถามย้ำ แต่ไม่บล็อก (บางรอบไม่มีเศษจริง ๆ)
   if(String(offVal('pk-scrap')).trim()==='' &&
      !confirm('ยังไม่ได้กรอก "เศษที่ตัดทิ้ง"\n\nถ้ารอบนี้ไม่มีเศษ หรือไม่ได้ชั่ง กด OK บันทึกได้เลย\nถ้าจะกลับไปชั่งก่อน กด Cancel')) return;
   if(!PK_CLIENT_ID) PK_CLIENT_ID=uuid();
   var payload={
     date:date, material:PK_MAT.n, packs_made:packs,
-    pack_size:offVal('pk-size'), size_unit:PK_MAT.sizeU,
+    pack_size:(PK_MAT.one?'':offVal('pk-size')), size_unit:(PK_MAT.sizeU||PK_MAT.pu),
     raw_used:offVal('pk-raw'), raw_unit:(document.getElementById('pk-rawu').textContent||PK_MAT.rawU),
     scrap_g:offVal('pk-scrap'),
     recv_id:(PK_RECV&&PK_RECV.recv_id)||'',
@@ -3060,14 +3173,14 @@ async function sendPack(){
   busy(btn,false,'บันทึกการทำแพค');
   // เน็ตหลุด = เก็บไว้ในเครื่อง แล้วแอปส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
   if(!r.ok && r.netfail){
-    var kept=offAdd('pack', PK_CLIENT_ID, 'ทำแพค '+PK_MAT.n+' '+packs+' แพค', payload);
+    var kept=offAdd('pack', PK_CLIENT_ID, 'ทำแพค '+PK_MAT.n+' '+packs+' '+PK_MAT.pu, payload);
     offDraftClear('pack');
     if(kept){ msg(m,'📤 เน็ตมีปัญหา — เก็บไว้ให้แล้ว จะส่งให้เองเมื่อเน็ตกลับมา (ไม่ต้องกรอกใหม่)','ok'); pkReset(); }
     else msg(m,'❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ — อย่าเพิ่งปิดแอป ลองกดใหม่เมื่อเน็ตกลับมา');
     return;
   }
   if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
-  msg(m,'✅ '+PK_MAT.n+': ได้ '+packs+' แพค'+
+  msg(m,'✅ '+PK_MAT.n+': ได้ '+packs+' '+PK_MAT.pu+
     (String(payload.raw_used).trim()!==''?(' (ใช้ '+payload.raw_used+' '+payload.raw_unit+')'):'')+' — บันทึกแล้ว','ok');
   offDraftClear('pack');
   pkReset();
@@ -3095,18 +3208,18 @@ async function pkLoadList(){
   });
   var tEl=document.getElementById('pk-today');
   if(tEl) tEl.innerHTML = torder.length
-    ? ('วันนี้ทำไปแล้ว: '+torder.map(function(k){ return esc(k)+' '+tsum[k]+' แพค'; }).join(' · '))
+    ? ('วันนี้ทำไปแล้ว: '+torder.map(function(k){ return esc(k)+' '+tsum[k]+' '+esc(pkUnitOf(k)); }).join(' · '))
     : '';
   if(!PK_ROWS.length){ box.innerHTML='<div class="card center muted">ยังไม่มีบันทึกการทำแพค</div>'; return; }
   box.innerHTML=PK_ROWS.map(function(x){
     var det=[];
     if(x.raw_used!=='' && x.raw_used!=null) det.push('ใช้ '+Number(x.raw_used).toLocaleString('en-US')+' '+esc(x.raw_unit||''));
-    if(x.pack_size!=='' && x.pack_size!=null && x.pack_size) det.push('แพคละ ~'+x.pack_size+' '+esc(x.size_unit||''));
+    if(x.pack_size!=='' && x.pack_size!=null && x.pack_size) det.push('1 '+esc(pkUnitOf(x.material))+' ≈ '+x.pack_size+' '+esc(x.size_unit||''));
     if(x.scrap_g!=='' && x.scrap_g!=null) det.push('เศษ '+Number(x.scrap_g).toLocaleString('en-US')+' ก.');
     return '<div class="card" style="margin-bottom:10px">'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">'+
         '<b style="min-width:0;word-break:break-word">'+esc(cashDMY(x.date))+(x.time?(' '+esc(x.time)):'')+' · '+esc(x.material)+'</b>'+
-        '<b style="color:var(--accent2);flex:0 0 auto">'+Number(x.packs_made||0).toLocaleString('en-US')+' แพค</b>'+
+        '<b style="color:var(--accent2);flex:0 0 auto">'+Number(x.packs_made||0).toLocaleString('en-US')+' '+esc(pkUnitOf(x.material))+'</b>'+
       '</div>'+
       (det.length?('<div class="meta" style="margin-top:6px">'+det.join(' · ')+'</div>'):'')+
       (x.note?('<div class="meta" style="margin-top:4px;opacity:.75">📝 '+esc(x.note)+'</div>'):'')+
@@ -3147,14 +3260,15 @@ const HELP_TOPICS = [
       'บันทึกผิด/บิลตามมาทีหลัง → <b>บอกเจ้าของ</b> ให้แก้ให้ (เจ้าของกด ✏️ แก้ หรือ 🗑 ลบ ได้ที่รายการใน “รับของล่าสุด” — ลบแล้วยังกู้คืนได้)'
     ], tip:'💡 ถ้าไม่มีปุ่ม AI หรือ AI อ่านไม่ออก — <b>พิมพ์รายการเองได้ตามปกติ</b> ของที่พิมพ์ไว้จะไม่หาย · ดูของที่เคยรับย้อนหลังได้ที่หัวข้อ “รับของล่าสุด” ท้ายหน้า (แตะ 🧾 เพื่อดูรูปบิล)' },
 
-  { id:'pack', ico:'🧊', name:'ทำแพค', sub:'ตัดแต่ง/แพควัตถุดิบ — ได้กี่แพค', steps:[
+  { id:'pack', ico:'🧊', name:'ทำแพค', sub:'ตัดแต่ง/แพควัตถุดิบ — ทำได้กี่แพค', steps:[
       'ตัดแต่ง/แพคของเสร็จเมื่อไหร่ → หน้าหลัก → แตะ <b>ทำแพค</b> (ใช้เวลาไม่ถึงครึ่งนาที)',
-      'แตะเลือกของที่ทำ เช่น <b>🦐 กุ้งสด</b> — ระบบจะโชว์บิลรับของล่าสุดของของตัวนั้น และผูกรอบให้เอง',
-      'กรอก <b>ได้กี่แพค</b> (ช่องเดียวที่บังคับ) · <b>แพคละประมาณ</b> ระบบเติมค่าปกติให้ ถ้ารอบนี้ไม่เท่าเดิม (เช่น กุ้งตัวเล็ก ใส่ 4-5 ตัว) แก้ตัวเลขได้',
-      '<b>ใช้วัตถุดิบไป</b> ระบบเติมจากบิลรับของให้ — ถ้าทำแค่ครึ่งเดียว แก้เป็นจำนวนที่ใช้จริง · <b>เศษที่ตัดทิ้ง</b> (หัว/ก้าง/เปลือก) ชั่งเป็นกรัมแล้วกรอกไว้',
+      'แตะกลุ่ม (ผัก / หมู เนื้อ ไก่ / ทะเล / เส้น แป้ง ของทอด) แล้วเลือกของที่เพิ่งทำ',
+      'กรอกช่องเดียวที่บังคับ: <b>ได้กี่แพค</b> (บางตัวนับต่างกัน เช่น <b>กุ้งสด = กี่ตัว</b> · <b>เกี๊ยวซ่า = กี่ชิ้น</b> · <b>เสียบไม้ = กี่ไม้</b> ระบบเปลี่ยนป้ายให้เอง)',
+      '<b>แพคละประมาณ</b> ระบบเติมค่าปกติให้ — รอบไหนไม่เท่าเดิม (ของชิ้นเล็ก/ใหญ่กว่าปกติ) แก้ตัวเลขได้เลย',
+      '<b>ใช้วัตถุดิบไป</b> — ถ้าเป็นของที่ระบบรู้จักบิล (เช่น กุ้งสด ปลาหิมะ) จะเติมจากบิลรับของให้ ถ้าทำแค่ครึ่งเดียวก็แก้เป็นจำนวนที่ใช้จริง · <b>เศษที่ตัดทิ้ง</b> (หัว/ก้าง/เปลือก) ชั่งเป็นกรัมแล้วกรอกไว้',
       'กด <b>บันทึกการทำแพค</b> — ทำครึ่งเดียววันนี้ พรุ่งนี้ทำต่อ ก็มาบันทึกเพิ่มได้อีกรอบ ระบบนับรวมเป็นรอบเดียวกันให้เอง',
-      'ตอนนับสต็อกกลางคืน → Stock → หมวด <b>🧊 ของแพค</b> — ช่อง "เข้า" ระบบเติมจากที่บันทึกไว้ให้เอง แค่นับของจริงในตู้แล้วกรอกช่อง "เหลือ"'
-    ], tip:'💡 ลืมบันทึกตอนทำ = ไปกรอกช่อง "เข้า" เองตอนนับกลางคืนได้ ยอดแพคยังถูก แต่จะไม่รู้ว่าของรอบนั้นทำได้กี่แพค · ชั่งเศษไว้ทุกรอบ จะรู้ว่าปลา 1 ตัว/กุ้ง 1 โล ได้เนื้อกี่เปอร์เซ็นต์ และเห็นทันทีถ้ารอบไหนเปลืองผิดปกติ' },
+      'ตอนนับสต็อกกลางคืน → Stock → หมวด <b>🧊 ของแพค</b> — แตะกลุ่มเพื่อกาง แล้ว<b>กรอกเฉพาะตัวที่นับจริง</b> (ตัวที่เว้นว่างไม่ถูกบันทึก) ; ช่อง "เข้า" ระบบเติมจากที่บันทึกไว้ให้ แค่กรอกช่อง "เหลือ"'
+    ], tip:'💡 ลืมบันทึกตอนทำ = ไปกรอกช่อง "เข้า" เองตอนนับกลางคืนได้ ยอดยังถูก แต่จะไม่รู้ว่าของรอบนั้นทำได้กี่แพค · ถ้ารับของมาแล้วยังไม่ได้บันทึก หน้าแรกจะขึ้นเตือนให้เอง · ชั่งเศษไว้ทุกรอบ จะรู้ว่าของ 1 โล/1 ตัว ได้เนื้อกี่เปอร์เซ็นต์ และเห็นทันทีถ้ารอบไหนเปลืองผิดปกติ' },
 
   { id:'cash', ico:'💵', name:'เงินสด', sub:'บันทึกเงินสดรายวัน', clip:'cash.gif', cashOnly:true, steps:[
       'หน้าหลัก → แตะ <b>เงินสด</b> → เลือก <b>วันที่</b>',
