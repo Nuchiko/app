@@ -949,7 +949,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 5;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v5 = ทำแพค)
+const APP_VER = 6;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v6 = เตือนลืมบันทึกทำแพค)
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -1448,7 +1448,11 @@ async function loadToday(force){
   if(TODAY_READY===false){ box.classList.add('hidden'); return; }
   if(TODAY_BUSY) return;
   TODAY_BUSY=true;
-  var r=await api('todayStatus', force?{nocache:1}:{});
+  // ส่งรายการของทำแพค + คำจับคู่ไปด้วย → หลังบ้านใช้เช็คว่า "วันนี้รับของตัวนี้มาแล้ว แต่ยังไม่บันทึกทำแพค"
+  // (config อยู่ที่เว็บที่เดียว — หลังบ้านรุ่นเก่าไม่รู้จักพารามิเตอร์นี้ก็แค่เงียบ ไม่พัง)
+  var q=force?{nocache:1}:{};
+  q.pack=PACK_ITEMS.map(function(p){ return {n:p.n, kw:p.match}; });
+  var r=await api('todayStatus', q);
   TODAY_BUSY=false;
   if(!r || !r.ok){ box.classList.add('hidden'); return; }   // หลังบ้านรุ่นเก่า/เน็ตมีปัญหา = ซ่อนเงียบ ๆ ไม่ขวางการใช้งาน
   TODAY=r;
@@ -1469,13 +1473,22 @@ function renderToday(){
   var rc=r.recv||{};
   chips.push(tChip('📥','รับของเข้า', rc.count?((rc.count+' ครั้ง')+(rc.by&&rc.by.length?(' · '+rc.by.join(', ')):'')):'', 'ยังไม่มี','openRecv()'));
   document.getElementById('ho-today-chips').innerHTML=chips.join('');
-  // เตือนเฉพาะรายการที่มีปัญหาจริง — Ikura ที่ตัวเลขล่าสุดมาจากฟอร์มเว็บเก่า (ฟอร์มเก่าไม่คูณ 500 ก./กล่อง)
-  var w=document.getElementById('ho-today-warn');
+  // เตือนเฉพาะรายการที่มีปัญหาจริง (โชว์พร้อมกันได้หลายเรื่อง คนละบรรทัด)
+  var warns=[];
+  // Ikura ที่ตัวเลขล่าสุดมาจากฟอร์มเว็บเก่า (ฟอร์มเก่าไม่คูณ 500 ก./กล่อง)
   if(st.ikura && st.ikura.from==='old'){
     var gi=stockGroupIndex('ปลาดิบ');
-    msg(w,'⚠️ ตัวเลข Ikura ล่าสุด'+(st.ikura.time?(' ('+st.ikura.time+')'):'')+' มาจากฟอร์มเว็บเก่า ซึ่งไม่ได้คูณ 500 ก./กล่อง'+
-      (gi>=0?' — เปิดหมวดปลาดิบในแอปแล้วกรอก Ikura ซ้ำอีกครั้ง ตัวเลขจะถูกต้อง':''),'warn');
-  } else clearMsg(w);
+    warns.push(esc('⚠️ ตัวเลข Ikura ล่าสุด'+(st.ikura.time?(' ('+st.ikura.time+')'):'')+' มาจากฟอร์มเว็บเก่า ซึ่งไม่ได้คูณ 500 ก./กล่อง'+
+      (gi>=0?' — เปิดหมวดปลาดิบในแอปแล้วกรอก Ikura ซ้ำอีกครั้ง ตัวเลขจะถูกต้อง':'')));
+  }
+  // รับวัตถุดิบทำแพคมาแล้วเกิน ~4 ชม. แต่ยังไม่มีบันทึกในเมนูทำแพค (เจ้าของสั่ง 4 ก.ย. 2026)
+  (r.packwait||[]).forEach(function(x){
+    warns.push('<span onclick="openPack()" style="cursor:pointer">🧊 วันนี้รับ <b>'+esc(x.n)+'</b> เข้ามา'+(x.time?(' ('+esc(x.time)+')'):'')+
+      ' แต่ยังไม่มีบันทึกว่าได้กี่แพค/ตัว — แกะเสร็จแล้ว <u>แตะที่นี่เพื่อไปบันทึก</u></span>');
+  });
+  var w=document.getElementById('ho-today-warn');
+  if(warns.length){ w.className='msg show warn'; w.innerHTML=warns.join('<br>'); }
+  else clearMsg(w);
   renderHealth(r.health);
 }
 // 🩺 สุขภาพระบบ — ผู้ดูแลเท่านั้น (หลังบ้านส่ง health มาให้เฉพาะผู้ดูแล ไม่ได้ซ่อนแค่ฝั่งหน้าเว็บ)
@@ -3059,6 +3072,7 @@ async function sendPack(){
   offDraftClear('pack');
   pkReset();
   pkLoadList();
+  todayRefresh();   // เตือน "ยังไม่บันทึกทำแพค" บนหน้าแรกต้องหายทันทีที่บันทึกเสร็จ (ไม่งั้นคนเห็นเตือนค้างแล้วบันทึกซ้ำ)
 }
 function pkReset(){
   PK_CLIENT_ID=uuid(); PK_MAT=null; PK_RECV=null;
