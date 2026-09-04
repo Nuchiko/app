@@ -157,6 +157,18 @@
     border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-bottom:12px;cursor:pointer;
     box-shadow:0 8px 24px rgba(3,18,50,.18);transition:transform .08s}
   .stcat-btn:active{transform:scale(.99)}
+  /* หมวดของแพค: ติ๊กเลือกก่อนว่าคืนนี้นับตัวไหน (48 รายการ ไล่กรอกทั้งหมดไม่ไหว) */
+  .pkgrp{margin:12px 2px 6px;font-size:12.5px;font-weight:800;color:rgba(255,255,255,.8)}
+  .pkchips{display:flex;flex-wrap:wrap;gap:7px}
+  .pkchip{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:999px;
+    border:1px solid var(--line);background:var(--card);color:var(--text);font-size:14px;line-height:1.2;cursor:pointer}
+  .pkchip.on{border-color:var(--ok);background:rgba(31,157,87,.16);font-weight:800}
+  .pkchip .tk{opacity:.35}
+  .pkchip.on .tk{opacity:1;color:var(--ok)}
+  .pkbar{margin:0 2px 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.5;
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.92);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .pkbar b{color:#fff}
   .stcat-btn.sel{border-color:rgba(46,160,110,.8);background:rgba(46,160,110,.12)}   /* ปุ่มเลือกวัตถุดิบในหน้าทำแพค — ตัวที่เลือกอยู่ */
   .stcat-btn .ico{font-size:30px;line-height:1}
   .stcat-btn .nm{font-weight:800;font-size:18px}
@@ -594,6 +606,8 @@
     <div class="topbar" style="padding-top:0"><div class="who" id="stc-title">หมวด</div></div>
     <div class="muted" id="stc-date" style="margin:-6px 2px 2px">—</div>
     <div class="st-tip" id="stc-tip">กรอกเป็นกรัม · ช่อง “ใช้ไป” คำนวณให้อัตโนมัติ</div>
+    <div class="pkbar hidden" id="stc-packbar"></div>   <!-- ของแพค: บอกว่ากำลังนับกี่รายการ + ปุ่มแก้รายการ -->
+    <div id="stc-picker" class="hidden"></div>          <!-- ของแพค: หน้าติ๊กเลือกรายการที่จะนับ -->
     <div class="st-prev" id="stc-prev"></div>
     <div class="st-prev" id="stc-packin"></div>   <!-- หมวดของแพค: บอกว่าช่อง "เข้า" เติมจากบันทึกทำแพควันนี้ -->
     <div class="st-warnbar" id="stc-warn"></div>
@@ -1704,9 +1718,9 @@ const STOCK_GROUPS=[
     {n:'ไข่ไก่', pack:30, packU:'แผง', pieceU:'ฟอง', e:'🥚'}
   ]},
   // ของแพค = นับเป็นแพค (จำนวนเต็ม) เดิม/เข้า/เหลือ → ใช้ไป ; ช่อง "เข้า" เติมอัตโนมัติจากบันทึกในเมนูทำแพค (แก้ทับได้)
-  // รายการเยอะ (50 ตัว) → แบ่งเป็นกลุ่มพับได้เหมือนเครื่องดื่ม ; กรอกเฉพาะตัวที่นับจริง ตัวที่เว้นว่างไม่ถูกส่งเข้าชีท
-  {name:'ของแพค', icon:'🧊', cut:false, packs:true, subs:PACK_GROUPS,
-   tip:'แตะกลุ่มเพื่อกางรายการ · กรอกเฉพาะตัวที่นับจริง (ตัวที่เว้นว่างไม่ถูกบันทึก) · ช่อง "เข้า" เติมให้เองจากบันทึกทำแพควันนี้',
+  // รายการเยอะ → ติ๊กเลือกก่อนว่าคืนนี้นับตัวไหน แล้วหน้ากรอกเหลือเฉพาะที่เลือก (ดู packEnter)
+  {name:'ของแพค', icon:'🧊', cut:false, packs:true,
+   tip:'เลือกก่อนว่าคืนนี้นับตัวไหน แล้วกรอกเฉพาะที่เลือก · ช่อง "เดิม/เข้า" ระบบเติมให้เอง กรอกแค่ "เหลือ"',
    items:PACK_ITEMS.map(function(p){ return {n:p.stockName, u:p.pu, e:p.e, sub:p.grp}; })},
   {name:'เครื่องดื่ม', icon:'🥤', count:true, items:[
     // 🍺 เบียร์
@@ -1834,21 +1848,27 @@ function openStockCat(gi){   // เข้าไปกรอกหมวดที
     document.getElementById('stc-draftbar').className='hidden';
     form.style.display='none';
   }else{
-    var subs = g.subs || (g.count ? DRINK_SUBS : null);
-    document.getElementById('stc-cards').innerHTML = subs
-      ? renderSubGroups(g,start,subs)
-      : g.items.map(function(item,k){ return stItemCard(item,start+k,g); }).join('');
-    form.style.display='';
     document.getElementById('stc-note').value='';
     stUsesInit(g);
     clearMsg(document.getElementById('stc-msg'));
-    calcStockUsed();
-    if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
-    if(g.packs) fillPackIn(start,g);       // หมวดของแพค: เติมช่อง "เข้า" จากบันทึกทำแพควันนี้ (แก้ทับได้)
     stRenderDual(g);   // เตือนลำดับการกรอกเมื่อยังใช้ 2 ระบบควบคู่กัน
-    if(g.count && DRINK_UPLOAD_ON){ loadDrinkPhotos().then(applyDrinkPhotos); }   // โหลดรูปที่อัปไว้แล้วแปะทับ (เปิดหลัง deploy หลังบ้าน)
     OFF_HIDE['stock:'+gi]=0;
-    offWatch(); offStockBar();   // มีร่างที่กรอกค้างไว้ของหมวดนี้ไหม (เฟส 3)
+    if(g.packs){
+      // ของแพค 48 รายการ ไล่กรอกทั้งหมดไม่ไหว → ติ๊กเลือกก่อนว่าคืนนี้นับตัวไหน (ระบบจำไว้ให้ครั้งหน้า)
+      PACK_SEL=packSelLoad(); PACK_VALS=null; PACK_TODAY=null;
+      packEnter(g,start);
+    }else{
+      packHideUI();
+      var subs = g.subs || (g.count ? DRINK_SUBS : null);
+      document.getElementById('stc-cards').innerHTML = subs
+        ? renderSubGroups(g,start,subs)
+        : g.items.map(function(item,k){ return stItemCard(item,start+k,g); }).join('');
+      form.style.display='';
+      calcStockUsed();
+      if(!g.count) fillPrevStock(start,g);   // เติม "ของเดิม" จากยอดเหลือครั้งก่อน (หมวดที่ชั่งเป็นกรัม/นับตัว)
+      if(g.count && DRINK_UPLOAD_ON){ loadDrinkPhotos().then(applyDrinkPhotos); }   // โหลดรูปที่อัปไว้แล้วแปะทับ (เปิดหลัง deploy หลังบ้าน)
+      offWatch(); offStockBar();   // มีร่างที่กรอกค้างไว้ของหมวดนี้ไหม (เฟส 3)
+    }
   }
   show('stockcat');
 }
@@ -1903,20 +1923,133 @@ async function fillPrevStock(start,g){
 }
 /* หมวดของแพค: ช่อง "เข้า" = แพคที่ทำวันนี้ (จากเมนูทำแพค) — เติมเฉพาะช่องที่ยังว่าง ไม่ทับที่พนักงานพิมพ์เอง
    หลังบ้านรุ่นเก่ายังไม่มี packToday → เงียบ ๆ ให้กรอกเองตามปกติ (ยอดนับยังถูก แค่ไม่รู้ yield ของรอบ) */
-async function fillPackIn(start,g){
-  var box=document.getElementById('stc-packin'); if(box) box.innerHTML='';
+/* ---------- หมวดของแพค: เลือกก่อนว่าคืนนี้นับตัวไหน แล้วค่อยกรอกเฉพาะที่เลือก ----------
+   ที่มา: เจ้าของบอก "รูปแบบการกรอกดูยาก" (4 ก.ย. 2026) — 48 รายการเรียงกันทั้งหน้าไล่หาไม่ไหว
+   ทางที่เจ้าของเลือก: ติ๊กเลือกรายการก่อน → หน้ากรอกเหลือเฉพาะตัวที่เลือก
+   ระบบจำรายการที่เลือกไว้ในเครื่อง → คืนถัดไปเข้ามาก็กรอกได้เลย ไม่ต้องเลือกใหม่ทุกคืน */
+let PACK_SEL=[];       // ชื่อแถวในชีท (stockName) ที่จะนับคืนนี้
+let PACK_VALS=null;    // ค่าที่พิมพ์ค้างไว้ตอนกดกลับไปแก้รายการ (กันพิมพ์แล้วหาย)
+let PACK_TODAY=null;   // ยอดทำแพควันนี้ที่โหลดมาแล้ว
+function packSelKey(){ return 'mana_packsel_'+((ME&&ME.emp_id)||'x'); }   // แยกตามคน — คนละคนอาจนับคนละชุด
+function packSelLoad(){
+  var a=[]; try{ a=JSON.parse(localStorage.getItem(packSelKey())||'[]'); }catch(e){ a=[]; }
+  if(!Array.isArray(a)) a=[];
+  var have={}; PACK_ITEMS.forEach(function(p){ have[p.stockName]=1; });
+  return a.filter(function(n){ return have[n]; });     // ตัดตัวที่ถูกเอาออกจากลิสต์ไปแล้ว
+}
+function packSelSave(){ try{ localStorage.setItem(packSelKey(), JSON.stringify(PACK_SEL)); }catch(e){} }
+function packHideUI(){
+  var p=document.getElementById('stc-picker'), b=document.getElementById('stc-packbar');
+  if(p){ p.className='hidden'; p.innerHTML=''; }
+  if(b){ b.className='pkbar hidden'; b.innerHTML=''; }
+}
+function packSnap(){   // เก็บค่าที่พิมพ์ไว้ก่อนเรนเดอร์ใหม่
+  var o={};
+  document.querySelectorAll('#stc-cards input').forEach(function(el){ if(el.id && el.value!=='') o[el.id]=el.value; });
+  return o;
+}
+function packRestore(o){ Object.keys(o||{}).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=o[id]; }); }
+
+function packEnter(g,start){
+  if(PACK_SEL.length) packShowFill(g,start); else packShowPicker(g,start);
+}
+// --- หน้ากรอก: โชว์เฉพาะรายการที่เลือกไว้ ---
+function packShowFill(g,start){
+  var pick=document.getElementById('stc-picker'); pick.className='hidden'; pick.innerHTML='';
+  var html='';
+  PACK_ITEMS.forEach(function(p,k){ if(PACK_SEL.indexOf(p.stockName)>=0) html+=stItemCard(g.items[k], start+k, g); });
+  document.getElementById('stc-cards').innerHTML=html;
+  document.getElementById('stc-form').style.display='';
+  packRestore(PACK_VALS); PACK_VALS=null;
+  packRenderBar();
+  calcStockUsed();
+  fillPrevStock(start,g);
+  fillPackIn(start,g);
+  offWatch(); offStockBar();
+}
+function packRenderBar(extra){
+  var bar=document.getElementById('stc-packbar'); if(!bar) return;
+  bar.className='pkbar';
+  bar.innerHTML='<span>🧊 คืนนี้นับ <b>'+PACK_SEL.length+'</b> รายการ'+(extra?(' · '+extra):'')+'</span>'+
+    '<button type="button" class="btn ghost sm" onclick="packEditSel()" style="flex:0 0 auto;padding:8px 14px">✏️ แก้รายการ</button>';
+}
+// --- หน้าเลือก: ชิปติ๊กได้ แบ่งตามกลุ่ม ---
+function packShowPicker(g,start){
+  document.getElementById('stc-cards').innerHTML='';
+  document.getElementById('stc-form').style.display='none';
+  document.getElementById('stc-packbar').className='pkbar hidden';
+  document.getElementById('stc-prev').innerHTML='';
+  document.getElementById('stc-packin').innerHTML='';
+  packRenderPicker();
+  if(!PACK_TODAY) packPreloadToday(g);   // ของที่ทำแพควันนี้ = ต้องนับแน่ ๆ → ติ๊กให้ล่วงหน้า
+}
+function packRenderPicker(note){
+  var box=document.getElementById('stc-picker'); if(!box) return;
+  var html='<div class="st-tip" style="margin:2px 2px 8px">แตะเลือกของที่จะนับคืนนี้ — เลือกครั้งเดียว ครั้งหน้าระบบจำให้ (แก้ทีหลังได้)</div>';
+  if(note) html+='<div class="st-prev" style="margin:0 2px 10px">'+note+'</div>';
+  PACK_GROUPS.forEach(function(sg){
+    var chips='';
+    PACK_ITEMS.forEach(function(p,i){
+      if(p.grp!==sg.name) return;
+      var on=PACK_SEL.indexOf(p.stockName)>=0;
+      chips+='<button type="button" class="pkchip'+(on?' on':'')+'" onclick="packToggle('+i+')">'+
+        '<span class="tk">'+(on?'✓':'○')+'</span>'+p.e+' '+esc(p.n)+'</button>';
+    });
+    if(chips) html+='<div class="pkgrp">'+sg.icon+' '+esc(sg.name)+'</div><div class="pkchips">'+chips+'</div>';
+  });
+  html+='<button class="btn" onclick="packPickDone()" style="margin-top:18px"'+(PACK_SEL.length?'':' disabled')+'>'+
+        (PACK_SEL.length?('เริ่มกรอก '+PACK_SEL.length+' รายการ'):'เลือกอย่างน้อย 1 รายการ')+'</button>';
+  box.innerHTML=html; box.className='';
+}
+function packToggle(i){
+  var nm=PACK_ITEMS[i].stockName, at=PACK_SEL.indexOf(nm);
+  if(at>=0) PACK_SEL.splice(at,1); else PACK_SEL.push(nm);
+  packRenderPicker();
+}
+function packPickDone(){
+  if(!PACK_SEL.length) return;
+  packSelSave();
+  packShowFill(STOCK_GROUPS[stCurrentGroup], groupStart(stCurrentGroup));
+  window.scrollTo(0,0);
+}
+function packEditSel(){
+  PACK_VALS=packSnap();   // พิมพ์ไว้แล้วกดแก้รายการ = ค่าต้องไม่หาย
+  packShowPicker(STOCK_GROUPS[stCurrentGroup], groupStart(stCurrentGroup));
+  window.scrollTo(0,0);
+}
+// ของที่ทำแพควันนี้ ต้องอยู่ในรายการนับเสมอ — ติ๊ก/เพิ่มให้เอง แล้วบอกว่าเพิ่มอะไรไป
+async function packPreloadToday(g){
   var r=await api('packToday');
   if(!r || !r.ok || !r.sum) return;
+  PACK_TODAY=r.sum;
+  if(stCurrentGroup!==stockGroupIndex(g.name)) return;
+  var added=[];
+  PACK_ITEMS.forEach(function(p){
+    if((r.sum[p.n]||0)>0 && PACK_SEL.indexOf(p.stockName)<0){ PACK_SEL.push(p.stockName); added.push(p.n); }
+  });
+  if(!added.length) return;
+  if(document.getElementById('stc-picker').className==='hidden') return;   // ผู้ใช้กดเริ่มกรอกไปแล้ว
+  packRenderPicker('✅ ติ๊ก <b>'+esc(added.join(', '))+'</b> ให้แล้ว (วันนี้ทำแพคไว้ ต้องนับ)');
+}
+// เติมช่อง "เข้า" จากบันทึกทำแพควันนี้ (เฉพาะช่องที่ยังว่าง — ไม่ทับที่พนักงานพิมพ์เอง)
+async function fillPackIn(start,g){
+  var box=document.getElementById('stc-packin'); if(box) box.innerHTML='';
+  var sum=PACK_TODAY;
+  if(!sum){
+    var r=await api('packToday');
+    if(!r || !r.ok || !r.sum) return;
+    sum=PACK_TODAY=r.sum;
+  }
   if(stCurrentGroup!==stockGroupIndex(g.name)) return;   // สลับหมวดไปแล้วระหว่างรอ — อย่าไปเติมช่องของหมวดอื่น
-  var n=0, det=[];
-  g.items.forEach(function(item,k){
-    var i=start+k, meta=STOCK_FLAT[i];
-    var pi=PACK_ITEMS.filter(function(p){ return p.stockName===meta.name; })[0];
-    var tot=pi ? (r.sum[pi.n]||0) : 0;
-    if(tot>0 && stSetIfEmpty('in_'+i, tot)){ n++; det.push(pi.n+' '+tot+' แพค'); }
+  var n=0, det=[], miss=[];
+  PACK_ITEMS.forEach(function(p,k){
+    var tot=sum[p.n]||0; if(!tot) return;
+    if(PACK_SEL.indexOf(p.stockName)<0){ miss.push(p.n); return; }   // ทำแพคไว้แต่ไม่ได้เลือกนับ
+    if(stSetIfEmpty('in_'+(start+k), tot)){ n++; det.push(p.n+' '+tot+' '+p.pu); }
   });
   calcStockUsed();
   if(box && n) box.innerHTML='↩️ ช่อง "เข้า" เติมให้แล้วจากบันทึกทำแพควันนี้ ('+esc(det.join(' · '))+') — ถ้าไม่ตรง แก้ทับได้เลย';
+  if(miss.length) packRenderBar('⚠️ วันนี้ทำแพค <b>'+esc(miss.join(', '))+'</b> ด้วย แต่ยังไม่ได้เลือกนับ');
 }
 function stItemCard(item,i,group){
   var meta=STOCK_FLAT[i], name=meta.name, unit=meta.unit, icon=group.icon;
@@ -3266,7 +3399,8 @@ const HELP_TOPICS = [
       '<b>แพคละประมาณ</b> ระบบเติมค่าปกติให้ — รอบไหนไม่เท่าเดิม (ของชิ้นเล็ก/ใหญ่กว่าปกติ) แก้ตัวเลขได้เลย',
       '<b>ใช้วัตถุดิบไป</b> — ถ้าเป็นของที่ระบบรู้จักบิล (เช่น กุ้งสด ปลาหิมะ) จะเติมจากบิลรับของให้ ถ้าทำแค่ครึ่งเดียวก็แก้เป็นจำนวนที่ใช้จริง · <b>เศษที่ตัดทิ้ง</b> (หัว/ก้าง/เปลือก) ชั่งเป็นกรัมแล้วกรอกไว้',
       'กด <b>บันทึกการทำแพค</b> — ทำครึ่งเดียววันนี้ พรุ่งนี้ทำต่อ ก็มาบันทึกเพิ่มได้อีกรอบ ระบบนับรวมเป็นรอบเดียวกันให้เอง',
-      'ตอนนับสต็อกกลางคืน → Stock → หมวด <b>🧊 ของแพค</b> — แตะกลุ่มเพื่อกาง แล้ว<b>กรอกเฉพาะตัวที่นับจริง</b> (ตัวที่เว้นว่างไม่ถูกบันทึก) ; ช่อง "เข้า" ระบบเติมจากที่บันทึกไว้ให้ แค่กรอกช่อง "เหลือ"'
+      'ตอนนับสต็อกกลางคืน → Stock → หมวด <b>🧊 ของแพค</b> — <b>ครั้งแรกให้แตะเลือกก่อน</b>ว่าจะนับตัวไหนบ้าง แล้วกด "เริ่มกรอก" ; <b>ครั้งต่อไประบบจำให้</b> เข้ามาก็กรอกได้เลย (เปลี่ยนรายการได้ที่ปุ่ม ✏️ แก้รายการ)',
+      'ในหน้ากรอก: ช่อง <b>เดิม</b> และ <b>เข้า</b> ระบบเติมให้เอง — <b>กรอกแค่ช่อง "เหลือ"</b> ตามที่นับได้จริงในตู้'
     ], tip:'💡 ลืมบันทึกตอนทำ = ไปกรอกช่อง "เข้า" เองตอนนับกลางคืนได้ ยอดยังถูก แต่จะไม่รู้ว่าของรอบนั้นทำได้กี่แพค · ถ้ารับของมาแล้วยังไม่ได้บันทึก หน้าแรกจะขึ้นเตือนให้เอง · ชั่งเศษไว้ทุกรอบ จะรู้ว่าของ 1 โล/1 ตัว ได้เนื้อกี่เปอร์เซ็นต์ และเห็นทันทีถ้ารอบไหนเปลืองผิดปกติ' },
 
   { id:'cash', ico:'💵', name:'เงินสด', sub:'บันทึกเงินสดรายวัน', clip:'cash.gif', cashOnly:true, steps:[
