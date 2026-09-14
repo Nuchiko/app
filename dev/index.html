@@ -1920,19 +1920,44 @@ function stParsePrev(txt){          // "3968" | "2กล่อง 20ตัว" |
 function stSetIfEmpty(id,v){ var e=document.getElementById(id); if(e && e.value==='' && v!=null){ e.value=String(v); return true; } return false; }
 async function fillPrevStock(start,g){
   var box=document.getElementById('stc-prev'); if(box) box.textContent='';
-  var r=await api('stockPrev');
+  // บอกหลังบ้านว่าหน้านี้ต้องการรายการอะไรบ้าง (เฉพาะช่องที่โผล่จริงบนจอ) → ได้ครบแล้วมันหยุดอ่านย้อนหลังทันที
+  var want=[];
+  g.items.forEach(function(item,k){
+    var i=start+k, meta=STOCK_FLAT[i];
+    if(!meta) return;
+    if(document.getElementById('old_'+i) || document.getElementById('old_'+i+'_box') ||
+       document.getElementById('old_'+i+'_pk')){ want.push(meta.name); }
+  });
+  var r=await api('stockPrev', want.length?{need:want}:{});
   if(!r || !r.ok || !r.found || !r.items) return;     // ยังไม่มีข้อมูลเก่า/หลังบ้านรุ่นเก่า = เงียบ ๆ ให้กรอกเองตามปกติ
-  var n=0;
+  var n=0, dates=r.dates||{}, newest='', old=[];
   g.items.forEach(function(item,k){
     var i=start+k, meta=STOCK_FLAT[i];
     var p=stParsePrev(r.items[meta.name]); if(!p) return;
-    if(meta.hotate)      n+= (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_pc',p.rest))?1:0;
-    else if(meta.boxg)   n+= (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_g',p.rest))?1:0;
-    else if(meta.pack)   n+= (stSetIfEmpty('old_'+i+'_pk',p.box)  | stSetIfEmpty('old_'+i+'_pcs',p.rest))?1:0;
-    else                 n+= stSetIfEmpty('old_'+i, p.box*0+p.rest)?1:0;
+    var hit=0;
+    if(meta.hotate)      hit = (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_pc',p.rest))?1:0;
+    else if(meta.boxg)   hit = (stSetIfEmpty('old_'+i+'_box',p.box) | stSetIfEmpty('old_'+i+'_g',p.rest))?1:0;
+    else if(meta.pack)   hit = (stSetIfEmpty('old_'+i+'_pk',p.box)  | stSetIfEmpty('old_'+i+'_pcs',p.rest))?1:0;
+    else                 hit = stSetIfEmpty('old_'+i, p.box*0+p.rest)?1:0;
+    if(!hit) return;
+    n++;
+    var d=dates[meta.name]||r.date;
+    if(d>newest) newest=d;
+    old.push({name:meta.name, date:d});
   });
   calcStockUsed();
-  if(box && n) box.innerHTML='↩️ ใส่ "ของเดิม" ให้แล้วจากยอดเหลือวันที่ '+esc(cashDMY(r.date))+' — ถ้านับจริงไม่ตรง แก้ทับได้เลย';
+  if(box && n){
+    if(!newest) newest=r.date;
+    // ของที่ไม่ได้นับทุกคืน (เช่นของแพค) ค่าที่เติมให้อาจมาจากหลายคืนก่อน — ต้องบอก ไม่งั้นเข้าใจผิดว่าเป็นยอดเมื่อวาน
+    var stale=old.filter(function(o){ return o.date && o.date!==newest; });
+    var html='↩️ ใส่ "ของเดิม" ให้แล้วจากยอดเหลือวันที่ '+esc(cashDMY(newest))+' — ถ้านับจริงไม่ตรง แก้ทับได้เลย';
+    if(stale.length){
+      var li=stale.slice(0,6).map(function(o){ return esc(o.name)+' ('+esc(cashDMY(o.date))+')'; }).join(', ');
+      if(stale.length>6) li+=' …';
+      html+='<br>⏳ ตัวที่ไม่ได้นับทุกคืน ใช้ยอดจากคืนที่นับล่าสุด: '+li;
+    }
+    box.innerHTML=html;
+  }
 }
 /* หมวดของแพค: ช่อง "เข้า" = แพคที่ทำวันนี้ (จากเมนูทำแพค) — เติมเฉพาะช่องที่ยังว่าง ไม่ทับที่พนักงานพิมพ์เอง
    หลังบ้านรุ่นเก่ายังไม่มี packToday → เงียบ ๆ ให้กรอกเองตามปกติ (ยอดนับยังถูก แค่ไม่รู้ yield ของรอบ) */
