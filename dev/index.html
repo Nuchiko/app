@@ -375,6 +375,110 @@
     background:rgba(227,178,60,.14);border:1px solid rgba(227,178,60,.45)}
   .editbar.lock{background:rgba(127,127,127,.14);border-color:var(--line);color:var(--muted)}
   .editbar.night{background:rgba(90,140,220,.14);border-color:rgba(90,140,220,.45)}
+  /* ทะเบียนอุปกรณ์ — ขั้นที่ 1: สำรวจ + ถ่ายรูป + เจ้าของอนุมัติ (21 ก.ย. 2026) */
+  .eq-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:2px 0 10px}
+  .eq-seg button{padding:11px 6px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);
+    color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .eq-seg button small{display:block;font-weight:500;font-size:11.5px;opacity:.85}
+  .eq-seg button.on{background:#fff;color:var(--navy);border-color:#fff}
+  .eq-filters{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+  .eq-fchip{padding:6px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);
+    color:#fff;font-size:13px;cursor:pointer;font-family:inherit}
+  .eq-fchip.on{background:#fff;color:var(--navy);font-weight:700;border-color:#fff}
+  .eq-sum{padding:14px 15px}
+  .eq-sum .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .eq-bar{display:flex;height:9px;border-radius:99px;overflow:hidden;background:var(--bg2);margin:8px 0 9px}
+  .eq-bar i{display:block;height:100%}
+  .eq-bar .ok{background:var(--ok)} .eq-bar .pend{background:#e3a53c} .eq-bar .bad{background:var(--danger)}
+  .eq-lg{display:flex;flex-wrap:wrap;gap:6px}
+  .eq-lg span{font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .eqc-ok{background:#e9f6ef;color:#177a4a;border-color:#bfe3cd}
+  .eqc-pend{background:#fff4df;color:#8a5a00;border-color:#f0d9a8}
+  .eqc-bad{background:#fdeceb;color:#b23b32;border-color:#f1c4bf}
+  .eqc-none{background:#eef2f8;color:#5f7088;border-color:var(--line)}
+  /* ตารางรูป: 1 ช่อง = 1 แบบ */
+  .eq-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .eq-tile{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:6px 6px 8px;text-align:left;cursor:pointer;color:var(--text);font-size:inherit;font-family:inherit;min-width:0}
+  .eq-tile.bad{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
+  .eq-tile.gone{opacity:.55}
+  .eq-tile.gone .eq-nm{text-decoration:line-through}
+  .eq-pic{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1;border-radius:9px;
+    overflow:hidden;font-size:30px;line-height:1;background:var(--bg2)}
+  .eq-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .eq-pic.empty{border:1.5px dashed #b9c8de;background:var(--bg2);font-size:11px;color:var(--muted);text-align:center;line-height:1.35}
+  .eq-pic.empty .cam{display:block;font-size:20px;margin-bottom:2px}
+  .eq-dot{position:absolute;top:4px;right:4px;z-index:2;min-width:20px;height:20px;border-radius:10px;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;border:1px solid;padding:0 4px;line-height:1}
+  .eq-nm{font-weight:700;font-size:12.5px;line-height:1.25;word-break:break-word}
+  .eq-nm.auto{color:#8a5a00}
+  .eq-sub{font-size:11.5px;color:var(--muted);line-height:1.3}
+  .eq-sub.bad{color:var(--danger);font-weight:700}
+  .eq-tile.newt{border:1.5px dashed rgba(255,255,255,.55);background:rgba(255,255,255,.08);color:#fff}
+  .eq-tile.newt .eq-pic{background:transparent;font-size:12px;color:#fff;flex-direction:column;gap:3px;text-align:center}
+  .eq-tile.newt .eq-pic .cam{font-size:24px}
+  .eq-empty{color:rgba(255,255,255,.8);text-align:center;padding:18px 8px;font-size:14px}
+  /* ฟอร์มสำรวจ 1 แบบ */
+  .eq-shots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .eq-shot{aspect-ratio:1;border-radius:11px;border:1.5px dashed #b9c8de;background:var(--bg2);color:var(--muted);font-size:12px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;
+    text-align:center;line-height:1.25;padding:4px;overflow:hidden;font-family:inherit}
+  .eq-shot .big{font-size:20px}
+  .eq-shot.has{border:1px solid var(--line);padding:0}
+  .eq-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .eq-shot .x{position:absolute;top:5px;right:5px;z-index:2;width:24px;height:24px;border-radius:50%;border:0;padding:0;
+    background:rgba(18,36,63,.78);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .eq-shot .lab{position:absolute;bottom:5px;left:5px;z-index:2;font-size:10px;color:var(--text);background:rgba(255,255,255,.85);
+    padding:0 6px;border-radius:5px}
+  .eq-shot.locked{opacity:.45;cursor:default}
+  .eq-tip{font-size:12px;color:var(--muted);background:var(--bg2);border-radius:10px;padding:8px 10px;margin-top:8px;line-height:1.5}
+  .eq-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .eq-two input{text-align:center;font-size:18px}
+  .eq-head{display:flex;align-items:center;gap:10px;margin:2px 2px 12px}
+  .eq-head .pic{width:52px;height:52px;flex:0 0 auto;border-radius:10px;overflow:hidden;position:relative;background:var(--bg2);
+    display:flex;align-items:center;justify-content:center;font-size:24px;border:1px solid var(--line)}
+  .eq-head .pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .eq-head .t{color:#fff;font-size:19px;font-weight:800;line-height:1.25;word-break:break-word}
+  .eq-head .s{color:rgba(255,255,255,.8);font-size:13px}
+  .eq-stbar{padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;margin-bottom:12px;border:1px solid}
+  /* หน้าอนุมัติ (เจ้าของ) */
+  .eq-grp{color:#fff;font-weight:800;font-size:14.5px;margin:14px 2px 8px}
+  .eq-ap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;
+    box-shadow:0 8px 24px rgba(3,18,50,.18)}
+  .eq-ap .row{display:grid;grid-template-columns:72px minmax(0,1fr);gap:11px;align-items:start}
+  .eq-ap .th{width:72px;height:72px;border-radius:10px;overflow:hidden;position:relative;background:var(--bg2);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:26px;cursor:zoom-in;padding:0}
+  .eq-ap .th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .eq-ap .th .n{position:absolute;z-index:2;bottom:3px;right:3px;font-size:9.5px;font-weight:700;background:rgba(18,36,63,.78);
+    color:#fff;border-radius:6px;padding:0 5px;line-height:1.5}
+  .eq-ap .nm{font-weight:800;font-size:15px;line-height:1.3;word-break:break-word}
+  .eq-ap .tag{font-size:11px;font-weight:700;color:#8a5a00;background:#fff4df;border:1px solid #f0d9a8;border-radius:999px;
+    padding:1px 7px;margin-left:4px;white-space:nowrap}
+  .eq-ap .meta{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+  .eq-ap .meta b{color:var(--text);font-weight:700}
+  .eq-acts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+  .eq-acts.two{grid-template-columns:1fr 1fr}
+  .eq-acts button{padding:10px 4px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);font-size:13.5px;
+    font-weight:700;cursor:pointer;color:var(--text);font-family:inherit}
+  .eq-acts .yes{background:#e9f6ef;border-color:var(--ok);color:#177a4a}
+  .eq-acts .no{background:#fdeceb;border-color:#f1c4bf;color:var(--danger)}
+  .eq-panel{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .eq-qchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .eq-qchips button{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);font-size:12.5px;
+    cursor:pointer;color:var(--text);font-family:inherit}
+  .eq-rowbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .eq-rowbtns .btn{margin-top:0;padding:11px;font-size:14.5px}
+  .eq-savebar{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom, 0px));z-index:5;margin-top:6px}
+  .fl-eq{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;font-weight:600}
+  .eq-inp{width:100%;padding:12px 14px;font-size:16px;border-radius:12px;border:1px solid var(--line);
+    background:var(--bg2);color:var(--text);font-family:inherit;outline:none}
+  .eq-inp:focus{border-color:var(--accent2)}
+  textarea.eq-inp{resize:vertical;font-size:15px}
+  .eqhub-warn{display:block;width:100%;text-align:left;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45;
+    margin-bottom:11px;cursor:pointer;background:#fdeceb;color:#b23b32;border:1px solid #f1c4bf;font-family:inherit}
+  .health .hlink{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .eqhub-bubble{margin-left:auto;background:var(--danger);color:#fff;font-weight:800;font-size:13px;min-width:26px;height:26px;
+    border-radius:13px;display:flex;align-items:center;justify-content:center;padding:0 7px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -543,6 +647,11 @@
       <div class="tile hidden" id="ho-pack-tile" onclick="openPack()" style="grid-column:1/-1">
         <div class="ico">🧊</div>
         <div><div class="tname">ทำแพค</div><div class="tdesc">ตัดแต่ง/แพควัตถุดิบ — บันทึกว่าได้กี่แพค</div></div>
+      </div>
+      <!-- เช็คอุปกรณ์ = โผล่เมื่อหลังบ้านรองรับ (ping.equip) เท่านั้น — อัปเว็บก่อน deploy GAS ได้ -->
+      <div class="tile hidden" id="ho-equip-tile" onclick="openEqHub()" style="grid-column:1/-1">
+        <div class="ico">🧰</div>
+        <div><div class="tname">อุปกรณ์</div><div class="tdesc">สำรวจ + ถ่ายรูป · เช็คเดือนละครั้ง</div></div>
       </div>
       <div class="tile hidden" id="ho-cash-tile" onclick="openCash()" style="grid-column:1/-1">
         <div class="ico">💵</div>
@@ -808,6 +917,52 @@
     </div>
   </section>
 
+  <!-- ============ อุปกรณ์: เมนูรวม (ขั้นที่ 1 = สำรวจ + อนุมัติ) ============ -->
+  <section id="screen-eqhub" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">🧰 อุปกรณ์</div></div>
+    <div class="page-label" id="eqh-sub" style="margin:-6px 2px 10px;font-size:14px">—</div>
+    <div class="msg" id="eqh-msg"></div>
+    <div id="eqh-menu"></div>
+  </section>
+
+  <!-- ============ อุปกรณ์: ตารางรูป (1 ช่อง = 1 แบบ) ============ -->
+  <section id="screen-eqlist" class="hidden">
+    <button class="backbtn" onclick="openEqHub()">‹ อุปกรณ์</button>
+    <div class="topbar" style="padding-top:0"><div class="who">📋 สำรวจอุปกรณ์</div></div>
+    <div class="st-tip">1 ช่อง = 1 แบบ · แตะช่องเพื่อถ่ายรูปและนับ · เจอแบบที่ไม่มีในตาราง กด “ถ่ายแบบใหม่”</div>
+    <div class="msg" id="eql-msg"></div>
+    <div id="eql-draftbar" class="hidden"></div>
+    <div class="card eq-sum hidden" id="eql-sum"></div>
+    <div class="eq-seg" id="eql-sides"></div>
+    <div class="eq-filters" id="eql-filters"></div>
+    <div id="eql-body"></div>
+  </section>
+
+  <!-- ============ อุปกรณ์: หน้ากรอก 1 แบบ ============ -->
+  <section id="screen-eqform" class="hidden">
+    <button class="backbtn" onclick="eqFormBack()">‹ กลับตารางรูป</button>
+    <div class="eq-head"><span class="pic" id="eqf-pic">📷</span><div><div class="t" id="eqf-title">—</div><div class="s" id="eqf-sub">—</div></div></div>
+    <div id="eqf-stbar" class="hidden"></div>
+    <div class="card">
+      <label class="page-label" style="margin:0 0 6px;font-size:13px;color:var(--muted)">ในร้านมีไหม</label>
+      <div class="eq-seg" id="eqf-have" style="margin-top:0"></div>
+      <div id="eqf-body"></div>
+      <button class="btn" id="eqf-send" onclick="sendEq()">ส่งให้เจ้าของอนุมัติ</button>
+      <div class="msg" id="eqf-msg"></div>
+    </div>
+    <input type="file" id="eqf-file" accept="image/*" style="display:none" onchange="onEqPhotoFile(this)">
+  </section>
+
+  <!-- ============ อุปกรณ์: หน้าอนุมัติ (เจ้าของร้านเท่านั้น) ============ -->
+  <section id="screen-eqappr" class="hidden">
+    <button class="backbtn" onclick="openEqHub()">‹ อุปกรณ์</button>
+    <div class="topbar" style="padding-top:0"><div class="who">🔎 รออนุมัติ</div></div>
+    <div class="page-label" id="eqa-sub" style="margin:-6px 2px 10px;font-size:14px">—</div>
+    <div class="msg" id="eqa-msg"></div>
+    <div id="eqa-body"></div>
+  </section>
+
   <!-- ============ วิธีใช้งาน (คลิปสอน) ============ -->
   <section id="screen-help" class="hidden">
     <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
@@ -975,7 +1130,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 6;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v6 = เตือนลืมบันทึกทำแพค)
+const APP_VER = 7;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v7 = เช็คอุปกรณ์ประจำเดือน ; v6 = เตือนลืมบันทึกทำแพค)
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -1087,6 +1242,7 @@ async function offSend(it){
   if(it.kind==='cash')  return await api('cashSave', it.payload);
   if(it.kind==='recv')  return await api('recvSave', it.payload);
   if(it.kind==='pack')  return await api('packSave', it.payload);
+  if(it.kind==='eq')    return await api('eqSave', it.payload);
   if(it.kind==='stock') return await offStockPost(it.payload);
   return {ok:false, error:'ไม่รู้จักชนิดข้อมูล'};
 }
@@ -1120,6 +1276,7 @@ async function offFlush(manual){
     try{ todayRefresh(); }catch(e){}
     if(kinds.cash && !document.getElementById('screen-cash').classList.contains('hidden')) loadCashList();
     if(kinds.recv && !document.getElementById('screen-recv').classList.contains('hidden')) loadRecvList();
+    if(kinds.eq){ EQ_LOADED=false; if(!document.getElementById('screen-eqlist').classList.contains('hidden')) eqLoad(1).then(eqRenderList); }
   }
 }
 function offConfirmDup(){
@@ -1201,7 +1358,7 @@ function offBarHtml(ts, restoreFn, dropFn){
 }
 // เฝ้าฟอร์มทั้ง 3 หน้า: พิมพ์อะไรก็เก็บร่างให้เอง (หน่วง 0.7 วิ กันเขียนถี่เกิน)
 function offWatch(){
-  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock], ['screen-packform', offDraftSavePack]].forEach(function(p){
+  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock], ['screen-packform', offDraftSavePack], ['screen-eqform', offDraftSaveEq]].forEach(function(p){
     var el=document.getElementById(p[0]); if(!el || el.dataset.offw) return;
     el.dataset.offw='1';
     var t=null, h=function(){ clearTimeout(t); t=setTimeout(function(){ try{ p[1](); }catch(e){} }, 700); };
@@ -1359,7 +1516,7 @@ function offRestorePack(){
 function offDropPackDraft(){ offDraftClear('pack'); OFF_HIDE['pack']=1; offPackBar(); }
 
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','pack','packform','help'].forEach(s=>{
+  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -1412,14 +1569,15 @@ function enterHome(){
 // เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
 async function showRecvTileIfReady(){
   const tile=document.getElementById('ho-recv-tile');
-  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); return; }
+  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
   showPackTile();
+  eqShowTile();
 }
 function showPackTile(){
   if(PACK_READY!==true) return;   // หลังบ้านยังไม่มีเมนูทำแพค → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
@@ -1530,6 +1688,7 @@ function renderHealth(h){
   var o=h.ocr||{};
   parts.push('🤖 AI อ่านบิลวันนี้ <b>'+(o.used||0)+'</b>/'+(o.max||0)+(o.key?'':' <span class="bad">(ยังไม่ได้ใส่คีย์)</span>'));
   if(h.pending>0) parts.push('👤 <span class="bad">รออนุมัติ '+h.pending+' คน</span> — จัดการพนักงาน → แก้ไข → สถานะ "ใช้งาน"');
+  if(h.eq_pending>0) parts.push('🧰 <button type="button" class="hlink" onclick="openEqAppr()">อุปกรณ์รออนุมัติ <b>'+h.eq_pending+' แบบ</b> — แตะเพื่อตรวจ</button>');
   var g=(TODAY&&TODAY.recv&&TODAY.recv.gaps)||0;
   if(g>0) parts.push('🧾 <span class="bad">บิลรับของที่ยังไม่มีร้าน/ยอด '+g+' ใบ</span> (7 วันล่าสุด)');
   el.className='health';
@@ -3401,6 +3560,487 @@ async function pkLoadList(){
   }).join('');
 }
 
+/* ---------- ทะเบียนอุปกรณ์ — ขั้นที่ 1: สำรวจ + ถ่ายรูป + เจ้าของอนุมัติ (21 ก.ย. 2026) ----------
+   เจ้าของสั่ง: สำรวจก่อน แล้วค่อยเช็คประจำเดือน (ขั้นที่ 2 ยังไม่ทำ — ปุ่มล็อกไว้)
+   หน้าตารางรูป: 1 ช่อง = 1 "แบบ" (ร้านมีจานมากกว่า 10 แบบ) — รูปคือตัวแยกแบบ ไม่ใช่ชื่อ
+   ชื่อไม่บังคับ: ไม่ใส่ = หลังบ้านตั้ง "จาน แบบที่ N" ให้ก่อน แล้วเจ้าของตั้งชื่อตอนอนุมัติ
+   EQUIP_CATS = ลิสต์ "ตั้งต้น" ให้พนักงานไล่ถ่ายเท่านั้น — ของจริงอยู่ในทะเบียน (ชีท) ที่อ้างด้วย eq_id
+     → เพิ่ม/ตัดรายการตั้งต้น = แก้ที่นี่แล้ว push เว็บ ไม่ต้อง deploy GAS ; แบบที่ถ่ายเพิ่มเองไม่หาย */
+const EQUIP_SIDES=[{id:'kitchen', name:'ครัว', icon:'🍳'}, {id:'front', name:'หน้าร้าน', icon:'🍽️'}];
+const EQUIP_CATS=[
+  {side:'kitchen', name:'มีดและเขียง', icon:'🔪', items:['มีดแล่ปลา (ยานางิบะ)','มีดเดบะ','มีดทั่วไป','มีดเล็ก/มีดปอก','หินลับมีด','เขียงของดิบ','เขียงของสุก','กรรไกรครัว']},
+  {side:'kitchen', name:'หม้อ', icon:'🍲', items:['หม้อน้ำซุป (ใหญ่)','หม้อลวกเส้น','ตะกร้อลวกเส้น','หม้อซอส (เล็ก)','หม้อโอเด้ง']},
+  {side:'kitchen', name:'กระทะ', icon:'🍳', items:['กระทะแบน','กระทะผัด (ก้นลึก)','กระทะไข่หวาน (เหลี่ยม)','กระทะเหล็กร้อน']},
+  {side:'kitchen', name:'ทอดและย่าง', icon:'🔥', items:['ตะกร้าทอด','ตะแกรงสะเด็ดน้ำมัน','ตะแกรงย่างปลา']},
+  {side:'kitchen', name:'ตะหลิวและของใช้มือ', icon:'🥄', items:['ตะหลิว','ทัพพี','กระชอน','ตะแกรงกรอง','คีมคีบ',{n:'ตะเกียบยาว',u:'คู่'},'ไม้พาย','ตะกร้อตีไข่','ที่ขูดหัวไชเท้า/ขิง','แหนบถอนก้าง','ที่ปอกผัก']},
+  {side:'kitchen', name:'ถาดและกล่องเก็บของ', icon:'🧺', items:['ถาดสแตนเลส','กล่องเก็บของมีฝา','อ่างผสม','ตะกร้าล้างผัก']},
+  {side:'kitchen', name:'ชั่งและตวง', icon:'⚖️', items:['ตาชั่ง','ถ้วยตวง','ช้อนตวง','เทอร์โมมิเตอร์']},
+  {side:'kitchen', name:'เครื่องใช้ไฟฟ้า', icon:'🔌', onoff:true, items:['ตู้เย็น','ตู้แช่แข็ง','หม้อหุงข้าว','เครื่องซีลสุญญากาศ','เครื่องซูวี','ไมโครเวฟ','เครื่องปั่น']},
+  {side:'front', name:'จาน', icon:'🍽️', items:['จานซาชิมิ','จานแบน (ใหญ่)','จานแบน (กลาง)','จานแบน (เล็ก)','จานรีปลาย่าง','ไม้รองซูชิ','จานคุชิคัตสึ']},
+  {side:'front', name:'ชาม', icon:'🍜', items:['ชามข้าวหน้า','ชามอุด้ง/โซบะ','ชามสลัด','ถ้วยโอเด้ง','ถ้วยซุป','ถาดไม้ไผ่ (โซบะเย็น)']},
+  {side:'front', name:'ถ้วยน้ำจิ้มและจานเล็ก', icon:'🥢', items:['ถ้วยโชยุ','ถ้วยน้ำจิ้ม','จานรองวาซาบิ','ถ้วยซอสคุชิคัตสึ']},
+  {side:'front', name:'ตะเกียบ ช้อน ส้อม', icon:'🍴', items:[{n:'ตะเกียบ',u:'คู่'},'ที่วางตะเกียบ','ช้อนญี่ปุ่น','ช้อน','ส้อม','มีดสเต๊ก']},
+  {side:'front', name:'แก้ว', icon:'🍺', items:['แก้วเบียร์','แก้วไฮบอล/โชจู','แก้วไวน์','แก้ววิสกี้','แก้วน้ำ','แก้วช็อต']},
+  {side:'front', name:'ชุดสาเก', icon:'🍶', items:['ขวดเทสาเก (โทคุริ)','จอกสาเก','ถังแช่ขวด']},
+  {side:'front', name:'อุปกรณ์บาร์', icon:'🧊', items:['เหยือกน้ำ','ถังน้ำแข็ง','ที่ตักน้ำแข็ง','ที่เปิดขวด','ที่เปิดไวน์','ถ้วยตวงเหล้า (จิกเกอร์)']},
+  {side:'front', name:'ของบนโต๊ะและงานบริการ', icon:'🧂', items:['ขวดโชยุ','กระปุกพริกญี่ปุ่น','ถาดผ้าเย็น','ถาดเสิร์ฟ','แฟ้มเมนู','แฟ้มบิล','กาน้ำชา','ถ้วยชา']}
+];
+const EQ_MAX_PHOTOS=3;                                   // ต้องตรงกับ EQ_MAX_PHOTOS ฝั่ง GAS
+const EQ_LABELS=['รูปหลัก','รูปเสริม','ที่เก็บ'];
+const EQ_REJECTS=['รูปมืด/ไม่ชัด ถ่ายใหม่','ถ่ายให้เห็นขนาด','จำนวนไม่ตรง นับใหม่','ซ้ำกับแบบที่มีแล้ว'];
+let EQUIP_READY=null;          // หลังบ้านรองรับแล้วหรือยัง (มาจาก ping.equip)
+let EQ_SIDE='', EQ_FILTER='all';
+let EQ_ROWS=[], EQ_COUNTS={pending:0,approved:0,rejected:0,absent:0};
+let EQ_OPEN={}, EQ_LOADED=false, EQ_BUSY=false, EQ_VIEW=[];
+let EQF=null;                  // ฟอร์มที่กำลังกรอก 1 แบบ
+let EQ_PANEL=null;             // การ์ดในหน้าอนุมัติที่กางแผงอยู่ {id, mode:'edit'|'reject'}
+let EQ_ALLARM=false;           // ปุ่ม "อนุมัติทั้งหมด" กดครั้งแรก = ถามยืนยัน
+
+function eqKeyName(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim().toLowerCase(); }
+function eqSideName(id){ var s=EQUIP_SIDES.filter(function(x){ return x.id===id; })[0]; return s?s.name:id; }
+function eqSideIcon(id){ var s=EQUIP_SIDES.filter(function(x){ return x.id===id; })[0]; return s?s.icon:'📦'; }
+function eqCatIdx(side,name){ for(var i=0;i<EQUIP_CATS.length;i++) if(EQUIP_CATS[i].side===side && EQUIP_CATS[i].name===name) return i; return -1; }
+function eqIsOwner(){ return !!(ME && ME.role==='owner'); }
+function eqShowTile(){
+  if(EQUIP_READY!==true) return;   // หลังบ้านยังไม่มีเมนูนี้ → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
+  var t=document.getElementById('ho-equip-tile'); if(t) t.classList.remove('hidden');
+}
+// ช่องในตาราง = ลิสต์ตั้งต้นของหมวดนั้น + แบบที่ถ่ายเพิ่มเอง (จับคู่กันด้วยชื่อ ครั้งเดียวตอนแสดงผล)
+function eqTiles(side){
+  var byName={}, used={}, out=[];
+  EQ_ROWS.forEach(function(r){ if(r.side===side) byName[eqKeyName(r.name)]=r; });
+  EQUIP_CATS.forEach(function(c,ci){
+    if(c.side!==side) return;
+    c.items.forEach(function(it){
+      var o=(typeof it==='string')?{n:it}:it, r=byName[eqKeyName(o.n)]||null;
+      if(r) used[r.eq_id]=1;
+      out.push({ci:ci, side:side, cat:c.name, icon:c.icon, onoff:!!c.onoff, unit:o.u||'ชิ้น', name:(r?r.name:o.n), row:r});
+    });
+  });
+  EQ_ROWS.forEach(function(r){
+    if(r.side!==side || used[r.eq_id]) return;
+    var ci=eqCatIdx(side, r.cat);
+    out.push({ci:ci, side:side, cat:(ci>=0?EQUIP_CATS[ci].name:(r.cat||'อื่น ๆ')), icon:(ci>=0?EQUIP_CATS[ci].icon:'📦'),
+      onoff:(ci>=0?!!EQUIP_CATS[ci].onoff:!!r.onoff), unit:r.unit||'ชิ้น', name:r.name, row:r});
+  });
+  return out;
+}
+function eqStats(){
+  var tot=0, done=0;
+  EQUIP_SIDES.forEach(function(s){ eqTiles(s.id).forEach(function(t){ tot++; if(t.row) done++; }); });
+  return {tot:tot, done:done, pending:EQ_COUNTS.pending||0, approved:EQ_COUNTS.approved||0,
+          rejected:EQ_COUNTS.rejected||0, absent:EQ_COUNTS.absent||0};
+}
+function eqSideStat(side){ var t=eqTiles(side); return {tot:t.length, done:t.filter(function(x){ return !!x.row; }).length}; }
+function eqStatusInfo(st){
+  if(st==='approved') return ['eqc-ok','อนุมัติแล้ว','✓'];
+  if(st==='pending'||st==='absent_pending') return ['eqc-pend','รออนุมัติ','⏳'];
+  if(st==='rejected') return ['eqc-bad','ต้องแก้','!'];
+  if(st==='absent') return ['eqc-none','ไม่มีในร้าน','—'];
+  return ['eqc-none','ยังไม่ถ่าย',''];
+}
+async function eqLoad(force){
+  if(EQ_BUSY) return false;
+  if(EQ_LOADED && !force) return true;
+  EQ_BUSY=true;
+  var r=await api('eqList',{});
+  EQ_BUSY=false;
+  if(r && r.ok){ EQ_ROWS=r.rows||[]; EQ_COUNTS=r.counts||EQ_COUNTS; EQ_LOADED=true; return true; }
+  return false;
+}
+
+/* --- เมนูรวมของอุปกรณ์ --- */
+async function openEqHub(){
+  if(!EQ_SIDE) EQ_SIDE=(ME && ME.team==='service')?'front':'kitchen';   // ค่าเริ่มต้นตามทีม — สลับเองได้
+  EQ_PANEL=null; EQ_ALLARM=false; EQF=null;
+  clearMsg(document.getElementById('eqh-msg'));
+  document.getElementById('eqh-menu').innerHTML='<div class="center muted" style="padding:26px"><span class="spinner"></span></div>';
+  show('eqhub');
+  var ok=await eqLoad(1);
+  if(!ok) msg(document.getElementById('eqh-msg'),'โหลดทะเบียนไม่สำเร็จ — ตรวจอินเทอร์เน็ตแล้วลองใหม่','warn');
+  eqRenderHub();
+}
+function eqRenderHub(){
+  var st=eqStats(), h='';
+  document.getElementById('eqh-sub').textContent='ขั้นที่ 1: สำรวจ + ถ่ายรูป ให้เจ้าของอนุมัติ · ตอนนี้มีในทะเบียน '+st.done+' แบบ';
+  if(!eqIsOwner() && st.rejected>0)
+    h+='<button type="button" class="eqhub-warn" onclick="EQ_FILTER=\'rejected\';openEqList()">❌ มี <b>'+st.rejected+' แบบ</b> ที่เจ้าของให้แก้ — แตะเพื่อดู</button>';
+  h+='<button type="button" class="stcat-btn" onclick="EQ_FILTER=\'all\';openEqList()"><span class="ico">📋</span>'+
+     '<div><div class="nm">สำรวจอุปกรณ์</div><div class="ct">ถ่ายรูป + นับ แล้วส่งให้เจ้าของ · สำรวจแล้ว '+st.done+'/'+st.tot+' แบบ</div>'+
+     '<div class="eq-bar" style="width:170px;max-width:100%;margin:7px 0 0"><i class="ok" style="width:'+(st.tot?Math.round(st.done*100/st.tot):0)+'%"></i></div></div>'+
+     '<span class="arrow">›</span></button>';
+  if(eqIsOwner())
+    h+='<button type="button" class="stcat-btn" onclick="openEqAppr()"><span class="ico">🔎</span>'+
+       '<div><div class="nm">รออนุมัติ</div><div class="ct">'+(st.pending?(st.pending+' แบบรอคุณตรวจ'):'ตรวจครบแล้ว')+'</div></div>'+
+       (st.pending?('<span class="eqhub-bubble">'+st.pending+'</span>'):'<span class="arrow">›</span>')+'</button>';
+  h+='<div class="stcat-btn" style="opacity:.62;cursor:default;box-shadow:none"><span class="ico">🧰</span>'+
+     '<div><div class="nm">เช็คประจำเดือน</div><div class="ct">🔒 เปิดใช้เมื่อสำรวจครบ (ขั้นที่ 2) · นับแยกทีละแบบ</div></div></div>';
+  document.getElementById('eqh-menu').innerHTML=h;
+}
+
+/* --- ตารางรูป --- */
+function openEqList(){
+  EQF=null;
+  clearMsg(document.getElementById('eql-msg'));
+  show('eqlist');
+  eqRenderList();
+  offEqBar();
+  if(!EQ_LOADED) eqLoad(1).then(function(){ eqRenderList(); });
+}
+function eqRenderList(){
+  var st=eqStats(), pct=function(n){ return (st.tot?(n*100/st.tot):0).toFixed(1)+'%'; };
+  var sum=document.getElementById('eql-sum');
+  sum.classList.remove('hidden');
+  sum.innerHTML='<div class="top"><b>สำรวจแล้ว '+st.done+'/'+st.tot+' แบบ</b><span class="muted" style="font-size:12px">ทั้ง 2 ฝั่ง</span></div>'+
+    '<div class="eq-bar"><i class="ok" style="width:'+pct(st.approved+st.absent)+'"></i><i class="pend" style="width:'+pct(st.pending)+'"></i><i class="bad" style="width:'+pct(st.rejected)+'"></i></div>'+
+    '<div class="eq-lg"><span class="eqc-ok">✓ อนุมัติ '+(st.approved+st.absent)+'</span><span class="eqc-pend">⏳ รออนุมัติ '+st.pending+'</span>'+
+    '<span class="eqc-bad">! ต้องแก้ '+st.rejected+'</span><span class="eqc-none">ยังไม่ถ่าย '+Math.max(0,st.tot-st.done)+'</span></div>';
+  document.getElementById('eql-sides').innerHTML=EQUIP_SIDES.map(function(s){
+    var ss=eqSideStat(s.id);
+    return '<button type="button" class="'+(EQ_SIDE===s.id?'on':'')+'" onclick="eqSetSide(\''+s.id+'\')">'+s.icon+' '+esc(s.name)+
+      '<small>สำรวจแล้ว '+ss.done+'/'+ss.tot+'</small></button>';
+  }).join('');
+  var tiles=eqTiles(EQ_SIDE);
+  var nNone=tiles.filter(function(t){ return !t.row; }).length;
+  var nBad=tiles.filter(function(t){ return t.row && t.row.status==='rejected'; }).length;
+  document.getElementById('eql-filters').innerHTML=[['all','ทั้งหมด'],['none','ยังไม่ถ่าย ('+nNone+')'],['rejected','ต้องแก้ ('+nBad+')']].map(function(f){
+    return '<button type="button" class="eq-fchip'+(EQ_FILTER===f[0]?' on':'')+'" onclick="eqSetFilter(\''+f[0]+'\')">'+f[1]+'</button>';
+  }).join('');
+  EQ_VIEW=[];
+  var groups=[], h='';
+  EQUIP_CATS.forEach(function(c,ci){ if(c.side===EQ_SIDE) groups.push({ci:ci, name:c.name, icon:c.icon}); });
+  if(tiles.some(function(t){ return t.ci<0; })) groups.push({ci:-1, name:'อื่น ๆ', icon:'📦'});
+  var shown=0;
+  groups.forEach(function(g){
+    var its=tiles.filter(function(t){ return t.ci===g.ci; });
+    var vis=its.filter(function(t){
+      if(EQ_FILTER==='none') return !t.row;
+      if(EQ_FILTER==='rejected') return t.row && t.row.status==='rejected';
+      return true;
+    });
+    if(!vis.length && EQ_FILTER!=='all') return;
+    shown++;
+    var done=its.filter(function(t){ return !!t.row; }).length;
+    var pend=its.filter(function(t){ return t.row && (t.row.status==='pending'||t.row.status==='absent_pending'); }).length;
+    var bad=its.filter(function(t){ return t.row && t.row.status==='rejected'; }).length;
+    var key=EQ_SIDE+':'+g.ci, open=(EQ_FILTER!=='all') || EQ_OPEN[key];
+    h+='<div class="st-sub" data-open="'+(open?'1':'0')+'">'+
+      '<button type="button" class="st-sub-h" onclick="eqToggleCat(this,\''+key+'\')"><span class="st-sub-t">'+g.icon+' '+esc(g.name)+'</span>'+
+      '<span class="st-sub-meta">'+its.length+' แบบ · ถ่ายแล้ว '+done+
+        (pend?(' <b style="color:#8a5a00">⏳'+pend+'</b>'):'')+(bad?(' <b style="color:var(--danger)">!'+bad+'</b>'):'')+
+        ' <span class="st-sub-ar">▾</span></span></button>';
+    if(open){
+      h+='<div class="st-sub-body"><div class="eq-grid">';
+      vis.forEach(function(t){ EQ_VIEW.push(t); h+=eqTileHtml(t, EQ_VIEW.length-1); });
+      if(EQ_FILTER==='all' && g.ci>=0)
+        h+='<button type="button" class="eq-tile newt" onclick="eqNewType('+g.ci+')"><span class="eq-pic"><span class="cam">📷</span>ถ่ายแบบใหม่</span></button>';
+      h+='</div></div>';
+    }
+    h+='</div>';
+  });
+  if(!shown) h='<div class="eq-empty">'+(EQ_FILTER==='rejected'?'ไม่มีแบบที่ต้องแก้ในฝั่งนี้ 👍':'ถ่ายครบทุกแบบในฝั่งนี้แล้ว 👍')+'</div>';
+  document.getElementById('eql-body').innerHTML=h;
+}
+function eqTileHtml(t,i){
+  var r=t.row, st=eqStatusInfo(r?r.status:''), photo=(r && r.photo_urls && r.photo_urls.length && r.status!=='absent_pending' && r.status!=='absent');
+  var sub;
+  if(!r) sub='ยังไม่ถ่าย';
+  else if(r.status==='rejected') sub='ต้องแก้';
+  else if(r.status==='absent_pending') sub='แจ้งว่าไม่มี';
+  else if(r.status==='absent') sub='ไม่มีในร้าน';
+  else if(t.onoff) sub='สภาพ: '+(r.cond==='broken'?'เสีย':'ใช้ได้');
+  else sub=(r.qty===''?'—':(r.qty+' '+(r.unit||t.unit)))+((+r.damaged>0)?(' · บิ่น '+r.damaged):'');
+  var inner = photo ? ('<img src="'+esc(r.photo_urls[0])+'" alt="" loading="lazy" onerror="this.remove()">')
+    : (r && (r.status==='absent'||r.status==='absent_pending') ? '<span>ไม่มี<br>ในร้าน</span>' : '<span><span class="cam">📷</span>ยังไม่ถ่าย</span>');
+  return '<button type="button" class="eq-tile'+(r&&r.status==='rejected'?' bad':'')+(r&&r.status==='absent'?' gone':'')+'" onclick="eqOpenForm('+i+')">'+
+    '<span class="eq-pic '+(photo?'':'empty')+'">'+inner+(st[2]?('<span class="eq-dot '+st[0]+'">'+st[2]+'</span>'):'')+'</span>'+
+    '<span class="eq-nm'+(r&&r.auto_name?' auto':'')+'">'+esc(t.name)+'</span>'+
+    '<span class="eq-sub'+(r&&r.status==='rejected'?' bad':'')+'">'+esc(sub)+(r&&r.auto_name&&r.status!=='rejected'?' · ยังไม่มีชื่อ':'')+'</span></button>';
+}
+function eqToggleCat(btn,key){ toggleSub(btn); EQ_OPEN[key]=(btn.parentNode.getAttribute('data-open')==='1'); }
+function eqSetSide(s){ if(s===EQ_SIDE) return; EQ_SIDE=s; eqRenderList(); }
+function eqSetFilter(f){ EQ_FILTER=f; eqRenderList(); }
+
+/* --- ฟอร์มสำรวจ 1 แบบ --- */
+function eqAutoPreview(side,cat){   // ชื่อชั่วคราวที่หลังบ้านจะตั้งให้ (โชว์เป็น placeholder เฉย ๆ)
+  var n=EQ_ROWS.filter(function(r){ return r.side===side && r.cat===cat; }).length+1;
+  return cat+' แบบที่ '+n;
+}
+function eqOpenForm(i){
+  var t=EQ_VIEW[i]; if(!t) return;
+  var r=t.row;
+  EQF={ eqId:(r?r.eq_id:''), side:t.side, ci:t.ci, cat:t.cat, icon:t.icon, unit:(r?(r.unit||t.unit):t.unit), onoff:t.onoff,
+        name:(r?(r.auto_name?'':r.name):(t.name||'')), have:(r?(r.status!=='absent_pending'&&r.status!=='absent'):true),
+        photos:(r?(r.photos||[]).map(function(id,k){ return {id:id, url:(r.photo_urls||[])[k]||''}; }):[]),
+        qty:(r&&r.qty!==''?String(r.qty):''), dmg:(r&&r.damaged!==''?String(r.damaged):''), cond:(r?r.cond:''),
+        loc:(r?r.loc:''), note:(r?r.note:''), status:(r?r.status:''), reason:(r?r.reason:''), by:(r?r.by:''), at:(r?r.at:''),
+        photoDirty:false, clientId:uuid(), isNew:!r, err:'' };
+  eqRenderForm(); show('eqform'); offWatch(); offEqBar();
+}
+function eqNewType(ci){
+  var c=EQUIP_CATS[ci]; if(!c) return;
+  EQF={ eqId:'', side:c.side, ci:ci, cat:c.name, icon:c.icon, unit:'ชิ้น', onoff:!!c.onoff, name:'', have:true, photos:[],
+        qty:'', dmg:'', cond:'', loc:'', note:'', status:'', reason:'', by:'', at:'',
+        photoDirty:true, clientId:uuid(), isNew:true, err:'' };
+  eqRenderForm(); show('eqform'); offWatch(); offEqBar();
+}
+function eqFormBack(){ offDraftSaveEq(); openEqList(); }
+function eqCollect(){   // อ่านค่าจากช่องกรอกเข้ามาเก็บใน EQF (เรียกก่อนเรนเดอร์ใหม่ทุกครั้ง)
+  if(!EQF) return;
+  var g=function(id){ var e=document.getElementById(id); return e?e.value:null; };
+  var v;
+  if((v=g('eqf-name'))!=null) EQF.name=v;
+  if((v=g('eqf-qty'))!=null) EQF.qty=v;
+  if((v=g('eqf-dmg'))!=null) EQF.dmg=v;
+  if((v=g('eqf-loc'))!=null) EQF.loc=v;
+  if((v=g('eqf-note'))!=null) EQF.note=v;
+}
+function eqRenderForm(){
+  var f=EQF; if(!f) return;
+  var first=f.photos[0];
+  document.getElementById('eqf-pic').innerHTML=first?('<img src="'+esc(first.url||('data:'+(first.mime||'image/jpeg')+';base64,'+first.b64))+'" alt="">'):'📷';
+  document.getElementById('eqf-title').textContent=f.isNew&&!f.name?('แบบใหม่ · '+f.cat):(f.name||f.cat);
+  document.getElementById('eqf-sub').textContent=eqSideName(f.side)+' · '+f.cat;
+  var bar=document.getElementById('eqf-stbar');
+  if(f.status==='rejected'){ bar.className='eq-stbar eqc-bad'; bar.innerHTML='❌ <b>เจ้าของให้แก้:</b> '+esc(f.reason||'ถ่ายใหม่'); }
+  else if(f.status==='pending'||f.status==='absent_pending'){ bar.className='eq-stbar eqc-pend'; bar.innerHTML='⏳ ส่งแล้ว รอเจ้าของอนุมัติ ('+esc(f.by||'')+' '+esc(f.at||'')+') — แก้แล้วส่งใหม่ได้'; }
+  else if(f.status==='approved'){ bar.className='eq-stbar eqc-ok'; bar.innerHTML='✅ อนุมัติแล้ว — ถ้าแก้แล้วส่ง จะกลับไปรออนุมัติใหม่'; }
+  else if(f.status==='absent'){ bar.className='eq-stbar eqc-none'; bar.innerHTML='เจ้าของยืนยันแล้วว่าไม่มีในร้าน — ถ้าเจอของจริง ถ่ายรูปแล้วส่งใหม่ได้'; }
+  else { bar.className='hidden'; bar.innerHTML=''; }
+  document.getElementById('eqf-have').innerHTML=
+    '<button type="button" class="'+(f.have?'on':'')+'" onclick="eqSetHave(true)">✅ มี</button>'+
+    '<button type="button" class="'+(!f.have?'on':'')+'" onclick="eqSetHave(false)">ไม่มีในร้าน</button>';
+  var h='';
+  if(f.have){
+    h+='<label class="fl-eq">รูป <span class="muted" style="font-weight:400">— รูปหลักบังคับ · เพิ่มได้อีก 2</span></label><div class="eq-shots">';
+    for(var i=0;i<EQ_MAX_PHOTOS;i++){
+      var p=f.photos[i];
+      if(p) h+='<div class="eq-shot has"><img src="'+esc(p.url||('data:'+(p.mime||'image/jpeg')+';base64,'+p.b64))+'" alt="">'+
+        '<button type="button" class="x" aria-label="ลบรูป" onclick="eqDelPhoto('+i+')">✕</button><span class="lab">'+EQ_LABELS[i]+'</span></div>';
+      else if(i===f.photos.length) h+='<button type="button" class="eq-shot" onclick="eqPickPhoto()"><span class="big">📷</span>'+(i===0?'ถ่ายรูปหลัก':'+ '+EQ_LABELS[i])+'</button>';
+      else h+='<div class="eq-shot locked"><span class="big">＋</span>'+EQ_LABELS[i]+'</div>';
+    }
+    h+='</div><div class="eq-tip">💡 วางของ 1 ชิ้นบนพื้นเรียบ ถ่ายเฉียงให้เห็นทรงและลาย · ของที่หน้าตาคล้ายกัน วางคู่ตะเกียบให้เห็นขนาด · รูปที่ 3 ถ่าย “ที่เก็บ” ไว้ก็ดี</div>';
+    h+='<label class="fl-eq">ชื่อ <span class="muted" style="font-weight:400">(ไม่บังคับ)</span></label>'+
+       '<input class="eq-inp" id="eqf-name" maxlength="60" placeholder="ไม่ใส่ = “'+esc(eqAutoPreview(f.side,f.cat))+'” ให้เจ้าของตั้งทีหลัง" value="'+esc(f.name)+'">';
+    if(f.onoff){
+      h+='<label class="fl-eq">สภาพ</label><div class="eq-seg" style="margin-top:0">'+
+         '<button type="button" class="'+(f.cond==='ok'?'on':'')+'" onclick="eqSetCond(\'ok\')">✅ ใช้ได้</button>'+
+         '<button type="button" class="'+(f.cond==='broken'?'on':'')+'" onclick="eqSetCond(\'broken\')">❌ เสีย</button></div>';
+    } else {
+      h+='<div class="eq-two" style="margin-top:14px">'+
+         '<div><label class="fl-eq" style="margin-top:0">มีตอนนี้ ('+esc(f.unit)+')</label><input class="eq-inp" id="eqf-qty" type="number" inputmode="numeric" min="0" placeholder="0" value="'+esc(f.qty)+'"></div>'+
+         '<div><label class="fl-eq" style="margin-top:0">บิ่น/เสีย</label><input class="eq-inp" id="eqf-dmg" type="number" inputmode="numeric" min="0" placeholder="—" value="'+esc(f.dmg)+'"></div></div>'+
+         '<div class="muted" style="font-size:11.5px;margin-top:5px">นับเฉพาะแบบนี้ รวมชิ้นที่บิ่นด้วย · ช่อง บิ่น/เสีย ไม่มีเว้นว่าง</div>';
+    }
+    h+='<label class="fl-eq">ที่เก็บ <span class="muted" style="font-weight:400">(ไม่บังคับ)</span></label>'+
+       '<input class="eq-inp" id="eqf-loc" maxlength="80" placeholder="เช่น ชั้นจาน หลังครัว" value="'+esc(f.loc)+'">'+
+       '<label class="fl-eq">หมายเหตุ <span class="muted" style="font-weight:400">(ไม่บังคับ)</span></label>'+
+       '<textarea class="eq-inp" id="eqf-note" rows="2" maxlength="200" placeholder="เช่น ใบนี้ร้าว 1 ใบ เก็บไว้ต่างหาก">'+esc(f.note)+'</textarea>';
+  } else {
+    h+='<div class="eq-tip" style="margin-top:12px">ส่งแล้วเจ้าของจะยืนยัน — ถ้าไม่มีจริง แบบนี้จะไม่ขึ้นในเช็คประจำเดือน (ขั้นที่ 2)</div>';
+    if(!f.isNew && f.name) h+='<div class="muted" style="font-size:13px;margin-top:10px">แบบที่แจ้ง: <b>'+esc(f.name)+'</b></div>';
+  }
+  document.getElementById('eqf-body').innerHTML=h;
+  document.getElementById('eqf-send').textContent=f.have?'ส่งให้เจ้าของอนุมัติ':'ส่ง: ไม่มีในร้าน';
+}
+function eqSetHave(v){ eqCollect(); EQF.have=v; clearMsg(document.getElementById('eqf-msg')); eqRenderForm(); }
+function eqSetCond(c){ eqCollect(); EQF.cond=c; clearMsg(document.getElementById('eqf-msg')); eqRenderForm(); offDraftSaveEq(); }
+function eqPickPhoto(){ eqCollect(); var f=document.getElementById('eqf-file'); f.value=''; f.click(); }
+function onEqPhotoFile(input){
+  var file=input.files && input.files[0]; if(!file) return;
+  var m=document.getElementById('eqf-msg');
+  msg(m,'⏳ กำลังย่อรูป…','warn');
+  resizeImage(file, 1280, 0.8, function(b64){
+    EQF.photos.push({b64:b64, mime:'image/jpeg'});
+    EQF.photoDirty=true;
+    clearMsg(m); eqRenderForm(); offDraftSaveEq();
+  }, function(){ msg(m,'อ่านรูปไม่สำเร็จ ลองถ่ายใหม่'); });
+  input.value='';
+}
+function eqDelPhoto(i){ eqCollect(); EQF.photos.splice(i,1); EQF.photoDirty=true; eqRenderForm(); offDraftSaveEq(); }
+async function sendEq(){
+  var m=document.getElementById('eqf-msg'); clearMsg(m);
+  var f=EQF; if(!f) return;
+  eqCollect();
+  if(f.have){
+    if(!f.photos.length){ msg(m,'ถ่ายรูปหลักก่อน (อย่างน้อย 1 รูป)'); return; }
+    if(f.onoff && !f.cond){ msg(m,'เลือกสภาพ: ใช้ได้ หรือ เสีย'); return; }
+    if(!f.onoff && String(f.qty).trim()===''){ msg(m,'กรอกจำนวนที่มีตอนนี้'); return; }
+    if(!f.onoff && String(f.dmg).trim()!=='' && Number(f.dmg)>Number(f.qty)){ msg(m,'จำนวนที่บิ่น/เสีย มากกว่าจำนวนที่มี — ช่อง “มีตอนนี้” ต้องรวมชิ้นที่บิ่นด้วย'); return; }
+  }
+  var payload={ side:f.side, cat:f.cat, name:String(f.name||'').trim(), unit:f.unit, onoff:f.onoff, have:f.have,
+    qty:(f.have&&!f.onoff)?f.qty:'', damaged:(f.have&&!f.onoff)?f.dmg:'', cond:(f.have&&f.onoff)?f.cond:'',
+    loc:f.loc, note:f.note, client_id:f.clientId };
+  if(f.eqId) payload.eq_id=f.eqId;
+  if(f.photoDirty){
+    payload.keep_photos=f.photos.filter(function(p){ return p.id; }).map(function(p){ return p.id; });
+    payload.photos=f.photos.filter(function(p){ return p.b64; }).map(function(p){ return {imageBase64:p.b64, mime:p.mime||'image/jpeg'}; });
+  }
+  var btn=document.getElementById('eqf-send'); busy(btn,true);
+  var r=await api('eqSave', payload);
+  busy(btn,false, f.have?'ส่งให้เจ้าของอนุมัติ':'ส่ง: ไม่มีในร้าน');
+  // เน็ตหลุด = เก็บไว้ในเครื่อง แล้วแอปส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
+  if(!r.ok && r.netfail){
+    var kept=offAdd('eq', f.clientId, 'สำรวจอุปกรณ์ '+(payload.name||f.cat), payload);
+    if(kept){
+      offDraftClear('eq'); OFF_HIDE['eq']=1;
+      openEqList();
+      msg(document.getElementById('eql-msg'),'📤 เน็ตมีปัญหา — เก็บไว้ให้แล้ว จะส่งให้เองเมื่อเน็ตกลับมา (ไม่ต้องถ่ายใหม่)','ok');
+    } else msg(m,'❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ — อย่าเพิ่งปิดแอป ลองกดใหม่เมื่อเน็ตกลับมา');
+    return;
+  }
+  if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
+  offDraftClear('eq'); OFF_HIDE['eq']=1;
+  EQ_LOADED=false;
+  await eqLoad(1);
+  openEqList();
+  msg(document.getElementById('eql-msg'), '📨 ส่งให้เจ้าของแล้ว — '+(r.name||payload.name||f.cat), 'ok');
+  todayRefresh();
+}
+
+/* --- ร่างในเครื่อง: ถ่ายค้างไว้แล้วแอปปิด = กลับมากู้คืนได้ --- */
+function eqDraftHas(f){ return !!(f && (f.photos.length || String(f.qty).trim() || String(f.name).trim() || String(f.loc).trim() || String(f.note).trim() || f.cond || !f.have)); }
+function offDraftSaveEq(){
+  if(!EQF){ return; }
+  eqCollect();
+  if(!eqDraftHas(EQF)){ offDraftClear('eq'); return; }
+  var d=JSON.parse(JSON.stringify(EQF));
+  offDraftSet('eq', d);
+  if(!offDraftGet('eq')){                                  // เครื่องเต็มเพราะรูป → เก็บเฉพาะตัวเลข (ดีกว่าไม่เก็บเลย)
+    d.photos=d.photos.filter(function(p){ return p.id; }); d.nophoto=true;
+    offDraftSet('eq', d);
+  }
+}
+function offEqBar(){
+  var el=document.getElementById('eql-draftbar'); if(!el) return;
+  var it=OFF_HIDE['eq']?null:offDraftGet('eq');
+  var d=it&&it.data;
+  if(!d || !eqDraftHas(d)){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar';
+  el.innerHTML=offBarHtml(it.ts,'offRestoreEq','offDropEqDraft')+
+    '<div style="margin-top:4px;opacity:.75">'+esc((d.name||d.cat||'')+(d.nophoto?' · รูปเก็บไม่ไหว ต้องถ่ายใหม่':''))+'</div>';
+}
+function offRestoreEq(){
+  var it=offDraftGet('eq'); if(!it || !it.data) return;
+  EQF=it.data; EQF.err='';
+  OFF_HIDE['eq']=1; offEqBar();
+  eqRenderForm(); show('eqform'); offWatch();
+}
+function offDropEqDraft(){ offDraftClear('eq'); OFF_HIDE['eq']=1; offEqBar(); }
+
+/* --- หน้าอนุมัติ (เจ้าของร้านเท่านั้น) --- */
+async function openEqAppr(){
+  if(!eqIsOwner()){ alert('หน้าอนุมัติสำหรับเจ้าของร้านเท่านั้นครับ'); if(!document.getElementById('screen-eqappr').classList.contains('hidden')) show('eqhub'); return; }
+  EQ_PANEL=null; EQ_ALLARM=false;
+  clearMsg(document.getElementById('eqa-msg'));
+  document.getElementById('eqa-body').innerHTML='<div class="center muted" style="padding:26px"><span class="spinner"></span></div>';
+  show('eqappr');
+  var ok=await eqLoad(1);
+  if(!ok) msg(document.getElementById('eqa-msg'),'โหลดทะเบียนไม่สำเร็จ — ตรวจอินเทอร์เน็ตแล้วลองใหม่','warn');
+  eqRenderAppr();
+}
+function eqPending(){ return EQ_ROWS.filter(function(r){ return r.status==='pending'||r.status==='absent_pending'; }); }
+function eqRenderAppr(){
+  var pend=eqPending(), h='';
+  document.getElementById('eqa-sub').textContent=pend.length?(pend.length+' แบบ · แตะรูปเพื่อดูใหญ่ · แบบที่ยังไม่มีชื่อ ตั้งชื่อได้ในการ์ด'):'ไม่มีรายการค้าง';
+  if(!pend.length){ document.getElementById('eqa-body').innerHTML='<div class="eq-empty">🎉 ตรวจครบแล้ว ไม่มีรายการรออนุมัติ</div>'; return; }
+  EQUIP_SIDES.forEach(function(s){
+    var arr=pend.filter(function(r){ return r.side===s.id; });
+    if(!arr.length) return;
+    h+='<div class="eq-grp">'+s.icon+' '+esc(s.name)+' ('+arr.length+')</div>';
+    arr.forEach(function(r){ h+=eqApprCard(r); });
+  });
+  h+='<div class="eq-savebar"><button type="button" class="btn" id="eqa-all" onclick="eqApproveAll()" style="background:linear-gradient(135deg,#15834a,#23a862)">'+
+     (EQ_ALLARM?('แตะอีกครั้งเพื่อยืนยัน · อนุมัติ '+pend.length+' แบบ'):('✅ อนุมัติทั้งหมดที่เห็น ('+pend.length+')'))+'</button></div>';
+  document.getElementById('eqa-body').innerHTML=h;
+}
+function eqApprCard(r){
+  var h='<div class="eq-ap">';
+  var url=(r.photo_urls&&r.photo_urls[0])||'';
+  if(r.status==='absent_pending'){
+    h+='<div class="row"><span class="th" style="cursor:default;font-size:15px">—</span><div><div class="nm">'+esc(r.name)+'</div>'+
+       '<div class="meta">'+esc(r.cat)+' · <b>แจ้งว่าไม่มีในร้าน</b><br>โดย '+esc(r.by||'—')+' · '+esc(r.at||'')+'</div></div></div>'+
+       '<div class="eq-acts two"><button type="button" class="yes" onclick="eqDo(\''+r.eq_id+'\',\'confirm_absent\')">ยืนยันไม่มี</button>'+
+       '<button type="button" onclick="eqDo(\''+r.eq_id+'\',\'not_absent\')">ไม่ใช่ มีอยู่</button></div>';
+    return h+'</div>';
+  }
+  var detail=r.onoff ? ('สภาพ: <b>'+(r.cond==='broken'?'❌ เสีย':'✅ ใช้ได้')+'</b>')
+                     : ('<b>'+esc(String(r.qty))+' '+esc(r.unit||'ชิ้น')+'</b>'+((+r.damaged>0)?(' (บิ่น '+r.damaged+')'):''));
+  h+='<div class="row"><button type="button" class="th" onclick="eqZoom(\''+r.eq_id+'\')" aria-label="ดูรูปใหญ่">'+
+     (url?('<img src="'+esc(url)+'" alt="" loading="lazy" onerror="this.remove()">'):'📷')+
+     '<span class="n">'+(r.photos?r.photos.length:0)+' รูป</span></button><div>'+
+     '<div class="nm">'+esc(r.name)+(r.auto_name?'<span class="tag">ยังไม่มีชื่อ</span>':'')+'</div>'+
+     '<div class="meta">'+esc(r.cat)+' · '+detail+(r.loc?('<br>ที่เก็บ: '+esc(r.loc)):'')+(r.note?('<br>📝 '+esc(r.note)):'')+
+     '<br>ส่งโดย '+esc(r.by||'—')+' · '+esc(r.at||'')+'</div></div></div>';
+  var panel=(EQ_PANEL && EQ_PANEL.id===r.eq_id)?EQ_PANEL.mode:'';
+  if(panel==='edit'){
+    h+='<div class="eq-panel"><label class="fl-eq" style="margin-top:0">ชื่อ</label><input class="eq-inp" id="eqe-n" maxlength="60" value="'+esc(r.auto_name?'':r.name)+'" placeholder="'+esc(r.name)+'">'+
+       (r.onoff?'':('<label class="fl-eq">จำนวน ('+esc(r.unit||'ชิ้น')+')</label><input class="eq-inp" id="eqe-q" type="number" inputmode="numeric" min="0" value="'+esc(String(r.qty))+'">'))+
+       '<label class="fl-eq">ที่เก็บ</label><input class="eq-inp" id="eqe-l" maxlength="80" value="'+esc(r.loc)+'">'+
+       '<div class="eq-rowbtns"><button type="button" class="btn" onclick="eqDo(\''+r.eq_id+'\',\'approve\',1)">บันทึก + อนุมัติ</button>'+
+       '<button type="button" class="btn ghost" onclick="eqPanel(null)">ยกเลิก</button></div></div>';
+  } else if(panel==='reject'){
+    h+='<div class="eq-panel"><label class="fl-eq" style="margin-top:0">เหตุผล <span class="muted" style="font-weight:400">(พนักงานจะเห็น)</span></label>'+
+       '<div class="eq-qchips">'+EQ_REJECTS.map(function(q){ return '<button type="button" onclick="eqSetReason(this)">'+esc(q)+'</button>'; }).join('')+'</div>'+
+       '<textarea class="eq-inp" id="eqe-r" rows="2" maxlength="200" placeholder="พิมพ์เหตุผลเอง หรือแตะข้อความด้านบน"></textarea>'+
+       '<div class="eq-rowbtns"><button type="button" class="btn" style="background:linear-gradient(135deg,#c0392b,#e0533d)" onclick="eqDo(\''+r.eq_id+'\',\'reject\')">ส่งกลับให้แก้</button>'+
+       '<button type="button" class="btn ghost" onclick="eqPanel(null)">ยกเลิก</button></div></div>';
+  } else {
+    if(r.auto_name) h+='<div style="margin-top:10px"><label class="fl-eq" style="margin-top:0">ตั้งชื่อ <span class="muted" style="font-weight:400">(ไม่บังคับ — กดอนุมัติแล้วใช้ชื่อนี้)</span></label>'+
+       '<input class="eq-inp" id="eqn-'+r.eq_id+'" maxlength="60" placeholder="เช่น จานกลมครีมลายจุด"></div>';
+    h+='<div class="eq-acts"><button type="button" class="yes" onclick="eqDo(\''+r.eq_id+'\',\'approve\')">✅ อนุมัติ</button>'+
+       '<button type="button" onclick="eqPanel({id:\''+r.eq_id+'\',mode:\'edit\'})">✏️ แก้</button>'+
+       '<button type="button" class="no" onclick="eqPanel({id:\''+r.eq_id+'\',mode:\'reject\'})">❌ ไม่ผ่าน</button></div>';
+  }
+  return h+'</div>';
+}
+function eqPanel(p){ EQ_PANEL=p; EQ_ALLARM=false; eqRenderAppr(); }
+function eqSetReason(btn){ var t=document.getElementById('eqe-r'); if(t) t.value=btn.textContent; }
+function eqZoom(id){
+  var r=EQ_ROWS.filter(function(x){ return x.eq_id===id; })[0];
+  if(r && r.photo_urls && r.photo_urls.length) openLightbox(r.photo_urls[0]);
+}
+async function eqDo(id, action, fromEdit){
+  var m=document.getElementById('eqa-msg'); clearMsg(m);
+  var payload={eq_id:id, act:action};   // ส่งเป็น act — ช่อง action ถูก api() ใช้เป็นชื่อคำสั่งไปแล้ว
+  if(action==='approve'){
+    var nm=document.getElementById(fromEdit?'eqe-n':('eqn-'+id));
+    if(nm && nm.value.trim()) payload.name=nm.value.trim();
+    if(fromEdit){
+      var q=document.getElementById('eqe-q'), l=document.getElementById('eqe-l');
+      if(q && q.value!=='') payload.qty=q.value;
+      if(l) payload.loc=l.value;
+    }
+  }
+  if(action==='reject'){ var rr=document.getElementById('eqe-r'); payload.reason=rr?rr.value.trim():''; }
+  EQ_PANEL=null; EQ_ALLARM=false;
+  var r=await api('eqDecide', payload);
+  if(!r.ok){ msg(m, r.error||'ทำรายการไม่สำเร็จ'); eqRenderAppr(); return; }
+  EQ_LOADED=false;
+  await eqLoad(1);
+  eqRenderAppr();
+  var word=(action==='approve')?'อนุมัติแล้ว':(action==='reject'?'ส่งกลับให้แก้แล้ว':(action==='confirm_absent'?'ยืนยันว่าไม่มีในร้านแล้ว':'ส่งกลับให้สำรวจใหม่แล้ว'));
+  msg(m,'✅ '+word+' — '+(r.name||''),'ok');
+  todayRefresh();
+}
+async function eqApproveAll(){
+  var m=document.getElementById('eqa-msg'); clearMsg(m);
+  var pend=eqPending(); if(!pend.length) return;
+  if(!EQ_ALLARM){ EQ_ALLARM=true; eqRenderAppr(); return; }
+  var names={};
+  pend.forEach(function(r){ var el=document.getElementById('eqn-'+r.eq_id); if(el && el.value.trim()) names[r.eq_id]=el.value.trim(); });
+  var btn=document.getElementById('eqa-all'); busy(btn,true);
+  var r=await api('eqApproveMany',{ids:pend.map(function(x){ return x.eq_id; }), names:names});
+  busy(btn,false,'อนุมัติทั้งหมด');
+  EQ_ALLARM=false;
+  if(!r.ok){ msg(m, r.error||'อนุมัติไม่สำเร็จ'); eqRenderAppr(); return; }
+  EQ_LOADED=false;
+  await eqLoad(1);
+  eqRenderAppr();
+  msg(m,'✅ อนุมัติแล้ว '+r.approved+' แบบ'+((r.failed&&r.failed.length)?(' · ข้าม '+r.failed.length+' แบบ (ไม่พบรายการ)'):''),'ok');
+  todayRefresh();
+}
 /* ---------- วิธีใช้งาน (คลิปสอน) ----------
    ไฟล์คลิปอยู่โฟลเดอร์ help/ ของเว็บ (repo Nuchiko/app) — คลิปชุดเดียว ใช้ทั้งแอปจริงและ /app/dev/
    หน้า dev อยู่ลึกลงไป 1 ชั้น จึงต้องถอยขึ้นมาก่อน (ดูจาก path จริง ไม่ใช้ IS_DEV เพราะ ?dev บนแอปจริงจะพาไปผิดที่)
@@ -3443,6 +4083,17 @@ const HELP_TOPICS = [
       'ตอนนับสต็อกกลางคืน → Stock → หมวด <b>🧊 ของแพค</b> — <b>ครั้งแรกให้แตะเลือกก่อน</b>ว่าจะนับตัวไหนบ้าง แล้วกด "เริ่มกรอก" ; <b>ครั้งต่อไประบบจำให้</b> เข้ามาก็กรอกได้เลย (เปลี่ยนรายการได้ที่ปุ่ม ✏️ แก้รายการ)',
       'ในหน้ากรอก: ช่อง <b>เดิม</b> และ <b>เข้า</b> ระบบเติมให้เอง — <b>กรอกแค่ช่อง "เหลือ"</b> ตามที่นับได้จริงในตู้'
     ], tip:'💡 ลืมบันทึกตอนทำ = ไปกรอกช่อง "เข้า" เองตอนนับกลางคืนได้ ยอดยังถูก แต่จะไม่รู้ว่าของรอบนั้นทำได้กี่แพค · ถ้ารับของมาแล้วยังไม่ได้บันทึก หน้าแรกจะขึ้นเตือนให้เอง · ชั่งเศษไว้ทุกรอบ จะรู้ว่าของ 1 โล/1 ตัว ได้เนื้อกี่เปอร์เซ็นต์ และเห็นทันทีถ้ารอบไหนเปลืองผิดปกติ' },
+
+  { id:'equip', ico:'🧰', name:'สำรวจอุปกรณ์', sub:'ถ่ายรูป + นับ ให้เจ้าของอนุมัติ', steps:[
+      'หน้าหลัก → แตะ <b>อุปกรณ์</b> → <b>📋 สำรวจอุปกรณ์</b> → เลือกฝั่ง <b>🍳 ครัว</b> หรือ <b>🍽️ หน้าร้าน</b> (ระบบเลือกตามทีมให้ก่อน)',
+      'แตะหมวดเพื่อกางตาราง — <b>1 ช่อง = 1 แบบ</b> · ช่องเส้นประ = ยังไม่ถ่าย · มุมรูปบอกสถานะ <b>✓</b> อนุมัติแล้ว · <b>⏳</b> รออนุมัติ · <b>!</b> ต้องแก้',
+      'แตะช่อง → เลือก <b>✅ มี</b> หรือ <b>ไม่มีในร้าน</b> → ถ่าย <b>รูปหลัก 1 รูป (บังคับ)</b> เพิ่มได้อีก 2 รูป',
+      'กรอก <b>มีตอนนี้</b> (นับเฉพาะแบบนี้ รวมชิ้นที่บิ่นด้วย) และ <b>บิ่น/เสีย</b> ถ้ามี · <b>เครื่องใช้ไฟฟ้า</b> ไม่ต้องนับ แตะ ✅ ใช้ได้ หรือ ❌ เสีย',
+      '<b>ชื่อไม่บังคับ</b> — ไม่ใส่ ระบบตั้งให้ก่อนเป็น “จาน แบบที่ 8” แล้วเจ้าของตั้งชื่อตอนอนุมัติ · <b>ที่เก็บ</b> ใส่ก็ดี (เช่น ชั้นจาน หลังครัว)',
+      'กด <b>ส่งให้เจ้าของอนุมัติ</b> → ช่องนั้นจะขึ้น ⏳ รออนุมัติ',
+      'เจอแบบที่ไม่มีในตาราง → กดช่อง <b>📷 ถ่ายแบบใหม่</b> ท้ายหมวด (เพิ่มได้ไม่จำกัด)',
+      'ถูกตีกลับ (ช่องขึ้นกรอบแดง) → แตะดูเหตุผลจากเจ้าของ แก้แล้วส่งใหม่ได้เลย'
+    ], tip:'💡 ถ่ายรูปให้ดูออก: วางของ 1 ชิ้นบนพื้นเรียบ ถ่ายเฉียงให้เห็นทรงและลาย · ของที่หน้าตาคล้ายกัน วางคู่ตะเกียบให้เห็นขนาด · ถ่ายค้างไว้แล้วแอปปิด เปิดมาใหม่มีปุ่ม <b>กู้คืนข้อมูล</b> · เน็ตหลุดก็กดส่งได้ แอปจะส่งให้เองเมื่อเน็ตกลับมา' },
 
   { id:'cash', ico:'💵', name:'เงินสด', sub:'บันทึกเงินสดรายวัน', clip:'cash.gif', cashOnly:true, steps:[
       'หน้าหลัก → แตะ <b>เงินสด</b> → เลือก <b>วันที่</b>',
