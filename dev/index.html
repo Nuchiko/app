@@ -930,7 +930,7 @@
   <section id="screen-eqlist" class="hidden">
     <button class="backbtn" onclick="openEqHub()">‹ อุปกรณ์</button>
     <div class="topbar" style="padding-top:0"><div class="who">📋 สำรวจอุปกรณ์</div></div>
-    <div class="st-tip">1 ช่อง = 1 แบบ · แตะช่องเพื่อถ่ายรูปและนับ · เจอแบบที่ไม่มีในตาราง กด “ถ่ายแบบใหม่”</div>
+    <div class="st-tip">1 ช่อง = 1 แบบ · ช่องตั้งชื่อเป็นเลขไว้ให้ (จาน 1, จาน 2 …) แตะช่องเพื่อถ่ายรูปและนับ · ช่องไม่พอ กด “➕ เพิ่ม…” ท้ายหมวด</div>
     <div class="msg" id="eql-msg"></div>
     <div id="eql-draftbar" class="hidden"></div>
     <div class="card eq-sum hidden" id="eql-sum"></div>
@@ -3563,27 +3563,30 @@ async function pkLoadList(){
 /* ---------- ทะเบียนอุปกรณ์ — ขั้นที่ 1: สำรวจ + ถ่ายรูป + เจ้าของอนุมัติ (21 ก.ย. 2026) ----------
    เจ้าของสั่ง: สำรวจก่อน แล้วค่อยเช็คประจำเดือน (ขั้นที่ 2 ยังไม่ทำ — ปุ่มล็อกไว้)
    หน้าตารางรูป: 1 ช่อง = 1 "แบบ" (ร้านมีจานมากกว่า 10 แบบ) — รูปคือตัวแยกแบบ ไม่ใช่ชื่อ
-   ชื่อไม่บังคับ: ไม่ใส่ = หลังบ้านตั้ง "จาน แบบที่ N" ให้ก่อน แล้วเจ้าของตั้งชื่อตอนอนุมัติ
-   EQUIP_CATS = ลิสต์ "ตั้งต้น" ให้พนักงานไล่ถ่ายเท่านั้น — ของจริงอยู่ในทะเบียน (ชีท) ที่อ้างด้วย eq_id
-     → เพิ่ม/ตัดรายการตั้งต้น = แก้ที่นี่แล้ว push เว็บ ไม่ต้อง deploy GAS ; แบบที่ถ่ายเพิ่มเองไม่หาย */
+   เจ้าของสั่ง 21 ก.ย.: ช่องตั้งต้น "ไม่ต้องตั้งชื่อ" ให้เป็น จาน 1 / จาน 2 … ทุกหมวด และเพิ่มช่องได้อีกไม่จำกัด
+     → EQUIP_CATS เก็บแค่ "กี่ช่องตั้งต้น" (slots) ; ชื่อช่องว่าง = "<หมวด> <เลขว่างตัวแรก>"
+     → ไม่ได้แก้ชื่อ = ส่งชื่อว่าง ให้หลังบ้านตั้ง "<หมวด> N" เอง (auto_name=true → เจ้าของเห็นป้าย "ยังไม่มีชื่อ")
+     → พนักงานพิมพ์ทับชื่อในช่องได้เลย (เช่น "จานซาชิมิ") — ของจริงอยู่ในทะเบียน (ชีท) อ้างด้วย eq_id ไม่ใช่ชื่อ
+   ⚠️ ชื่อหมวดถูกใช้เป็นคำนำหน้าชื่อช่อง + เก็บลงคอลัมน์ cat → เปลี่ยนชื่อหมวดทีหลัง แถวเก่าจะหลุดไปกอง "อื่น ๆ"
+     เพิ่ม/ตัดหมวดหรือจำนวนช่อง = แก้ที่นี่แล้ว push เว็บ ไม่ต้อง deploy GAS ; แบบที่ถ่ายไปแล้วไม่หาย */
 const EQUIP_SIDES=[{id:'kitchen', name:'ครัว', icon:'🍳'}, {id:'front', name:'หน้าร้าน', icon:'🍽️'}];
 const EQUIP_CATS=[
-  {side:'kitchen', name:'มีดและเขียง', icon:'🔪', items:['มีดแล่ปลา (ยานางิบะ)','มีดเดบะ','มีดทั่วไป','มีดเล็ก/มีดปอก','หินลับมีด','เขียงของดิบ','เขียงของสุก','กรรไกรครัว']},
-  {side:'kitchen', name:'หม้อ', icon:'🍲', items:['หม้อน้ำซุป (ใหญ่)','หม้อลวกเส้น','ตะกร้อลวกเส้น','หม้อซอส (เล็ก)','หม้อโอเด้ง']},
-  {side:'kitchen', name:'กระทะ', icon:'🍳', items:['กระทะแบน','กระทะผัด (ก้นลึก)','กระทะไข่หวาน (เหลี่ยม)','กระทะเหล็กร้อน']},
-  {side:'kitchen', name:'ทอดและย่าง', icon:'🔥', items:['ตะกร้าทอด','ตะแกรงสะเด็ดน้ำมัน','ตะแกรงย่างปลา']},
-  {side:'kitchen', name:'ตะหลิวและของใช้มือ', icon:'🥄', items:['ตะหลิว','ทัพพี','กระชอน','ตะแกรงกรอง','คีมคีบ',{n:'ตะเกียบยาว',u:'คู่'},'ไม้พาย','ตะกร้อตีไข่','ที่ขูดหัวไชเท้า/ขิง','แหนบถอนก้าง','ที่ปอกผัก']},
-  {side:'kitchen', name:'ถาดและกล่องเก็บของ', icon:'🧺', items:['ถาดสแตนเลส','กล่องเก็บของมีฝา','อ่างผสม','ตะกร้าล้างผัก']},
-  {side:'kitchen', name:'ชั่งและตวง', icon:'⚖️', items:['ตาชั่ง','ถ้วยตวง','ช้อนตวง','เทอร์โมมิเตอร์']},
-  {side:'kitchen', name:'เครื่องใช้ไฟฟ้า', icon:'🔌', onoff:true, items:['ตู้เย็น','ตู้แช่แข็ง','หม้อหุงข้าว','เครื่องซีลสุญญากาศ','เครื่องซูวี','ไมโครเวฟ','เครื่องปั่น']},
-  {side:'front', name:'จาน', icon:'🍽️', items:['จานซาชิมิ','จานแบน (ใหญ่)','จานแบน (กลาง)','จานแบน (เล็ก)','จานรีปลาย่าง','ไม้รองซูชิ','จานคุชิคัตสึ']},
-  {side:'front', name:'ชาม', icon:'🍜', items:['ชามข้าวหน้า','ชามอุด้ง/โซบะ','ชามสลัด','ถ้วยโอเด้ง','ถ้วยซุป','ถาดไม้ไผ่ (โซบะเย็น)']},
-  {side:'front', name:'ถ้วยน้ำจิ้มและจานเล็ก', icon:'🥢', items:['ถ้วยโชยุ','ถ้วยน้ำจิ้ม','จานรองวาซาบิ','ถ้วยซอสคุชิคัตสึ']},
-  {side:'front', name:'ตะเกียบ ช้อน ส้อม', icon:'🍴', items:[{n:'ตะเกียบ',u:'คู่'},'ที่วางตะเกียบ','ช้อนญี่ปุ่น','ช้อน','ส้อม','มีดสเต๊ก']},
-  {side:'front', name:'แก้ว', icon:'🍺', items:['แก้วเบียร์','แก้วไฮบอล/โชจู','แก้วไวน์','แก้ววิสกี้','แก้วน้ำ','แก้วช็อต']},
-  {side:'front', name:'ชุดสาเก', icon:'🍶', items:['ขวดเทสาเก (โทคุริ)','จอกสาเก','ถังแช่ขวด']},
-  {side:'front', name:'อุปกรณ์บาร์', icon:'🧊', items:['เหยือกน้ำ','ถังน้ำแข็ง','ที่ตักน้ำแข็ง','ที่เปิดขวด','ที่เปิดไวน์','ถ้วยตวงเหล้า (จิกเกอร์)']},
-  {side:'front', name:'ของบนโต๊ะและงานบริการ', icon:'🧂', items:['ขวดโชยุ','กระปุกพริกญี่ปุ่น','ถาดผ้าเย็น','ถาดเสิร์ฟ','แฟ้มเมนู','แฟ้มบิล','กาน้ำชา','ถ้วยชา']}
+  {side:'kitchen', name:'มีด/เขียง', icon:'🔪', slots:8},
+  {side:'kitchen', name:'หม้อ', icon:'🍲', slots:5},
+  {side:'kitchen', name:'กระทะ', icon:'🍳', slots:4},
+  {side:'kitchen', name:'ของทอด/ย่าง', icon:'🔥', slots:3},
+  {side:'kitchen', name:'ของใช้มือ', icon:'🥄', slots:11},
+  {side:'kitchen', name:'ถาด/กล่อง', icon:'🧺', slots:4},
+  {side:'kitchen', name:'ชั่ง/ตวง', icon:'⚖️', slots:4},
+  {side:'kitchen', name:'เครื่องใช้ไฟฟ้า', icon:'🔌', onoff:true, slots:7},
+  {side:'front', name:'จาน', icon:'🍽️', slots:12},
+  {side:'front', name:'ชาม', icon:'🍜', slots:6},
+  {side:'front', name:'ถ้วยน้ำจิ้ม', icon:'🥢', slots:4},
+  {side:'front', name:'ตะเกียบ/ช้อน', icon:'🍴', slots:6},
+  {side:'front', name:'แก้ว', icon:'🍺', slots:6},
+  {side:'front', name:'ชุดสาเก', icon:'🍶', slots:3},
+  {side:'front', name:'ของใช้บาร์', icon:'🧊', slots:6},
+  {side:'front', name:'ของบนโต๊ะ', icon:'🧂', slots:8}
 ];
 const EQ_MAX_PHOTOS=3;                                   // ต้องตรงกับ EQ_MAX_PHOTOS ฝั่ง GAS
 const EQ_LABELS=['รูปหลัก','รูปเสริม','ที่เก็บ'];
@@ -3599,31 +3602,46 @@ let EQ_ALLARM=false;           // ปุ่ม "อนุมัติทั้�
 function eqKeyName(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim().toLowerCase(); }
 function eqSideName(id){ var s=EQUIP_SIDES.filter(function(x){ return x.id===id; })[0]; return s?s.name:id; }
 function eqSideIcon(id){ var s=EQUIP_SIDES.filter(function(x){ return x.id===id; })[0]; return s?s.icon:'📦'; }
-function eqCatIdx(side,name){ for(var i=0;i<EQUIP_CATS.length;i++) if(EQUIP_CATS[i].side===side && EQUIP_CATS[i].name===name) return i; return -1; }
 function eqIsOwner(){ return !!(ME && ME.role==='owner'); }
 function eqShowTile(){
   if(EQUIP_READY!==true) return;   // หลังบ้านยังไม่มีเมนูนี้ → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
   var t=document.getElementById('ho-equip-tile'); if(t) t.classList.remove('hidden');
 }
-// ช่องในตาราง = ลิสต์ตั้งต้นของหมวดนั้น + แบบที่ถ่ายเพิ่มเอง (จับคู่กันด้วยชื่อ ครั้งเดียวตอนแสดงผล)
+// เลขท้ายชื่อที่ถูกใช้ไปแล้วในหมวดนั้น ("จาน 4" → 4) — ใช้หาเลขว่างของช่องถัดไป
+function eqUsedNums(rows, cat){
+  var used={}, re=new RegExp('^'+cat.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+'\\s*(\\d+)$');
+  rows.forEach(function(r){ var m=re.exec(String(r.name||'').replace(/\s+/g,' ').trim()); if(m) used[+m[1]]=1; });
+  return used;
+}
+function eqNextNum(used, from){ var n=from||1; while(used[n]) n++; return n; }
+// ช่องในตาราง = แบบที่ถ่ายไว้แล้วของหมวดนั้น แล้วเติม "ช่องว่าง" ให้ครบตามจำนวนตั้งต้น (slots)
+// ไม่ได้จับคู่ด้วยชื่ออีกแล้ว → พนักงานเปลี่ยนชื่อเป็นอะไรก็ได้ ช่องไม่งอกซ้ำ
 function eqTiles(side){
-  var byName={}, used={}, out=[];
-  EQ_ROWS.forEach(function(r){ if(r.side===side) byName[eqKeyName(r.name)]=r; });
+  var byCat={}, out=[];
+  EQ_ROWS.forEach(function(r){ if(r.side!==side) return; var k=eqKeyName(r.cat); (byCat[k]=byCat[k]||[]).push(r); });
   EQUIP_CATS.forEach(function(c,ci){
     if(c.side!==side) return;
-    c.items.forEach(function(it){
-      var o=(typeof it==='string')?{n:it}:it, r=byName[eqKeyName(o.n)]||null;
-      if(r) used[r.eq_id]=1;
-      out.push({ci:ci, side:side, cat:c.name, icon:c.icon, onoff:!!c.onoff, unit:o.u||'ชิ้น', name:(r?r.name:o.n), row:r});
+    var k=eqKeyName(c.name), rows=byCat[k]||[]; delete byCat[k];
+    rows.forEach(function(r){
+      out.push({ci:ci, side:side, cat:c.name, icon:c.icon, onoff:!!c.onoff, unit:r.unit||'ชิ้น', name:r.name, row:r});
+    });
+    var used=eqUsedNums(rows, c.name), n=1;
+    for(var i=rows.length; i<(c.slots||0); i++){
+      n=eqNextNum(used, n); used[n]=1;
+      out.push({ci:ci, side:side, cat:c.name, icon:c.icon, onoff:!!c.onoff, unit:'ชิ้น', name:c.name+' '+n, row:null, slot:true});
+    }
+  });
+  Object.keys(byCat).forEach(function(k){     // แถวที่หมวดไม่ตรงกับลิสต์ตั้งต้น (เช่นเคยเปลี่ยนชื่อหมวด) → กอง "อื่น ๆ"
+    byCat[k].forEach(function(r){
+      out.push({ci:-1, side:side, cat:(r.cat||'อื่น ๆ'), icon:'📦', onoff:!!r.onoff, unit:r.unit||'ชิ้น', name:r.name, row:r});
     });
   });
-  EQ_ROWS.forEach(function(r){
-    if(r.side!==side || used[r.eq_id]) return;
-    var ci=eqCatIdx(side, r.cat);
-    out.push({ci:ci, side:side, cat:(ci>=0?EQUIP_CATS[ci].name:(r.cat||'อื่น ๆ')), icon:(ci>=0?EQUIP_CATS[ci].icon:'📦'),
-      onoff:(ci>=0?!!EQUIP_CATS[ci].onoff:!!r.onoff), unit:r.unit||'ชิ้น', name:r.name, row:r});
-  });
   return out;
+}
+// ชื่อช่องถัดไปของหมวด (ใช้ตอนกดปุ่ม "เพิ่ม" และเป็นชื่อที่หลังบ้านจะตั้งให้ถ้าไม่แก้)
+function eqSlotName(side,cat){
+  var rows=EQ_ROWS.filter(function(r){ return r.side===side && eqKeyName(r.cat)===eqKeyName(cat); });
+  return cat+' '+eqNextNum(eqUsedNums(rows, cat), 1);
 }
 function eqStats(){
   var tot=0, done=0;
@@ -3732,8 +3750,9 @@ function eqRenderList(){
     if(open){
       h+='<div class="st-sub-body"><div class="eq-grid">';
       vis.forEach(function(t){ EQ_VIEW.push(t); h+=eqTileHtml(t, EQ_VIEW.length-1); });
-      if(EQ_FILTER==='all' && g.ci>=0)
-        h+='<button type="button" class="eq-tile newt" onclick="eqNewType('+g.ci+')"><span class="eq-pic"><span class="cam">📷</span>ถ่ายแบบใหม่</span></button>';
+      if(EQ_FILTER==='all' && g.ci>=0)   // เลขที่จะได้จริง = เลขว่างตัวแรก (หลังบ้านตั้งให้) จึงไม่โชว์เลขบนปุ่ม กันสับสนกับช่องว่างที่ยังเหลือ
+        h+='<button type="button" class="eq-tile newt" onclick="eqNewType('+g.ci+')"><span class="eq-pic"><span class="cam">➕</span>เพิ่ม'+esc(g.name)+'</span>'+
+           '<span class="eq-sub">ช่องไม่พอ กดเพิ่มได้</span></button>';
       h+='</div></div>';
     }
     h+='</div>';
@@ -3762,15 +3781,13 @@ function eqSetSide(s){ if(s===EQ_SIDE) return; EQ_SIDE=s; eqRenderList(); }
 function eqSetFilter(f){ EQ_FILTER=f; eqRenderList(); }
 
 /* --- ฟอร์มสำรวจ 1 แบบ --- */
-function eqAutoPreview(side,cat){   // ชื่อชั่วคราวที่หลังบ้านจะตั้งให้ (โชว์เป็น placeholder เฉย ๆ)
-  var n=EQ_ROWS.filter(function(r){ return r.side===side && r.cat===cat; }).length+1;
-  return cat+' แบบที่ '+n;
-}
 function eqOpenForm(i){
   var t=EQ_VIEW[i]; if(!t) return;
   var r=t.row;
+  // ช่องชื่อเติมไว้ให้เลย (เช่น "จาน 4") พนักงานพิมพ์ทับได้ ; ไม่แก้ = ส่งชื่อว่างให้หลังบ้านตั้งเอง (ยังนับว่า "ยังไม่มีชื่อ")
   EQF={ eqId:(r?r.eq_id:''), side:t.side, ci:t.ci, cat:t.cat, icon:t.icon, unit:(r?(r.unit||t.unit):t.unit), onoff:t.onoff,
-        name:(r?(r.auto_name?'':r.name):(t.name||'')), have:(r?(r.status!=='absent_pending'&&r.status!=='absent'):true),
+        slotName:(r?(r.auto_name?r.name:''):(t.name||eqSlotName(t.side,t.cat))),
+        name:(r?r.name:(t.name||eqSlotName(t.side,t.cat))), have:(r?(r.status!=='absent_pending'&&r.status!=='absent'):true),
         photos:(r?(r.photos||[]).map(function(id,k){ return {id:id, url:(r.photo_urls||[])[k]||''}; }):[]),
         qty:(r&&r.qty!==''?String(r.qty):''), dmg:(r&&r.damaged!==''?String(r.damaged):''), cond:(r?r.cond:''),
         loc:(r?r.loc:''), note:(r?r.note:''), status:(r?r.status:''), reason:(r?r.reason:''), by:(r?r.by:''), at:(r?r.at:''),
@@ -3779,7 +3796,8 @@ function eqOpenForm(i){
 }
 function eqNewType(ci){
   var c=EQUIP_CATS[ci]; if(!c) return;
-  EQF={ eqId:'', side:c.side, ci:ci, cat:c.name, icon:c.icon, unit:'ชิ้น', onoff:!!c.onoff, name:'', have:true, photos:[],
+  var nm=eqSlotName(c.side, c.name);
+  EQF={ eqId:'', side:c.side, ci:ci, cat:c.name, icon:c.icon, unit:'ชิ้น', onoff:!!c.onoff, name:nm, slotName:nm, have:true, photos:[],
         qty:'', dmg:'', cond:'', loc:'', note:'', status:'', reason:'', by:'', at:'',
         photoDirty:true, clientId:uuid(), isNew:true, err:'' };
   eqRenderForm(); show('eqform'); offWatch(); offEqBar();
@@ -3821,8 +3839,9 @@ function eqRenderForm(){
       else h+='<div class="eq-shot locked"><span class="big">＋</span>'+EQ_LABELS[i]+'</div>';
     }
     h+='</div><div class="eq-tip">💡 วางของ 1 ชิ้นบนพื้นเรียบ ถ่ายเฉียงให้เห็นทรงและลาย · ของที่หน้าตาคล้ายกัน วางคู่ตะเกียบให้เห็นขนาด · รูปที่ 3 ถ่าย “ที่เก็บ” ไว้ก็ดี</div>';
-    h+='<label class="fl-eq">ชื่อ <span class="muted" style="font-weight:400">(ไม่บังคับ)</span></label>'+
-       '<input class="eq-inp" id="eqf-name" maxlength="60" placeholder="ไม่ใส่ = “'+esc(eqAutoPreview(f.side,f.cat))+'” ให้เจ้าของตั้งทีหลัง" value="'+esc(f.name)+'">';
+    h+='<label class="fl-eq">ชื่อ <span class="muted" style="font-weight:400">— แก้ได้ ถ้าอยากเรียกให้จำง่าย</span></label>'+
+       '<input class="eq-inp" id="eqf-name" maxlength="60" placeholder="'+esc(f.slotName||f.cat)+'" value="'+esc(f.name)+'">'+
+       '<div class="muted" style="font-size:11.5px;margin-top:5px">ใช้ชื่อที่ระบบตั้งให้ก็ได้ ('+esc(f.slotName||f.name||f.cat)+') · พิมพ์ทับได้เลย เช่น “จานซาชิมิ”</div>';
     if(f.onoff){
       h+='<label class="fl-eq">สภาพ</label><div class="eq-seg" style="margin-top:0">'+
          '<button type="button" class="'+(f.cond==='ok'?'on':'')+'" onclick="eqSetCond(\'ok\')">✅ ใช้ได้</button>'+
@@ -3869,7 +3888,10 @@ async function sendEq(){
     if(!f.onoff && String(f.qty).trim()===''){ msg(m,'กรอกจำนวนที่มีตอนนี้'); return; }
     if(!f.onoff && String(f.dmg).trim()!=='' && Number(f.dmg)>Number(f.qty)){ msg(m,'จำนวนที่บิ่น/เสีย มากกว่าจำนวนที่มี — ช่อง “มีตอนนี้” ต้องรวมชิ้นที่บิ่นด้วย'); return; }
   }
-  var payload={ side:f.side, cat:f.cat, name:String(f.name||'').trim(), unit:f.unit, onoff:f.onoff, have:f.have,
+  // ไม่ได้พิมพ์ทับชื่อที่ระบบตั้งให้ → ส่งชื่อว่าง ให้หลังบ้านตั้ง "<หมวด> N" เอง (คงสถานะ "ยังไม่มีชื่อ" ให้เจ้าของตั้งตอนอนุมัติ)
+  var nameOut=String(f.name||'').trim();
+  if(f.slotName && eqKeyName(nameOut)===eqKeyName(f.slotName)) nameOut='';
+  var payload={ side:f.side, cat:f.cat, name:nameOut, unit:f.unit, onoff:f.onoff, have:f.have,
     qty:(f.have&&!f.onoff)?f.qty:'', damaged:(f.have&&!f.onoff)?f.dmg:'', cond:(f.have&&f.onoff)?f.cond:'',
     loc:f.loc, note:f.note, client_id:f.clientId };
   if(f.eqId) payload.eq_id=f.eqId;
@@ -3882,7 +3904,7 @@ async function sendEq(){
   busy(btn,false, f.have?'ส่งให้เจ้าของอนุมัติ':'ส่ง: ไม่มีในร้าน');
   // เน็ตหลุด = เก็บไว้ในเครื่อง แล้วแอปส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
   if(!r.ok && r.netfail){
-    var kept=offAdd('eq', f.clientId, 'สำรวจอุปกรณ์ '+(payload.name||f.cat), payload);
+    var kept=offAdd('eq', f.clientId, 'สำรวจอุปกรณ์ '+(nameOut||f.slotName||f.cat), payload);
     if(kept){
       offDraftClear('eq'); OFF_HIDE['eq']=1;
       openEqList();
@@ -3900,7 +3922,11 @@ async function sendEq(){
 }
 
 /* --- ร่างในเครื่อง: ถ่ายค้างไว้แล้วแอปปิด = กลับมากู้คืนได้ --- */
-function eqDraftHas(f){ return !!(f && (f.photos.length || String(f.qty).trim() || String(f.name).trim() || String(f.loc).trim() || String(f.note).trim() || f.cond || !f.have)); }
+function eqDraftHas(f){   // ชื่อที่ระบบเติมให้เอง (เช่น "จาน 4") ไม่นับว่ากรอกอะไรไว้ — ไม่งั้นแถบ "กรอกค้าง" เด้งทุกครั้งที่เปิดฟอร์ม
+  if(!f) return false;
+  var nm=String(f.name||'').trim(), typed=!!nm && eqKeyName(nm)!==eqKeyName(f.slotName||'');
+  return !!(f.photos.length || String(f.qty).trim() || typed || String(f.loc).trim() || String(f.note).trim() || f.cond || !f.have);
+}
 function offDraftSaveEq(){
   if(!EQF){ return; }
   eqCollect();
@@ -4086,12 +4112,12 @@ const HELP_TOPICS = [
 
   { id:'equip', ico:'🧰', name:'สำรวจอุปกรณ์', sub:'ถ่ายรูป + นับ ให้เจ้าของอนุมัติ', steps:[
       'หน้าหลัก → แตะ <b>อุปกรณ์</b> → <b>📋 สำรวจอุปกรณ์</b> → เลือกฝั่ง <b>🍳 ครัว</b> หรือ <b>🍽️ หน้าร้าน</b> (ระบบเลือกตามทีมให้ก่อน)',
-      'แตะหมวดเพื่อกางตาราง — <b>1 ช่อง = 1 แบบ</b> · ช่องเส้นประ = ยังไม่ถ่าย · มุมรูปบอกสถานะ <b>✓</b> อนุมัติแล้ว · <b>⏳</b> รออนุมัติ · <b>!</b> ต้องแก้',
+      'แตะหมวดเพื่อกางตาราง — <b>1 ช่อง = 1 แบบ</b> ช่องตั้งชื่อไว้เป็นเลข (จาน 1, จาน 2 …) ถ่ายช่องไหนก่อนก็ได้ · มุมรูปบอกสถานะ <b>✓</b> อนุมัติแล้ว · <b>⏳</b> รออนุมัติ · <b>!</b> ต้องแก้',
       'แตะช่อง → เลือก <b>✅ มี</b> หรือ <b>ไม่มีในร้าน</b> → ถ่าย <b>รูปหลัก 1 รูป (บังคับ)</b> เพิ่มได้อีก 2 รูป',
       'กรอก <b>มีตอนนี้</b> (นับเฉพาะแบบนี้ รวมชิ้นที่บิ่นด้วย) และ <b>บิ่น/เสีย</b> ถ้ามี · <b>เครื่องใช้ไฟฟ้า</b> ไม่ต้องนับ แตะ ✅ ใช้ได้ หรือ ❌ เสีย',
-      '<b>ชื่อไม่บังคับ</b> — ไม่ใส่ ระบบตั้งให้ก่อนเป็น “จาน แบบที่ 8” แล้วเจ้าของตั้งชื่อตอนอนุมัติ · <b>ที่เก็บ</b> ใส่ก็ดี (เช่น ชั้นจาน หลังครัว)',
+      '<b>ชื่อแก้ได้เอง</b> — ระบบเติมให้ก่อนเป็น “จาน 4” ถ้าอยากเรียกให้จำง่ายพิมพ์ทับได้เลย (เช่น จานซาชิมิ) · ไม่แก้ก็ได้ เจ้าของตั้งชื่อตอนอนุมัติ · <b>ที่เก็บ</b> ใส่ก็ดี (เช่น ชั้นจาน หลังครัว)',
       'กด <b>ส่งให้เจ้าของอนุมัติ</b> → ช่องนั้นจะขึ้น ⏳ รออนุมัติ',
-      'เจอแบบที่ไม่มีในตาราง → กดช่อง <b>📷 ถ่ายแบบใหม่</b> ท้ายหมวด (เพิ่มได้ไม่จำกัด)',
+      'ช่องไม่พอ (เช่นจานมีมากกว่า 12 แบบ) → กดช่อง <b>➕ เพิ่มจาน</b> ท้ายหมวด เพิ่มได้ไม่จำกัด',
       'ถูกตีกลับ (ช่องขึ้นกรอบแดง) → แตะดูเหตุผลจากเจ้าของ แก้แล้วส่งใหม่ได้เลย'
     ], tip:'💡 ถ่ายรูปให้ดูออก: วางของ 1 ชิ้นบนพื้นเรียบ ถ่ายเฉียงให้เห็นทรงและลาย · ของที่หน้าตาคล้ายกัน วางคู่ตะเกียบให้เห็นขนาด · ถ่ายค้างไว้แล้วแอปปิด เปิดมาใหม่มีปุ่ม <b>กู้คืนข้อมูล</b> · เน็ตหลุดก็กดส่งได้ แอปจะส่งให้เองเมื่อเน็ตกลับมา' },
 
