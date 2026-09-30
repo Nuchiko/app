@@ -930,7 +930,7 @@
   <section id="screen-eqlist" class="hidden">
     <button class="backbtn" onclick="openEqHub()">‹ อุปกรณ์</button>
     <div class="topbar" style="padding-top:0"><div class="who">📋 สำรวจอุปกรณ์</div></div>
-    <div class="st-tip">1 ช่อง = 1 แบบ · ช่องตั้งชื่อเป็นเลขไว้ให้ (จาน 1, จาน 2 …) แตะช่องเพื่อถ่ายรูปและนับ · ช่องไม่พอ กด “➕ เพิ่ม…” ท้ายหมวด</div>
+    <div class="st-tip">1 ช่อง = 1 แบบ · ตั้งต้นให้หมวดละ 1 ช่อง (จาน 1) แตะเพื่อถ่ายรูปและนับ · ของชนิดเดียวกันมีหลายแบบ กด “➕ เพิ่ม…” ท้ายหมวดได้เรื่อย ๆ</div>
     <div class="msg" id="eql-msg"></div>
     <div id="eql-draftbar" class="hidden"></div>
     <div class="card eq-sum hidden" id="eql-sum"></div>
@@ -3571,22 +3571,22 @@ async function pkLoadList(){
      เพิ่ม/ตัดหมวดหรือจำนวนช่อง = แก้ที่นี่แล้ว push เว็บ ไม่ต้อง deploy GAS ; แบบที่ถ่ายไปแล้วไม่หาย */
 const EQUIP_SIDES=[{id:'kitchen', name:'ครัว', icon:'🍳'}, {id:'front', name:'หน้าร้าน', icon:'🍽️'}];
 const EQUIP_CATS=[
-  {side:'kitchen', name:'มีด/เขียง', icon:'🔪', slots:8},
-  {side:'kitchen', name:'หม้อ', icon:'🍲', slots:5},
-  {side:'kitchen', name:'กระทะ', icon:'🍳', slots:4},
-  {side:'kitchen', name:'ของทอด/ย่าง', icon:'🔥', slots:3},
-  {side:'kitchen', name:'ของใช้มือ', icon:'🥄', slots:11},
-  {side:'kitchen', name:'ถาด/กล่อง', icon:'🧺', slots:4},
-  {side:'kitchen', name:'ชั่ง/ตวง', icon:'⚖️', slots:4},
-  {side:'kitchen', name:'เครื่องใช้ไฟฟ้า', icon:'🔌', onoff:true, slots:7},
-  {side:'front', name:'จาน', icon:'🍽️', slots:12},
-  {side:'front', name:'ชาม', icon:'🍜', slots:6},
-  {side:'front', name:'ถ้วยน้ำจิ้ม', icon:'🥢', slots:4},
-  {side:'front', name:'ตะเกียบ/ช้อน', icon:'🍴', slots:6},
-  {side:'front', name:'แก้ว', icon:'🍺', slots:6},
-  {side:'front', name:'ชุดสาเก', icon:'🍶', slots:3},
-  {side:'front', name:'ของใช้บาร์', icon:'🧊', slots:6},
-  {side:'front', name:'ของบนโต๊ะ', icon:'🧂', slots:8}
+  {side:'kitchen', name:'มีด/เขียง', icon:'🔪', slots:1},
+  {side:'kitchen', name:'หม้อ', icon:'🍲', slots:1},
+  {side:'kitchen', name:'กระทะ', icon:'🍳', slots:1},
+  {side:'kitchen', name:'ของทอด/ย่าง', icon:'🔥', slots:1},
+  {side:'kitchen', name:'ของใช้มือ', icon:'🥄', slots:1},
+  {side:'kitchen', name:'ถาด/กล่อง', icon:'🧺', slots:1},
+  {side:'kitchen', name:'ชั่ง/ตวง', icon:'⚖️', slots:1},
+  {side:'kitchen', name:'เครื่องใช้ไฟฟ้า', icon:'🔌', onoff:true, slots:1},
+  {side:'front', name:'จาน', icon:'🍽️', slots:1},
+  {side:'front', name:'ชาม', icon:'🍜', slots:1},
+  {side:'front', name:'ถ้วยน้ำจิ้ม', icon:'🥢', slots:1},
+  {side:'front', name:'ตะเกียบ/ช้อน', icon:'🍴', slots:1},
+  {side:'front', name:'แก้ว', icon:'🍺', slots:1},
+  {side:'front', name:'ชุดสาเก', icon:'🍶', slots:1},
+  {side:'front', name:'ของใช้บาร์', icon:'🧊', slots:1},
+  {side:'front', name:'ของบนโต๊ะ', icon:'🧂', slots:1}
 ];
 const EQ_MAX_PHOTOS=3;                                   // ต้องตรงกับ EQ_MAX_PHOTOS ฝั่ง GAS
 const EQ_LABELS=['รูปหลัก','รูปเสริม','ที่เก็บ'];
@@ -3750,9 +3750,9 @@ function eqRenderList(){
     if(open){
       h+='<div class="st-sub-body"><div class="eq-grid">';
       vis.forEach(function(t){ EQ_VIEW.push(t); h+=eqTileHtml(t, EQ_VIEW.length-1); });
-      if(EQ_FILTER==='all' && g.ci>=0)   // เลขที่จะได้จริง = เลขว่างตัวแรก (หลังบ้านตั้งให้) จึงไม่โชว์เลขบนปุ่ม กันสับสนกับช่องว่างที่ยังเหลือ
+      if(g.ci>=0)   // โชว์ทุกตัวกรอง — ตั้งต้นมีหมวดละ 1 ช่อง ที่เหลือพนักงานกดเพิ่มเอง ปุ่มนี้จึงต้องเห็นเสมอ
         h+='<button type="button" class="eq-tile newt" onclick="eqNewType('+g.ci+')"><span class="eq-pic"><span class="cam">➕</span>เพิ่ม'+esc(g.name)+'</span>'+
-           '<span class="eq-sub">ช่องไม่พอ กดเพิ่มได้</span></button>';
+           '<span class="eq-sub">กดได้เรื่อย ๆ</span></button>';
       h+='</div></div>';
     }
     h+='</div>';
