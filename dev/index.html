@@ -479,6 +479,110 @@
   .health .hlink{background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
   .eqhub-bubble{margin-left:auto;background:var(--danger);color:#fff;font-weight:800;font-size:13px;min-width:26px;height:26px;
     border-radius:13px;display:flex;align-items:center;justify-content:center;padding:0 7px}
+
+  /* ===== ลงเวลาเข้า–ออกงาน v2 (GPS 3 ระดับ + เซลฟี่ทุกครั้ง) — 2 ต.ค. 2026 ===== */
+  .att-sub{display:block;font-size:15px;font-weight:600;opacity:.92;margin-top:2px;
+    font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans Myanmar","Myanmar Sangam MN",Padauk,"Noto Sans Thai",sans-serif}
+  .att-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:700;
+    line-height:1.35;border:1px solid;text-align:left;white-space:normal;max-width:100%}
+  .att-pill.ok{background:#e9f6ef;color:#177a4a;border-color:#bfe3cd}
+  .att-pill.warn{background:#fff4df;color:#8a5a00;border-color:#f0d9a8}
+  .att-pill.bad{background:#fdeceb;color:#b23b32;border-color:#f1c4bf}
+  .att-pill.mute{background:#eef2f8;color:#5f7088;border-color:var(--line)}
+  .att-pill.sm{font-size:12.5px;padding:3px 10px}
+  .att-pill svg{width:16px;height:16px;flex:none}
+  .att-pills{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 12px}
+  .att-dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+  .att-spin{width:14px;height:14px;border:2px solid rgba(10,65,145,.22);border-top-color:var(--accent2);border-radius:50%;
+    display:inline-block;animation:spin .7s linear infinite;vertical-align:-2px}
+  .att-hint{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13.5px;color:rgba(255,255,255,.85);margin:10px 0 4px;text-align:center}
+  .att-hint svg{width:17px;height:17px;flex:none}
+  .att-onbg{color:rgba(255,255,255,.85)}
+  .att-h2{font-size:21px;font-weight:800;color:#fff;line-height:1.35}
+  .att-rows{padding:4px 16px}
+  .att-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .att-row:last-child{border-bottom:0}
+  .att-row .k{color:var(--muted);font-size:14.5px;flex:0 0 auto;max-width:48%}
+  .att-row .v{font-weight:700;text-align:right;min-width:0;word-break:break-word}
+  .att-num{font-variant-numeric:tabular-nums}
+  .att-worked{font-size:15px;margin-top:8px}
+  .att-linkbtn{background:none;border:0;padding:6px 0 0;color:var(--accent2);font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px}
+  .att-hero{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0 14px;text-align:center}
+  .att-ico{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:#0a4191}
+  .att-ico svg{width:32px;height:32px}
+  .att-ico.okc{color:#1f9d57;width:96px;height:96px}
+  .att-ico.outc{color:#c0392b;width:96px;height:96px}
+  .att-ico.okc svg,.att-ico.outc svg{width:52px;height:52px}
+  .att-ico.warnc{color:#c98a00;width:84px;height:84px}
+  .att-ico.warnc svg{width:42px;height:42px}
+  .att-bigtime{font-size:52px;font-weight:800;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+  .att-consent{display:flex;flex-direction:column;gap:13px;font-size:15px}
+  .att-ci{display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+  .att-ci svg{width:19px;height:19px;flex:none;margin-top:3px;color:#c98a00}
+  .att-warncard{border:1px solid #f0d9a8!important}
+  .att-badcard{border:1px solid #f1c4bf!important}
+  .att-steps{margin:6px 0 0;padding-left:20px;font-size:13.5px;line-height:1.65;color:var(--muted)}
+  .att-steps b{color:var(--text)}
+  .att-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .att-two .btn{margin-top:0}
+  .att-danger{color:var(--danger)!important;border-color:rgba(216,69,63,.45)!important}
+  .bigbtn.att-mid{padding:15px;font-size:19px;margin-top:12px}
+  .bigbtn .att-sub{color:#fff}
+  /* กล้องเซลฟี่ — พรีวิวกลับด้านแบบกระจก (CSS อย่างเดียว) รูปที่ส่งเป็นภาพจริง */
+  .att-band{background:#e3b23c;color:#1a1614;font-weight:800;text-align:center;padding:10px 12px;font-size:15px;border-radius:12px;margin:2px 0 8px}
+  .att-cam{position:relative;border-radius:18px;overflow:hidden;background:#000;height:min(62vh,560px);min-height:300px}
+  .att-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#000}
+  .att-gscan{position:absolute;top:7%;right:6%;width:38%;height:33%;border:2.5px dashed #e3b23c;border-radius:18px;pointer-events:none}
+  .att-gface{position:absolute;left:8%;bottom:5%;width:46%;height:48%;border:2.5px dashed #e3b23c;border-radius:50%;pointer-events:none}
+  .att-glab{position:absolute;left:-20px;right:-20px;text-align:center;font-size:12px;font-weight:800;color:#e3b23c;text-shadow:0 1px 3px rgba(0,0,0,.85)}
+  .att-gscan .att-glab{bottom:-21px}
+  .att-gface .att-glab{top:-21px}
+  .att-camstate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    padding:20px;text-align:center;color:#fff;background:rgba(0,0,0,.78);font-size:14.5px;line-height:1.55;overflow:auto}
+  .att-camstate ol{text-align:left;margin:4px 0 0;padding-left:20px;font-size:13.5px}
+  .att-shutter{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:#f4ece2;box-shadow:0 0 0 3px rgba(0,0,0,.25);
+    cursor:pointer;display:block;margin:14px auto 6px;padding:0}
+  .att-shutter[disabled]{opacity:.35;cursor:default}
+  .att-shot{border-radius:18px;overflow:hidden;border:3px solid #fff;background:#000;display:flex;align-items:center;justify-content:center}
+  .att-shot img{display:block;width:100%;height:auto;max-height:56vh;object-fit:contain}
+  /* หน้าเจ้าของร้าน */
+  .att-nav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 2px 12px}
+  .att-nav b{color:#fff;font-size:16px;text-align:center;flex:1}
+  .att-navbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:10px;padding:6px 14px;
+    font-size:17px;font-weight:800;cursor:pointer;font-family:inherit}
+  .att-navbtn[disabled]{opacity:.3;cursor:default}
+  .att-prow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .att-prow:last-child{border-bottom:0}
+  .att-prow.tap{cursor:pointer}
+  .att-prow .who{display:flex;align-items:center;gap:10px;min-width:0}
+  .att-prow .sub{font-size:13px;color:var(--muted);line-height:1.4}
+  .att-prow .rej{font-size:12px;color:#b23b32;font-weight:700}
+  .att-av{width:36px;height:36px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;
+    background:#eaf1fb;color:#0a4191}
+  .att-av.none{background:var(--bg2);border:1px dashed #b9c8de;color:var(--muted)}
+  .att-recsw{display:flex;gap:7px;flex-wrap:wrap;margin:0 2px 12px}
+  .att-recsw button{padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;
+    font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .att-recsw button.on{background:#fff;color:#0a4191;border-color:#fff}
+  .att-revph{position:relative;min-height:220px;border-radius:16px;overflow:hidden;background:#11203a;display:flex;align-items:center;
+    justify-content:center;color:rgba(255,255,255,.8);font-size:14px;margin-bottom:12px;text-align:center}
+  .att-revph img{display:block;width:100%;height:auto;max-height:62vh;object-fit:contain;cursor:zoom-in}
+  .att-seg{display:grid;gap:8px}
+  .att-seg button{padding:11px 4px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-weight:700;
+    font-size:15px;cursor:pointer;font-family:inherit}
+  .att-seg button.on{background:#0a4191;border-color:#0a4191;color:#fff}
+  .att-seg button.on.in{background:#1f9d57;border-color:#1f9d57}
+  .att-seg button.on.out{background:#c0392b;border-color:#c0392b}
+  .att-radio{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;
+    margin-top:8px;font-size:15px;line-height:1.45}
+  .att-radio .rb{width:20px;height:20px;border-radius:50%;border:2px solid #b9c8de;flex:none;margin-top:2px;box-sizing:border-box}
+  .att-radio.on{border-color:#0a4191;background:#eef3fb}
+  .att-radio.on .rb{border:6px solid #0a4191}
+  .att-map{height:110px;border-radius:12px;background-color:var(--bg2);display:flex;align-items:center;justify-content:center;color:#d8453f;
+    background-image:repeating-linear-gradient(0deg,#dbe5f2 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,#dbe5f2 0 1px,transparent 1px 24px)}
+  .att-map svg{width:34px;height:34px}
+  .att-map.none{color:#9aa7bd}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -635,6 +739,11 @@
 
     <div class="sect-title">ระบบงาน</div>
     <div class="grid">
+      <!-- ลงเวลา = โผล่เมื่อหลังบ้านรองรับลงเวลา v2 (ping.att) เท่านั้น — หลังบ้านรุ่นเก่าไม่มีธงนี้ ไทล์จึงซ่อนอยู่ (อัปเว็บก่อน deploy GAS ได้) -->
+      <div class="tile hidden" id="ho-clock-tile" onclick="openClock()" style="grid-column:1/-1">
+        <div class="ico">⏰</div>
+        <div><div class="tname">ลงเวลา</div><div class="tdesc">เข้า–ออกงาน · ถ่ายเซลฟี่ทุกครั้ง</div></div>
+      </div>
       <div class="tile" onclick="openStock()" style="grid-column:1/-1">
         <div class="ico">📦</div>
         <div><div class="tname">Stock</div><div class="tdesc">กรอกสต็อกประจำวัน</div></div>
@@ -656,11 +765,6 @@
       <div class="tile hidden" id="ho-cash-tile" onclick="openCash()" style="grid-column:1/-1">
         <div class="ico">💵</div>
         <div><div class="tname">เงินสด</div><div class="tdesc">บันทึกเงินสดรายวัน · ทีม Service</div></div>
-      </div>
-      <!-- เวลาเข้างาน = แบบร่าง โผล่เฉพาะ DEV (แอปจริงตัดออก) -->
-      <div class="tile hidden" id="ho-clock-tile" onclick="openClock()" style="grid-column:1/-1">
-        <div class="ico">⏰</div>
-        <div><div class="tname">เวลาเข้างาน</div><div class="tdesc">เข้า–ออกงาน · ยังทดลองอยู่ (เฉพาะ DEV)</div></div>
       </div>
     </div>
 
@@ -740,35 +844,220 @@
     <div class="footnote">บันทึกลงชีท + ส่งรูปเข้า LINE กลุ่ม Staff</div>
   </section>
 
-  <!-- ============ เวลาเข้างาน ============ -->
-  <section id="screen-clock" class="hidden">
+  <!-- ============ ลงเวลา v2: อ่าน + รับทราบครั้งเดียว ============ -->
+  <section id="screen-attconsent" class="hidden">
     <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
-    <div class="clock" id="ck-clock">--:--</div>
-    <div class="clockdate" id="ck-date">—</div>
-    <div class="card statuscard">
-      <span class="badge out" id="ck-badge"><span class="dot off" id="ck-dot"></span><span id="ck-status">—</span></span>
-      <div class="since" id="ck-since"></div>
+    <div id="acs-line"></div>
+    <div class="att-hero">
+      <div class="att-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="M8.5 12l2.5 2.5 4.5-4.5"></path></svg></div>
+      <div class="att-h2">ก่อนเริ่มลงเวลา</div>
+      <div class="att-onbg" style="font-size:15px">อ่านครั้งเดียว แล้วกด "รับทราบ"</div>
     </div>
-    <button class="bigbtn in" id="ck-action" onclick="punch()">เข้างาน</button>
-    <div class="geo" id="ck-geo"></div>
-    <div class="summary">
-      <div class="box"><div class="lab">เข้างานวันนี้</div><div class="val" id="ck-firstin">—</div></div>
-      <div class="box"><div class="lab">ออกงานล่าสุด</div><div class="val" id="ck-lastout">—</div></div>
+    <div class="card att-consent">
+      <div class="att-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <div><b>เวลาเข้า–ออกงาน</b> ใช้เวลาของระบบ เอาไปคิดค่าจ้าง</div></div>
+      <div class="att-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+        <div><b>ระยะห่างจากร้าน</b> แอปดูตำแหน่งเฉพาะตอนเปิดหน้าลงเวลา ไม่ติดตามตลอดเวลา</div></div>
+      <div class="att-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
+        <div><b>เซลฟี่ทุกครั้ง</b> ทั้งเข้าและออกงาน ถ่ายหน้าเครื่องสแกนนิ้ว รูปลบเองใน 60 วัน</div></div>
+      <div class="att-ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+        <div><b>ใครเห็น</b> เจ้าของร้านเท่านั้น คุณดูประวัติของตัวเองได้</div></div>
     </div>
-    <div id="ck-adminwrap" class="hidden">
-      <button class="btn ghost adminbtn" onclick="openReport()">📋 ดูเวลาเข้างานทั้งร้าน (วันนี้)</button>
+    <div class="card" style="font-size:14px;background:var(--bg2)">
+      <div style="font-weight:700;margin-bottom:4px">ตั้งค่ามือถือครั้งแรก</div>
+      <div class="muted">อนุญาต "ตำแหน่ง" และเปิด "ตำแหน่งที่แม่นยำ" · อนุญาต "กล้อง" · เปิดแอปจากไอคอนหรือ Safari/Chrome ไม่ใช่จากลิงก์ใน LINE</div>
     </div>
-    <div class="sect-title">ประวัติล่าสุด</div>
-    <div id="ck-history"></div>
-    <div class="msg" id="ck-msg"></div>
+    <button class="bigbtn in" id="acs-btn" onclick="attDoConsent()">รับทราบ<span class="att-sub">သိရှိပါပြီ</span></button>
+    <div class="msg" id="acs-msg"></div>
+    <div id="acs-owner" class="hidden"><button class="btn ghost adminbtn" onclick="openAttDay('home')">👑 ดูเวลาเข้างานของพนักงาน (เจ้าของร้าน) ›</button></div>
   </section>
 
-  <!-- ============ เวลาเข้างาน: รายงาน (ผู้ดูแล) ============ -->
-  <section id="screen-report" class="hidden">
-    <button class="backbtn" onclick="show('clock')">‹ กลับ</button>
-    <div class="topbar" style="padding-top:0"><div class="who">เวลาเข้างานวันนี้</div></div>
-    <div id="rp-date" class="muted" style="margin-bottom:10px"></div>
-    <div id="rp-list"></div>
+  <!-- ============ ลงเวลา v2: หน้าหลัก (ยังไม่เข้างาน / กำลังทำงาน + ลืมกดออก) ============ -->
+  <section id="screen-clock" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div id="ck-line"></div>
+    <div class="clock att-num" data-attclock id="ck-clock">--:--:--</div>
+    <div class="clockdate" data-attdate id="ck-date">—</div>
+    <div id="ck-forgot"></div>
+    <div class="card statuscard" style="padding:18px 16px">
+      <div id="ck-state"><span class="att-pill mute"><span class="att-spin"></span>กำลังโหลด…</span></div>
+      <div class="att-worked att-num hidden" id="ck-worked"></div>
+      <div style="margin-top:10px"><span class="att-pill mute att-locchip">กำลังหาตำแหน่ง…</span></div>
+      <button type="button" class="att-linkbtn hidden" id="ck-geohelp" onclick="attShowNoGps()">ตำแหน่งใช้ไม่ได้? ดูวิธีแก้ ›</button>
+    </div>
+    <button class="bigbtn in" id="ck-action" onclick="attTapPunch()" disabled>เข้างาน<span class="att-sub">အလုပ်ဝင်</span></button>
+    <div class="att-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>กดแล้วถ่ายเซลฟี่หน้าเครื่องสแกนนิ้ว</div>
+    <div class="msg" id="ck-msg"></div>
+    <div class="summary">
+      <div class="box"><div class="lab">เข้างานวันนี้</div><div class="val att-num" id="ck-firstin">—</div></div>
+      <div class="box"><div class="lab">ออกงานวันนี้</div><div class="val att-num" id="ck-lastout">—</div></div>
+    </div>
+    <div class="card att-rows" id="ck-month" style="margin-top:14px">—</div>
+    <button class="btn ghost adminbtn" style="margin-top:0" onclick="openAttHist()">ดูประวัติของฉัน ›</button>
+    <div id="ck-owner" class="hidden"><button class="btn ghost adminbtn" style="margin-top:12px" onclick="openAttDay('clock')">👑 เวลาเข้างานทั้งร้าน (เจ้าของร้าน) ›</button></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2: กล้องเซลฟี่ (ต้องเห็นหน้า + จอเครื่องสแกนนิ้ว) ============ -->
+  <section id="screen-attcam" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <button class="backbtn" onclick="attCamCancel()">ยกเลิก</button>
+      <b id="atc-title" style="color:#fff;padding-top:12px">เซลฟี่ · เข้างาน</b>
+      <span style="width:44px"></span>
+    </div>
+    <div class="att-band">ถ่ายให้เห็น หน้าคุณ + จอเครื่องสแกนนิ้ว</div>
+    <div class="att-cam">
+      <video id="atc-video" playsinline muted autoplay></video>
+      <div class="att-gscan"><span class="att-glab">จอเครื่องสแกน</span></div>
+      <div class="att-gface"><span class="att-glab">หน้า</span></div>
+      <div class="att-camstate" id="atc-state"><span class="spinner"></span>กำลังเปิดกล้อง…</div>
+    </div>
+    <button type="button" class="att-shutter" id="atc-shot" aria-label="ถ่ายรูป" onclick="attShoot()" disabled></button>
+    <div class="att-hint" id="atc-note">ใช้กล้องหน้า · เลือกรูปจากอัลบั้มไม่ได้</div>
+    <div id="atc-btns" class="hidden">
+      <button type="button" class="btn ghost adminbtn" id="atc-retry" onclick="attCamStart()">ลองเปิดกล้องอีกครั้ง</button>
+      <button type="button" class="btn ghost adminbtn" id="atc-fb" style="margin-top:10px" onclick="attPickFile()">📷 ใช้กล้องของมือถือถ่ายแทน</button>
+    </div>
+    <input type="file" id="atc-file" accept="image/*" capture="user" style="display:none" onchange="attOnFile(this)">
+  </section>
+
+  <!-- ============ ลงเวลา v2: ตรวจรูปก่อนส่ง ============ -->
+  <section id="screen-attconfirm" class="hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <button class="backbtn" onclick="attRetake()">‹ ถ่ายใหม่</button>
+      <b style="color:#fff;padding-top:12px">ตรวจรูปก่อนส่ง</b>
+      <span style="width:70px"></span>
+    </div>
+    <div class="att-shot"><img id="acf-img" alt="เซลฟี่"></div>
+    <div class="card att-rows" style="margin-top:12px">
+      <div class="att-row"><span class="k">เห็นหน้าชัดไหม</span><span class="v">ดูในรูป</span></div>
+      <div class="att-row"><span class="k">เห็นจอเครื่องสแกน (เวลาบนจอ) ไหม</span><span class="v">ดูในรูป</span></div>
+      <div class="att-row"><span class="k">ตำแหน่ง</span><span class="att-pill mute sm att-locchip">กำลังหาตำแหน่ง…</span></div>
+    </div>
+    <div class="msg warn" id="acf-insist"></div>
+    <button class="bigbtn in" id="acf-send" onclick="attSend()">ใช้รูปนี้ · เข้างาน<span class="att-sub">အလုပ်ဝင်</span></button>
+    <div class="att-hint" id="acf-wait"></div>
+    <div class="msg" id="acf-msg"></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2: สำเร็จ (เข้างาน/ออกงานแล้ว) ============ -->
+  <section id="screen-attdone" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div id="adn-body"></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2: ยังไม่ถึงร้าน (ไกลเกิน) ============ -->
+  <section id="screen-attfar" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="clock att-num" data-attclock>--:--:--</div>
+    <div class="clockdate" data-attdate>—</div>
+    <div id="afr-body"></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2: หาตำแหน่งไม่ได้ ============ -->
+  <section id="screen-attnogps" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="clock att-num" data-attclock>--:--:--</div>
+    <div class="clockdate" data-attdate>—</div>
+    <div id="ang-body"></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2: ไม่มีอินเทอร์เน็ต ============ -->
+  <section id="screen-attnonet" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="att-hero" style="padding-top:30px">
+      <div class="att-ico warnc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0"></path><path d="M5.5 12a10 10 0 0 1 13 0"></path><path d="M9 15.5a5 5 0 0 1 6 0"></path><path d="M12 19h.01"></path><path d="M3 3l18 18"></path></svg></div>
+      <div class="att-h2">ไม่มีอินเทอร์เน็ต</div>
+      <div class="att-onbg" style="font-size:15px">ลงเวลาต้องมีเน็ตตอนกด เพื่อใช้เวลาจริงของระบบ</div>
+    </div>
+    <div class="card att-rows">
+      <div class="att-row"><span class="k">ต่อ Wi-Fi ของร้าน</span><span class="v">หรือเปิดเน็ตมือถือ</span></div>
+      <div class="att-row"><span class="k">รูปที่ถ่ายไว้</span><span class="v" id="ann-photo">—</span></div>
+    </div>
+    <button class="btn" id="ann-retry" onclick="attNoNetRetry()">ลองใหม่</button>
+    <div class="msg" id="ann-msg"></div>
+    <div class="att-hint" style="margin-top:18px">ไม่มีเน็ตจริง ๆ ให้บอกหัวหน้าหรือเจ้าของร้านลงเวลาให้</div>
+  </section>
+
+  <!-- ============ ลงเวลา v2: ประวัติของฉัน ============ -->
+  <section id="screen-atthist" class="hidden">
+    <button class="backbtn" onclick="openClock()">‹ กลับ</button>
+    <div class="topbar" style="padding-top:0"><div class="who">ประวัติของฉัน</div></div>
+    <div class="att-nav"><button class="att-navbtn" id="ah-prev" onclick="attHistGo(-1)">‹</button><b id="ah-ym">—</b><button class="att-navbtn" id="ah-next" onclick="attHistGo(1)">›</button></div>
+    <div id="ah-body"></div>
+    <div class="att-hint" style="margin-top:14px">เห็นเฉพาะของตัวเอง · เจ้าของร้านเห็นของทุกคน</div>
+  </section>
+
+  <!-- ============ ลงเวลา v2 (เจ้าของร้าน): เวลาเข้างานรายวัน ============ -->
+  <section id="screen-attday" class="hidden">
+    <button class="backbtn" onclick="attDayBack()">‹ กลับ</button>
+    <div class="topbar" style="padding-top:0"><div class="who">เวลาเข้างาน</div></div>
+    <div class="att-nav"><button class="att-navbtn" id="ad-prev" onclick="attDayGo(-1)">‹</button><b id="ad-date">—</b><button class="att-navbtn" id="ad-next" onclick="attDayGo(1)">›</button></div>
+    <div class="msg" id="ad-msg"></div>
+    <div id="ad-body"></div>
+    <div class="att-two">
+      <button class="btn ghost adminbtn" onclick="openAttMan()">+ ลงเวลาให้</button>
+      <button class="btn ghost adminbtn" onclick="openAttMonth()">สรุปรายเดือน</button>
+    </div>
+    <button class="btn ghost adminbtn" style="margin-top:10px" onclick="openAttSet()">⚙ ตั้งค่าลงเวลา</button>
+  </section>
+
+  <!-- ============ ลงเวลา v2 (เจ้าของร้าน): ตรวจรายการ ============ -->
+  <section id="screen-attrev" class="hidden">
+    <button class="backbtn" onclick="attBackDay()">‹ เวลาเข้างานวันนี้</button>
+    <div id="ar-body"></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2 (เจ้าของร้าน): สรุปรายเดือน ============ -->
+  <section id="screen-attmonth" class="hidden">
+    <button class="backbtn" onclick="attBackDay()">‹ เวลาเข้างาน</button>
+    <div class="topbar" style="padding-top:0"><div class="who">สรุปรายเดือน</div></div>
+    <div class="att-nav"><button class="att-navbtn" id="amo-prev" onclick="attMonthGo(-1)">‹</button><b id="amo-ym">—</b><button class="att-navbtn" id="amo-next" onclick="attMonthGo(1)">›</button></div>
+    <div class="card att-warncard" style="background:#fff8ea;font-size:14px">
+      <b style="color:#8a5a00">ยังคิดเป็นเงินไม่ได้</b>
+      <div class="muted">รอข้อมูล: จ่ายแบบไหน + เวลาเริ่ม–เลิกกะของครัวและ Service · ตอนนี้โชว์แค่ชั่วโมงทำงาน</div>
+    </div>
+    <div id="amo-body"></div>
+    <div class="att-hint" style="justify-content:flex-start;text-align:left">ไม่ครบ = ลืมกดออก หรือรอยืนยัน · ควรเคลียร์ก่อนคิดเงิน</div>
+    <button class="btn ghost adminbtn" id="amo-exp" onclick="attMonthExport()">ส่งออกเป็นแท็บในชีต</button>
+    <div class="msg" id="amo-msg"></div>
+  </section>
+
+  <!-- ============ ลงเวลา v2 (เจ้าของร้าน): ลงเวลาให้พนักงาน ============ -->
+  <section id="screen-attman" class="hidden">
+    <button class="backbtn" onclick="attBackDay()">‹ เวลาเข้างาน</button>
+    <div class="topbar" style="padding-top:0;flex-direction:column;align-items:flex-start;gap:2px">
+      <div class="who">ลงเวลาให้พนักงาน</div>
+      <div class="att-onbg" style="font-size:14px">ใช้เมื่อพนักงานไม่มีมือถือ แบตหมด หรือลืมกด</div>
+    </div>
+    <div class="card">
+      <label for="am-who">พนักงาน</label>
+      <select id="am-who"></select>
+      <label>ประเภท</label>
+      <div class="att-seg" style="grid-template-columns:1fr 1fr">
+        <button type="button" id="am-t-in" class="on in" onclick="attManType('in')">เข้างาน</button>
+        <button type="button" id="am-t-out" onclick="attManType('out')">ออกงาน</button>
+      </div>
+      <div class="row2" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:end">
+        <div><label for="am-date">วันทำงาน (กะของวันไหน)</label><input id="am-date" type="date" oninput="attManWhen()" onchange="attManWhen()"></div>
+        <div><label for="am-time">เวลา</label><input id="am-time" type="time" oninput="attManWhen()" onchange="attManWhen()"></div>
+      </div>
+      <div class="muted" style="font-size:12.5px;margin-top:6px">เวลา 00:00–03:59 = หลังเที่ยงคืนของวันทำงานนั้น (เช่น กะคืนวันที่ 2 ออก 00:30 → เลือกวันที่ 2)</div>
+      <div class="muted att-num" id="am-when" style="font-size:12.5px;margin-top:4px"></div>
+      <label for="am-why">เหตุผล (ต้องกรอก)</label>
+      <input id="am-why" type="text" maxlength="200" placeholder="เช่น แบตหมด มาถึงพร้อมเปีย">
+      <div class="muted" id="am-note" style="font-size:13px;margin-top:10px"></div>
+      <button class="bigbtn in att-mid" id="am-save" onclick="attManSave()">บันทึก</button>
+      <div class="msg" id="am-msg"></div>
+    </div>
+  </section>
+
+  <!-- ============ ลงเวลา v2 (เจ้าของร้าน): ตั้งค่า ============ -->
+  <section id="screen-attset" class="hidden">
+    <button class="backbtn" onclick="attBackDay()">‹ เวลาเข้างาน</button>
+    <div class="topbar" style="padding-top:0"><div class="who">ตั้งค่าลงเวลา</div></div>
+    <div class="msg" id="as-msg"></div>
+    <div id="as-body"></div>
+    <div class="att-hint">เซลฟี่: ทุกครั้งทั้งเข้าและออกงาน · ลบรูปเองใน 60 วัน · ทุกการเปลี่ยนค่าบันทึกว่าใครเปลี่ยน</div>
   </section>
 
   <!-- ============ เงินสด (ทีม Service + ผู้ดูแล) ============ -->
@@ -1516,7 +1805,9 @@ function offRestorePack(){
 function offDropPackDraft(){ offDraftClear('pack'); OFF_HIDE['pack']=1; offPackBar(); }
 
 function show(id){
-  ['login','register','home','stock','stockcat','clock','report','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr','help'].forEach(s=>{
+  try{ attLeave(id); }catch(e){}   // ลงเวลา: ออกจากหน้าจอที่ใช้กล้อง/ตำแหน่ง = ปิดกล้อง + หยุดดูตำแหน่งทันที
+  ['login','register','home','stock','stockcat','clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet',
+   'atthist','attday','attrev','attmonth','attman','attset','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -1569,15 +1860,16 @@ function enterHome(){
 // เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
 async function showRecvTileIfReady(){
   const tile=document.getElementById('ho-recv-tile');
-  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); return; }
+  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
   showPackTile();
   eqShowTile();
+  attShowTile();
 }
 function showPackTile(){
   if(PACK_READY!==true) return;   // หลังบ้านยังไม่มีเมนูทำแพค → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
@@ -1656,9 +1948,21 @@ function renderToday(){
   if(r.cash) chips.push(tChip('💵','เงินสด', r.cash.saved?[r.cash.by,r.cash.time].filter(function(x){return x;}).join(' '):'', 'ยังไม่กรอก','openCash()'));
   var rc=r.recv||{};
   chips.push(tChip('📥','รับของเข้า', rc.count?((rc.count+' ครั้ง')+(rc.by&&rc.by.length?(' · '+rc.by.join(', ')):'')):'', 'ยังไม่มี','openRecv()'));
+  // ⏰ ลงเวลา — หลังบ้านส่ง att มาให้เฉพาะเจ้าของร้าน (คนอื่นไม่มีบรรทัดนี้)
+  var at=r.att||null;
+  if(at){
+    var atxt='มาแล้ว '+(+at.came||0)+'/'+(+at.total||0);
+    chips.push(tChip('⏰','ลงเวลา', ((+at.total>0) && (+at.came>=+at.total) && !(+at.review>0)) ? atxt : '', atxt, "openAttDay('home')"));
+  }
   document.getElementById('ho-today-chips').innerHTML=chips.join('');
   // เตือนเฉพาะรายการที่มีปัญหาจริง (โชว์พร้อมกันได้หลายเรื่อง คนละบรรทัด)
   var warns=[];
+  if(at && (((at.not_came||[]).length) || (+at.review>0))){
+    var nc=(at.not_came||[]), parts=[];
+    if(nc.length) parts.push('ยังไม่ลงเวลา: '+esc(nc.slice(0,8).join(', '))+(nc.length>8?(' และอีก '+(nc.length-8)+' คน'):''));
+    if(+at.review>0) parts.push('ตรวจ '+(+at.review));
+    warns.push('<span onclick="openAttDay(\'home\')" style="cursor:pointer">⏰ '+parts.join(' · ')+' <u>แตะเพื่อดู</u></span>');
+  }
   // Ikura ที่ตัวเลขล่าสุดมาจากฟอร์มเว็บเก่า (ฟอร์มเก่าไม่คูณ 500 ก./กล่อง)
   if(st.ikura && st.ikura.from==='old'){
     var gi=stockGroupIndex('ปลาดิบ');
@@ -2547,75 +2851,1186 @@ async function uploadDrinkPhoto(slug,i,b64){
 }
 function comingSoon(name){ alert('“'+name+'” กำลังพัฒนา จะเปิดให้ใช้เร็ว ๆ นี้ครับ'); }
 
-/* ---------- เวลาเข้างาน (เข้า–ออกงาน) ---------- */
-let ME_STATUS = null;
-function tickClock(){
-  const d=new Date(), p=n=>String(n).padStart(2,'0');
-  const cl=document.getElementById('ck-clock'); if(!cl) return;
-  cl.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
-  const days=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  document.getElementById('ck-date').textContent='วัน'+days[d.getDay()]+'ที่ '+d.getDate()+' '+months[d.getMonth()]+' '+(d.getFullYear()+543);
+/* ====================== ลงเวลาเข้า–ออกงาน v2 (GPS 3 ระดับ + เซลฟี่ทุกครั้ง) — 2 ต.ค. 2026 ======================
+   เจ้าของเลือก (final): กดเข้า/ออกจากมือถือของตัวเองในแอปนี้ · ตรวจตำแหน่ง 3 ระดับ · เซลฟี่ "ทุกครั้ง" ทั้งเข้าและออก
+   ถ่ายหน้าเครื่องสแกนนิ้ว (ต้องเห็นนาฬิกาบนจอเครื่อง) · ไม่ใช้ AI อ่านรูป · เวลาใช้ "เวลาของระบบ" เท่านั้น
+   · ไม่มีคิวส่งค้าง (ต้องมีเน็ตตอนกด) — รูปเก็บในหน่วยความจำ กด "ลองใหม่" ได้โดยไม่ต้องถ่ายใหม่
+   · เจ้าของร้าน (role owner) คนเดียวเห็นของทุกคน/อนุมัติ/แก้/ยกเลิก/ลงเวลาให้/ตั้งค่า (หลังบ้านเช็คซ้ำทุกครั้ง)
+   หน้าเว็บแค่ "แสดงผล" — ตัดสินใกล้/ไกลที่หลังบ้านเสมอ (ระยะที่โชว์บนมือถือเป็นตัวช่วยดูเท่านั้น) และไม่โชว์พิกัดให้พนักงานเห็น
+   เซลฟี่: พรีวิวกลับด้านแบบส่องกระจก (CSS อย่างเดียว) แต่รูปที่ส่ง = ภาพจริงไม่กลับด้าน → ตัวเลขบนจอเครื่องสแกนอ่านออก
+   ออกจากหน้าจอลงเวลาเมื่อไหร่ = ปิดกล้อง + หยุดดูตำแหน่งทันที (show() เรียก attLeave) */
+let ATT_READY=null;          // หลังบ้านรองรับลงเวลา v2 แล้วหรือยัง (ping.att) — หลังบ้านรุ่นเก่าไม่มีธงนี้ = ไทล์ซ่อน
+let ATT_ST=null;             // ผล attendanceStatus ล่าสุด
+let ATT_TYPE='in';           // การกดครั้งนี้: 'in' เข้างาน / 'out' ออกงาน
+let ATT_PHOTO=null;          // เซลฟี่ {b64, at} — อยู่ในหน่วยความจำเท่านั้น
+let ATT_CID='';              // client_id ของการกดครั้งนี้ — ใหม่ทุกครั้งที่กด ; ใช้ซ้ำเฉพาะตอนส่งซ้ำหลังเน็ตหลุด/ระบบยุ่ง (หลังบ้านจะได้รู้ว่าเป็นครั้งเดิม ไม่บันทึกซ้ำ)
+let ATT_INSIST=false;        // ส่งแบบ "อยู่ร้านแล้ว" (หลังโดนปฏิเสธว่าไกล 2 ครั้งใน 10 นาที)
+let ATT_FAR_TIMES=[];        // เวลาที่โดนปฏิเสธว่าไกล
+let ATT_SENDING=false;
+let ATT_LAST_IN='';          // เวลาเข้างานของกะที่กำลังปิด (โชว์ในหน้า "ออกงานแล้ว")
+let ATT_NONET_RETRY=null;    // หน้า "ไม่มีอินเทอร์เน็ต" กด "ลองใหม่" แล้วทำอะไรต่อ
+let ATT_GEO_ID=null, ATT_FIX=null, ATT_GEO_ERR=0, ATT_GEO_RETRY=null;   // ATT_GEO_ERR: 0 ปกติ · 1 ไม่อนุญาต · 2 หาไม่ได้ · 3 นานเกิน · -1 มือถือไม่รองรับ
+let ATT_NOGPS_SHOWN=false;
+let ATT_STREAM=null, ATT_CAM_SEQ=0, ATT_CAM_TIMER=null;
+let ATT_HIST_YM='';
+let ATT_DAY=null, ATT_DAY_DATE='', ATT_DAY_FROM='home';
+let ATT_REV_I=-1, ATT_REV_ID='', ATT_REV_PANEL='', ATT_PH_CACHE={}, ATT_PH_PEND={};
+let ATT_MONTH_YM='', ATT_MAN_TYPE='in';
+let ATT_SET=null, ATT_SGEO_ID=null, ATT_SFIX=null, ATT_SGEO_ERR=0, ATT_SET_MEASURE=false, ATT_SET_MODECONF=false;
+const ATT_GEO_OPTS={enableHighAccuracy:true, maximumAge:0, timeout:20000};
+const ATT_GEO_SCREENS=['clock','attcam','attconfirm','attfar','attnogps','attnonet'];   // หน้าที่ยังดูตำแหน่งอยู่
+const ATT_SCREENS=['clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet','atthist','attday','attrev','attmonth','attman','attset'];
+const ATT_WAIT_FIX_MS=20000, ATT_GOOD_ACC=50, ATT_SHOP_MAX_ACC=30;
+const ATT_FIX_MAX_AGE_MS=60000;   // ตำแหน่งที่ได้มานานเกิน 1 นาที = ถือว่าไม่มี (กันส่งตำแหน่งเก่า เช่น เปิดหน้าจอค้างไว้ที่ร้านแล้วเดินออกไป)
+const ATT_PHOTO_REUSE_MS=3*60*1000;   // "ลองใหม่" หลังโดนว่าไกล: รูปที่ถ่ายไม่เกิน 3 นาทีใช้ซ้ำได้ เก่ากว่านั้นถ่ายใหม่ (กันใช้รูปที่ถ่ายจากที่อื่น)
+const ATT_FAR_WINDOW_MS=10*60*1000;
+const ATT_UA=navigator.userAgent||'';
+const ATT_IN_LINE=/Line\//.test(ATT_UA);
+const ATT_IOS=/iPhone|iPad|iPod/i.test(ATT_UA) || (navigator.platform==='MacIntel' && (navigator.maxTouchPoints||0)>1);
+const ATT_ANDROID=/Android/i.test(ATT_UA);
+const ATT_DOW=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const ATT_DOW_S=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+const ATT_MON=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const ATT_FLAG_ORDER=['same_device','far','no_loc','weak_loc','no_photo','insist','self_report','forgot_open','would_reject'];
+const ATT_SVG_PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>';
+const ATT_SVG_OK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+const ATT_SVG_WARN='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l9 16H3z"></path><path d="M12 10v4.5"></path><path d="M12 17.5h.01"></path></svg>';
+
+/* ---------- ตัวช่วย ---------- */
+function attP2(n){ return String(n).padStart(2,'0'); }
+function attParseISO(iso){ var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); return m?new Date(+m[1],+m[2]-1,+m[3]):null; }
+function attISO(d){ return d.getFullYear()+'-'+attP2(d.getMonth()+1)+'-'+attP2(d.getDate()); }
+function attAddDays(iso,n){ var d=attParseISO(iso); if(!d) return iso; d.setDate(d.getDate()+n); return attISO(d); }
+function attDayTH(iso, withYear){
+  var d=attParseISO(iso); if(!d) return String(iso||'');
+  return ATT_DOW_S[d.getDay()]+' '+d.getDate()+' '+ATT_MON[d.getMonth()]+(withYear?(' '+(d.getFullYear()+543)):'');
 }
-async function openClock(){ show('clock'); tickClock(); await loadStatus(); }
-async function loadStatus(){
-  const r=await api('attendanceStatus');
-  if(!r.ok){ if(r.error&&r.error.indexOf('เข้าสู่ระบบ')>=0){ logout(); } return; }
-  ME_STATUS=r;
-  document.getElementById('ck-adminwrap').classList.toggle('hidden', !r.is_admin);
-  renderStatus(); loadHistory();
+function attYmTH(ym){ var m=/^(\d{4})-(\d{2})/.exec(String(ym||'')); return m?(ATT_MON[+m[2]-1]+' '+(+m[1]+543)):String(ym||''); }
+function attMonTH(ym){ var m=/^(\d{4})-(\d{2})/.exec(String(ym||'')); return m?ATT_MON[+m[2]-1]:''; }
+function attYmAdd(ym,n){ var m=/^(\d{4})-(\d{2})/.exec(String(ym||'')); if(!m) return ym; var d=new Date(+m[1],+m[2]-1+n,1); return d.getFullYear()+'-'+attP2(d.getMonth()+1); }
+function attCurYm(){ return bizDateISO().slice(0,7); }
+function attHM(s){ var m=/(\d{1,2}):(\d{2})/.exec(String(s||'')); return m?(attP2(+m[1])+':'+m[2]):''; }
+function attHMS(s){ var m=/(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(String(s||'')); return m?(attP2(+m[1])+':'+m[2]+(m[3]?(':'+m[3]):'')):''; }
+function attDur(min){ min=Math.max(0,Math.round(+min||0)); var h=Math.floor(min/60), m=min%60; return (h?(h+' ชม. '):'')+m+' นาที'; }
+function attDurS(min){ min=Math.max(0,Math.round(+min||0)); return Math.floor(min/60)+' ชม. '+(min%60)+' น.'; }
+function attHMM(min){ min=Math.max(0,Math.round(+min||0)); return Math.floor(min/60)+':'+attP2(min%60); }
+function attHas(v){ return v!=='' && v!=null && isFinite(+v); }
+function attDist(m){ m=+m; if(!isFinite(m)||m<0) return ''; return m>=1000 ? ((m/1000).toFixed(m>=10000?0:1)+' กม.') : (Math.round(m)+' ม.'); }
+function attFlags(f){
+  if(Array.isArray(f)) return f.map(String).filter(function(x){ return !!x; });
+  return String(f||'').split(',').map(function(s){ return s.trim(); }).filter(function(x){ return !!x; });
 }
-function renderStatus(){
-  const r=ME_STATUS, inNow=r.status==='in';
-  document.getElementById('ck-status').textContent=inNow?'กำลังทำงาน':'ยังไม่ได้เข้างาน / ออกงานแล้ว';
-  document.getElementById('ck-badge').className='badge '+(inNow?'in':'out');
-  document.getElementById('ck-dot').className='dot '+(inNow?'on':'off');
-  document.getElementById('ck-since').textContent=inNow&&r.since?('ตั้งแต่ '+r.since.slice(0,5)+' น.'):'';
-  const act=document.getElementById('ck-action');
-  act.textContent=inNow?'ออกงาน':'เข้างาน'; act.className='bigbtn '+(inNow?'out':'in');
-  document.getElementById('ck-firstin').textContent=(r.today&&r.today.firstIn)?r.today.firstIn.slice(0,5):'—';
-  document.getElementById('ck-lastout').textContent=(r.today&&r.today.lastOut)?r.today.lastOut.slice(0,5):'—';
+function attPill(kind, html, sm){ return '<span class="att-pill '+kind+(sm?' sm':'')+'">'+html+'</span>'; }
+function attRow(k, v){ return '<div class="att-row"><span class="k">'+esc(k)+'</span><span class="v">'+esc(v)+'</span></div>'; }
+function attErrText(r, def){ return (r&&r.netfail) ? 'ไม่มีอินเทอร์เน็ต — ต่อเน็ตแล้วลองใหม่อีกครั้ง' : ((r&&r.error)||def); }
+function attHav(lat1,lng1,lat2,lng2){
+  var R=6371000, r=Math.PI/180, dLat=(lat2-lat1)*r, dLng=(lng2-lng1)*r;
+  var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*r)*Math.cos(lat2*r)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(x)));
 }
-async function loadHistory(){
-  const box=document.getElementById('ck-history');
-  const r=await api('myAttendance');
-  if(!r.ok||!r.records||!r.records.length){ box.innerHTML='<div class="center muted" style="padding:10px">ยังไม่มีประวัติ</div>'; return; }
-  box.innerHTML=r.records.map(x=>`<div class="rec"><span class="${x.type}">${x.type==='in'?'🟢 เข้างาน':'🔴 ออกงาน'}</span><span class="d">${x.date} · ${x.time.slice(0,5)} น.</span></div>`).join('');
+function attIsOwner(){ return !!((ATT_ST&&ATT_ST.is_owner) || (ME&&ME.role==='owner')); }
+function attCur(){ var s=document.querySelector('section[id^="screen-"]:not(.hidden)'); return s?s.id.slice(7):''; }
+function attDeviceId(){   // รหัสสุ่มประจำเครื่อง (สร้างครั้งเดียว) — หลังบ้านใช้จับ "มือถือเครื่องเดียวกดให้หลายคน"
+  try{
+    var k='mana_device_id', v=localStorage.getItem(k);
+    if(!v){
+      var a=new Uint8Array(12);
+      if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+      else for(var i=0;i<a.length;i++) a[i]=Math.floor(Math.random()*256);
+      v='d'+Array.prototype.map.call(a,function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+      localStorage.setItem(k,v);
+    }
+    return v;
+  }catch(e){ return ''; }
 }
-function getLoc(){
-  return new Promise(res=>{
-    if(!navigator.geolocation) return res({});
-    navigator.geolocation.getCurrentPosition(
-      pos=>res({lat:pos.coords.latitude,lng:pos.coords.longitude}), ()=>res({}),
-      {enableHighAccuracy:true,timeout:8000,maximumAge:30000});
+function attShowTile(){
+  if(ATT_READY!==true) return;   // หลังบ้านยังไม่มีลงเวลา v2 → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
+  var t=document.getElementById('ho-clock-tile'); if(t) t.classList.remove('hidden');
+}
+// busy() เดิมเก็บแค่ textContent → ข้อความพม่าใต้ปุ่มจะหาย จึงเก็บ innerHTML เองแทน
+function attBtnBusy(btn, on){
+  if(!btn) return;
+  if(on){ if(!btn.dataset.html) btn.dataset.html=btn.innerHTML; btn.innerHTML='<span class="spinner"></span>'; btn.disabled=true; }
+  else { if(btn.dataset.html){ btn.innerHTML=btn.dataset.html; delete btn.dataset.html; } btn.disabled=false; }
+}
+
+/* ---------- ออกจากหน้าจอ = ปิดกล้อง + หยุดดูตำแหน่ง ---------- */
+function attLeave(id){
+  if(id!=='attcam') attCamStop();
+  if(ATT_GEO_SCREENS.indexOf(id)<0) attGeoStop();
+  if(id!=='attset') attSetGeoStop();
+  if(ATT_SCREENS.indexOf(id)<0){ ATT_PHOTO=null; ATT_CID=''; ATT_INSIST=false; }
+}
+document.addEventListener('visibilitychange', function(){
+  try{
+    if(document.visibilityState==='hidden'){
+      if(ATT_STREAM){ attCamStop(); if(attCur()==='attcam') attCamUI('paused'); }
+    } else {
+      attDropStaleFix();   // กลับมาจากล็อกจอ/สลับแอป: ตำแหน่งเก่าเกิน 1 นาทีทิ้งไป (ระหว่างนั้นอาจย้ายที่แล้ว)
+      if(ATT_GEO_SCREENS.indexOf(attCur())>=0 && ATT_GEO_ERR!==1 && ATT_GEO_ERR!==-1 && (ATT_GEO_ID==null || !ATT_FIX)){
+        attGeoStart(true);   // เริ่มดูตำแหน่งใหม่ (บางเครื่องพักการดูตำแหน่งตอนล็อกจอ) → ได้ตำแหน่งสดภายในไม่กี่วิ
+      } else attGeoRender();
+    }
+  }catch(e){}
+});
+window.addEventListener('pagehide', function(){ try{ attCamStop(); attGeoStop(); attSetGeoStop(); }catch(e){} });
+
+/* ---------- ตำแหน่ง (ดูเฉพาะตอนอยู่หน้าลงเวลา) ---------- */
+function attGeoStart(keepFix){
+  attGeoStop();
+  if(!keepFix) ATT_FIX=null;
+  ATT_GEO_ERR=0;
+  if(!('geolocation' in navigator)){ ATT_GEO_ERR=-1; attGeoRender(); return; }
+  try{ ATT_GEO_ID=navigator.geolocation.watchPosition(attGeoOk, attGeoFail, ATT_GEO_OPTS); }
+  catch(e){ ATT_GEO_ID=null; ATT_GEO_ERR=-1; }
+  attGeoRender();
+}
+function attGeoStop(){
+  clearTimeout(ATT_GEO_RETRY); ATT_GEO_RETRY=null;
+  if(ATT_GEO_ID!=null){ try{ navigator.geolocation.clearWatch(ATT_GEO_ID); }catch(e){} }
+  ATT_GEO_ID=null;
+}
+// อายุของตำแหน่ง: ใช้ทั้งนาฬิกาในเบราว์เซอร์ (performance.now — ไม่โดนแก้เวลามือถือ) และเวลาจริง (Date.now — ยังเดินตอนล็อกจอ
+// ซึ่ง performance.now บางเครื่องหยุดนับ) แล้วเอาค่าที่มากกว่า ; ไม่ใช้เวลาในตัวตำแหน่ง เพราะบางเครื่องเพี้ยน
+function attFixAge(f){
+  if(!f) return Infinity;
+  var pa=performance.now()-f.t, wa=Math.abs(Date.now()-f.w);   // abs: ถ้าใครหมุนนาฬิกามือถือถอยหลัง ก็ถือว่าเก่า
+  return Math.max(isFinite(pa)?pa:Infinity, isFinite(wa)?wa:Infinity);
+}
+function attFreshFix(){ return (ATT_FIX && attFixAge(ATT_FIX)<=ATT_FIX_MAX_AGE_MS) ? ATT_FIX : null; }
+function attDropStaleFix(){ if(ATT_FIX && !attFreshFix()){ ATT_FIX=null; return true; } return false; }
+function attAccRank(f){ return (f && f.acc>0) ? f.acc : 99999; }   // ใช้เรียงหาตัวแม่นสุดในเครื่องเท่านั้น — ไม่ส่งค่านี้ไปหลังบ้าน
+// ทุกวินาที (จาก tickClock): อยู่หน้าลงเวลาแล้วตำแหน่งเก่าเกิน 1 นาที → ทิ้ง แล้วขอตำแหน่งใหม่ (ป้ายจะได้ไม่ค้างว่า "อยู่ที่ร้าน")
+function attFixWatch(){
+  if(!ATT_FIX || ATT_GEO_SCREENS.indexOf(attCur())<0) return;
+  if(!attDropStaleFix()) return;
+  if(ATT_GEO_ERR!==1 && ATT_GEO_ERR!==-1) attGeoStart(true); else attGeoRender();
+}
+function attGeoOk(pos){
+  var c=pos&&pos.coords; if(!c) return;
+  var lat=+c.latitude, lng=+c.longitude, acc=+c.accuracy;
+  if(!isFinite(lat)||!isFinite(lng)) return;
+  if(!isFinite(acc)||acc<=0) acc=null;            // ไม่รู้ความแม่นยำ = เก็บเป็น null (หลังบ้านจะตัดสินเป็น "ไม่มีตำแหน่ง" เอง)
+  // เก็บตำแหน่งที่ดีที่สุดตั้งแต่เริ่มดู ; ตัวดีสุดเก่าเกิน 1 นาที = ใช้ตัวใหม่แทน (คนเดินไปมาได้)
+  var f={lat:lat, lng:lng, acc:acc, t:performance.now(), w:Date.now()}, b=ATT_FIX;
+  if(!b || attAccRank(f)<=attAccRank(b) || attFixAge(b)>ATT_FIX_MAX_AGE_MS) ATT_FIX=f;
+  ATT_GEO_ERR=0;
+  attGeoRender();
+  if(attCur()==='attnogps'){ show('clock'); attRenderClock(); }   // หาตำแหน่งได้แล้ว → กลับหน้าลงเวลาปกติ
+}
+function attGeoFail(err){
+  var code=(err&&+err.code)||2;
+  if(code===1){                                   // 1 = ไม่อนุญาต → ไปหน้า "หาตำแหน่งไม่ได้" พร้อมวิธีแก้ (ยังกดลงเวลาได้)
+    ATT_GEO_ERR=1; attGeoStop(); attDropStaleFix(); attGeoRender();
+    var cur=attCur(); if(cur==='clock'||cur==='attnogps') attShowNoGps();
+    return;
+  }
+  attDropStaleFix();                              // ตำแหน่งที่มีอยู่เก่าเกิน 1 นาที = ทิ้ง (เช่น ปิดตำแหน่งแล้วเดินออกจากร้าน)
+  if(!ATT_FIX) ATT_GEO_ERR=code;                  // 2 หาไม่ได้ / 3 นานเกิน — มีตำแหน่งสดอยู่แล้ว สะดุดชั่วคราวไม่ต้องเตือน
+  attGeoRender();
+  // บางเครื่องหยุดดูตำแหน่งเองหลัง error → เริ่มใหม่ใน 4 วิ (เก็บตำแหน่งดีสุดไว้)
+  clearTimeout(ATT_GEO_RETRY);
+  ATT_GEO_RETRY=setTimeout(function(){
+    ATT_GEO_RETRY=null;
+    if(ATT_GEO_ID==null || ATT_GEO_SCREENS.indexOf(attCur())<0) return;
+    try{ navigator.geolocation.clearWatch(ATT_GEO_ID); }catch(e){}
+    try{ ATT_GEO_ID=navigator.geolocation.watchPosition(attGeoOk, attGeoFail, ATT_GEO_OPTS); }catch(e){ ATT_GEO_ID=null; }
+  }, 4000);
+}
+// ป้ายตำแหน่งบนจอ (ตัวช่วยดูเท่านั้น — หลังบ้านตัดสินเองจากตัวเลขที่ส่งไป) ; ไม่โชว์พิกัดให้พนักงานเห็น
+function attGeoState(){
+  if(ATT_GEO_ERR===-1) return {k:'warn', t:'มือถือนี้หาตำแหน่งไม่ได้'};
+  var fx=attFreshFix();
+  if(!fx){
+    if(ATT_GEO_ERR===1) return {k:'warn', t:'ไม่ได้อนุญาตตำแหน่ง'};
+    if(ATT_GEO_ERR) return {k:'warn', t:'หาตำแหน่งไม่ได้'};
+    return {k:'mute', t:'กำลังหาตำแหน่ง…'};
+  }
+  var st=ATT_ST||{}, sh=st.shop, a=fx.acc, aTxt=(a>0)?(' (±'+Math.round(a)+' ม.)'):'';
+  if(!(sh && sh.set!==false && isFinite(parseFloat(sh.lat)) && isFinite(parseFloat(sh.lng))))
+    return {k:'mute', t:'ได้ตำแหน่งแล้ว'+aTxt};
+  var R=+st.radius||200, FAR=+st.far_m||500;
+  var d=attHav(parseFloat(sh.lat), parseFloat(sh.lng), fx.lat, fx.lng);
+  if(!(a>0)) return {k:'warn', t:'ตำแหน่งไม่ชัด · ห่าง ~'+attDist(d)};   // มือถือไม่บอกความแม่นยำ — หลังบ้านจะนับเป็น "ไม่มีตำแหน่ง"
+  if(d+a<=R) return {k:'ok', t:'อยู่ที่ร้าน · ห่าง '+Math.round(d)+' ม.'};
+  if(d-a>FAR) return {k:'bad', t:'ห่างร้าน ~'+attDist(d)};
+  return {k:'warn', t:'ตำแหน่งยังไม่ชัด · ห่าง ~'+attDist(d)+' (±'+Math.round(a)+' ม.)'};
+}
+function attGeoRender(){
+  var g=attGeoState();
+  document.querySelectorAll('.att-locchip').forEach(function(el){
+    var sm=el.classList.contains('sm');
+    el.className='att-pill '+g.k+(sm?' sm':'')+' att-locchip';
+    el.innerHTML=ATT_SVG_PIN+esc(g.t);
+  });
+  var h=document.getElementById('ck-geohelp');
+  if(h) h.classList.toggle('hidden', !(ATT_GEO_ERR && !attFreshFix()));
+}
+// ตอนกดส่ง: ยังไม่มีตำแหน่ง "สด" (ไม่เกิน 1 นาที) = รอได้สูงสุด 20 วิ (ได้ตำแหน่งแม่น ±50 ม. ก่อนก็ไปต่อเลย) ; ไม่มีวันบล็อกการลงเวลา
+// ตำแหน่งเก่าเกิน 1 นาทีไม่ส่งเด็ดขาด — ทิ้งแล้วขอใหม่ ; หาไม่ได้ใน 20 วิ = ส่งแบบไม่มีตำแหน่ง (เจ้าของร้านจะตรวจ)
+function attWaitFix(onTick){
+  return new Promise(function(res){
+    var t0=performance.now();
+    if(attFreshFix()) return res(0);
+    attDropStaleFix();
+    if(ATT_GEO_ERR===1 || ATT_GEO_ERR===-1) return res(0);
+    if(ATT_GEO_ID==null) attGeoStart(true);           // ไม่ได้ดูตำแหน่งอยู่ (เช่น เครื่องพักไว้) → เริ่มขอใหม่
+    if(ATT_GEO_ID==null) return res(0);
+    (function loop(){
+      var el=performance.now()-t0, fx=attFreshFix();
+      if((fx && attAccRank(fx)<=ATT_GOOD_ACC) || el>=ATT_WAIT_FIX_MS || ATT_GEO_ERR===1 || ATT_GEO_ID==null) return res(Math.round(el));
+      try{ if(onTick) onTick(el); }catch(e){}
+      setTimeout(loop, 250);
+    })();
   });
 }
-async function punch(){
-  const inNow=ME_STATUS&&ME_STATUS.status==='in';
-  const btn=document.getElementById('ck-action'), m=document.getElementById('ck-msg'); clearMsg(m);
-  const geo=document.getElementById('ck-geo'); geo.textContent='กำลังตรวจตำแหน่ง…';
-  busy(btn,true);
-  const loc=await getLoc();
-  geo.textContent=loc.lat?('📍 '+loc.lat.toFixed(4)+', '+loc.lng.toFixed(4)):'📍 ไม่ได้ตำแหน่ง';
-  const r=await api(inNow?'clockOut':'clockIn',{lat:loc.lat,lng:loc.lng,clientTime:new Date().toLocaleString('th-TH')});
-  busy(btn,false,'');
-  if(!r.ok){ msg(m,r.error||'บันทึกไม่สำเร็จ'); renderStatus(); return; }
-  msg(m,(r.type==='in'?'✅ เข้างานเรียบร้อย ':'✅ ออกงานเรียบร้อย ')+r.time.slice(0,5)+' น.','ok');
-  await loadStatus();
+
+/* ---------- นาฬิกาสด (เวลามือถือ — ใช้ดูเฉย ๆ เวลาที่บันทึกจริงมาจากระบบ) ---------- */
+function tickClock(){
+  try{ attFixWatch(); }catch(e){}
+  var cl=document.querySelectorAll('[data-attclock]'); if(!cl.length) return;
+  var d=new Date(), t=attP2(d.getHours())+':'+attP2(d.getMinutes())+':'+attP2(d.getSeconds());
+  var ds='วัน'+ATT_DOW[d.getDay()]+'ที่ '+d.getDate()+' '+ATT_MON[d.getMonth()]+' '+(d.getFullYear()+543);
+  cl.forEach(function(e){ e.textContent=t; });
+  document.querySelectorAll('[data-attdate]').forEach(function(e){ e.textContent=ds; });
+  attTickWorked();
 }
-async function openReport(){
-  show('report');
-  const box=document.getElementById('rp-list'); box.innerHTML='<div class="center muted" style="padding:20px"><span class="spinner"></span></div>';
-  const r=await api('attendanceReport');
-  if(!r.ok){ box.innerHTML='<div class="card center">'+(r.error||'โหลดไม่สำเร็จ')+'</div>'; return; }
-  document.getElementById('rp-date').textContent='วันที่ '+r.date;
-  if(!r.employees.length){ box.innerHTML='<div class="card center muted">ยังไม่มีใครลงเวลาวันนี้</div>'; return; }
-  box.innerHTML=r.employees.map(e=>`<div class="card" style="padding:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center"><b>${esc(e.name)}</b>
-      <span class="muted" style="font-size:13px">${e.still_in?'🟢 อยู่ในร้าน':(e.worked?('รวม '+e.worked):'')}</span></div>
-    <div class="muted" style="font-size:14px;margin-top:6px">เข้า ${e.firstIn?e.firstIn.slice(0,5):'—'} · ออก ${e.lastOut?e.lastOut.slice(0,5):'—'} · ${e.punches.length} ครั้ง</div>
-  </div>`).join('');
+function attMinsSince(biz, tm){
+  var s=String(tm||''), m=/(\d{1,2}):(\d{2})/.exec(s); if(!m) return null;
+  var dm=/^(\d{4}-\d{2}-\d{2})/.exec(s), d=attParseISO(dm?dm[1]:biz); if(!d) return null;
+  var h=+m[1]; d.setHours(h, +m[2], 0, 0);
+  if(!dm && h<NIGHT_UNTIL) d.setDate(d.getDate()+1);   // เข้างานหลังเที่ยงคืน = วันปฏิทินถัดจากวันธุรกิจ
+  var mins=Math.floor((Date.now()-d.getTime())/60000);
+  return (mins>=0 && mins<=24*60) ? mins : null;
 }
+function attTickWorked(){
+  var el=document.getElementById('ck-worked'); if(!el) return;
+  var o=ATT_ST&&ATT_ST.open, mins=o?attMinsSince(o.biz_date, o.in_time):null;
+  if(mins==null){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  el.innerHTML='ทำงานแล้ว <b>'+esc(attDur(mins))+'</b>';
+}
+
+/* ---------- เปิดจาก LINE: กล้อง/ตำแหน่งมักใช้ไม่ได้ → บอกให้เปิดใน Safari/Chrome ---------- */
+function attLineWarn(){
+  if(!ATT_IN_LINE) return '';
+  var u=location.href;
+  try{ var x=new URL(location.href); x.searchParams.set('openExternalBrowser','1'); u=x.toString(); }catch(e){}   // LINE เปิดลิงก์ที่มีพารามิเตอร์นี้ในเบราว์เซอร์ของเครื่องให้เอง
+  return '<div class="card att-warncard" style="font-size:14px;padding:14px">⚠️ <b>เปิดจากลิงก์ใน LINE อยู่</b> — กล้องและตำแหน่งมักใช้ไม่ได้ ให้เปิดใน Safari หรือ Chrome แทน'+
+    '<a class="btn ghost" style="display:block;text-align:center;text-decoration:none;margin-top:10px" href="'+esc(u)+'">เปิดใน Safari / Chrome</a>'+
+    '<div class="muted" style="font-size:12.5px;margin-top:8px">ถ้าปุ่มไม่ทำงาน: กดเมนู ⋮ หรือ ⤴ มุมจอ › เปิดในเบราว์เซอร์ · เปิดที่ใหม่แล้วต้องเข้าสู่ระบบ 1 ครั้ง</div></div>';
+}
+
+/* ---------- หน้าหลักลงเวลา ---------- */
+async function openClock(flash){
+  if(!ME){ show('login'); return; }
+  show('clock'); tickClock();
+  attClockLoading();
+  var r=await api('attendanceStatus',{});
+  if(attCur()!=='clock') return;                       // ระหว่างรอ ผู้ใช้กดไปหน้าอื่นแล้ว
+  if(!r || r.netfail){ attShowNoNet(function(){ openClock(flash); }); return; }
+  if(!r.ok){ msg(document.getElementById('ck-msg'), r.error||'โหลดข้อมูลลงเวลาไม่สำเร็จ'); return; }
+  ATT_ST=r;
+  if(!r.consent){ attShowConsent(); return; }
+  attRenderClock();
+  if(flash) msg(document.getElementById('ck-msg'), flash, /^✅/.test(flash)?'ok':'warn');
+  if(ATT_GEO_ID==null) attGeoStart(); else attGeoRender();
+}
+function attClockLoading(){
+  document.getElementById('ck-line').innerHTML=attLineWarn();
+  document.getElementById('ck-forgot').innerHTML='';
+  document.getElementById('ck-state').innerHTML=attPill('mute','<span class="att-spin"></span>กำลังโหลด…');
+  document.getElementById('ck-worked').classList.add('hidden');
+  document.getElementById('ck-action').disabled=true;
+  document.getElementById('ck-month').innerHTML='<div class="att-row"><span class="k"><span class="att-spin"></span></span></div>';
+  document.getElementById('ck-owner').classList.add('hidden');
+  clearMsg(document.getElementById('ck-msg'));
+  attGeoRender();
+}
+function attRenderClock(){
+  var st=ATT_ST||{}, open=st.open||null, inNow=!!open || st.status==='in', t=st.today||{};
+  document.getElementById('ck-line').innerHTML=attLineWarn();
+  document.getElementById('ck-forgot').innerHTML=(st.forgot||[]).slice(0,3).map(attForgotCard).join('');
+  var sEl=document.getElementById('ck-state');
+  if(inNow){
+    sEl.innerHTML=attPill('ok','<span class="att-dot" style="background:#1f9d57"></span>กำลังทำงาน'+(open&&open.in_time?(' · ตั้งแต่ '+esc(attHM(open.in_time))):''));
+  } else if(t.first_in && t.last_out){
+    sEl.innerHTML=attPill('mute','<span class="att-dot" style="background:#8a98ad"></span>ออกงานแล้ววันนี้ · '+esc(attHM(t.last_out)));
+  } else {
+    sEl.innerHTML=attPill('mute','<span class="att-dot" style="background:#8a98ad"></span>'+((st.forgot&&st.forgot.length)?'วันนี้ยังไม่ได้เข้างาน':'ยังไม่ได้เข้างาน'));
+  }
+  attTickWorked();
+  var b=document.getElementById('ck-action');
+  delete b.dataset.html; b.disabled=false;
+  b.className='bigbtn '+(inNow?'out':'in');
+  b.innerHTML=(inNow?'ออกงาน':'เข้างาน')+'<span class="att-sub">'+(inNow?'အလုပ်ဆင်း':'အလုပ်ဝင်')+'</span>';
+  document.getElementById('ck-firstin').textContent=attHM(t.first_in)||'—';
+  document.getElementById('ck-lastout').textContent=attHM(t.last_out)||'—';
+  var mo=st.month||{}, ym=mo.ym||attCurYm();
+  document.getElementById('ck-month').innerHTML=
+    '<div class="att-row"><span class="k">เดือนนี้ ('+esc(attMonTH(ym))+')</span><span class="v att-num">'+(+mo.days||0)+' วัน · '+esc(attDurS(mo.minutes))+'</span></div>'+
+    ((+mo.pending>0)?('<div class="att-row"><span class="k">ในนี้รอเจ้าของร้านยืนยัน</span>'+attPill('warn',(+mo.pending)+' วัน',1)+'</div>'):'');
+  document.getElementById('ck-owner').classList.toggle('hidden', !attIsOwner());
+  attGeoRender();
+}
+function attTapPunch(){
+  if(!ATT_ST){ openClock(); return; }
+  if(!ATT_ST.consent){ attShowConsent(); return; }
+  var inNow=!!ATT_ST.open || ATT_ST.status==='in';
+  attStartPunch(inNow?'out':'in');
+}
+
+/* ---------- ลืมกดออก (แจ้งเวลาเอง → รอเจ้าของร้านยืนยัน) ---------- */
+function attForgotCard(f, i){
+  var lbl=(f.biz_date===attAddDays(bizDateISO(),-1)) ? ('เมื่อคืน ('+attDayTH(f.biz_date)+')') : ('วันที่ '+attDayTH(f.biz_date));
+  return '<div class="card att-warncard" style="padding:16px">'+
+    '<div style="font-weight:800;color:#8a5a00">'+esc(lbl)+' ยังไม่ได้กดออกงาน</div>'+
+    '<div class="muted att-num" style="font-size:13.5px">เข้างานเวลา '+esc(attHM(f.in_time)||'—')+' น.</div>'+
+    '<label for="fo-time-'+i+'">ออกจริงกี่โมง?</label>'+
+    '<input id="fo-time-'+i+'" type="time">'+
+    '<button class="btn ghost" id="fo-btn-'+i+'" style="margin-top:10px" onclick="attSelfOut('+i+')">ส่งให้เจ้าของร้านตรวจ</button>'+
+    '<div class="muted" style="font-size:12.5px;margin-top:8px">ชั่วโมงของวันนั้นจะนับเมื่อเจ้าของร้านยืนยัน</div>'+
+    '<div class="msg" id="fo-msg-'+i+'"></div></div>';
+}
+async function attSelfOut(i){
+  var f=((ATT_ST&&ATT_ST.forgot)||[])[i]; if(!f) return;
+  var tEl=document.getElementById('fo-time-'+i), m=document.getElementById('fo-msg-'+i), b=document.getElementById('fo-btn-'+i);
+  clearMsg(m);
+  var tm=(tEl&&tEl.value)||'';
+  if(!/^\d{2}:\d{2}$/.test(tm)){ msg(m,'ใส่เวลาที่ออกจริงก่อน (เช่น 00:05)'); return; }
+  attBtnBusy(b,true);
+  var r=await api('attSelfOut',{rec_id:f.rec_id, time:tm});
+  attBtnBusy(b,false);
+  if(!r||!r.ok){ msg(m, attErrText(r,'ส่งไม่สำเร็จ')); return; }
+  openClock('✅ ส่งเวลาออกงาน '+tm+' น. ให้เจ้าของร้านตรวจแล้ว');
+}
+
+/* ---------- อ่าน + รับทราบ (ครั้งเดียว) ---------- */
+function attShowConsent(){
+  document.getElementById('acs-line').innerHTML=attLineWarn();
+  clearMsg(document.getElementById('acs-msg'));
+  document.getElementById('acs-owner').classList.toggle('hidden', !attIsOwner());
+  var b=document.getElementById('acs-btn'); delete b.dataset.html; b.disabled=false;
+  b.innerHTML='รับทราบ<span class="att-sub">သိရှိပါပြီ</span>';
+  show('attconsent');
+}
+async function attDoConsent(){
+  var b=document.getElementById('acs-btn'), m=document.getElementById('acs-msg'); clearMsg(m);
+  attBtnBusy(b,true);
+  var r=await api('attConsent',{});
+  attBtnBusy(b,false);
+  if(!r||!r.ok){ msg(m, attErrText(r,'บันทึกไม่สำเร็จ')); return; }
+  if(ATT_ST) ATT_ST.consent=true;
+  openClock();
+}
+
+/* ---------- กล้องเซลฟี่ ---------- */
+function attStartPunch(type){
+  if(ATT_SENDING) return;
+  ATT_TYPE=(type==='out')?'out':'in';
+  ATT_CID=uuid(); ATT_INSIST=false; ATT_PHOTO=null;     // กดใหม่ = client_id ใหม่
+  ATT_LAST_IN=(ATT_TYPE==='out') ? attHM(ATT_ST&&ATT_ST.open&&ATT_ST.open.in_time) : '';
+  attCamStart();       // เรียกตรงจากการแตะปุ่ม — iPhone ยอมเปิดกล้องเฉพาะตอนผู้ใช้แตะ
+}
+function attCamStart(){
+  attCamStop();
+  var seq=ATT_CAM_SEQ;
+  document.getElementById('atc-title').textContent='เซลฟี่ · '+(ATT_TYPE==='out'?'ออกงาน':'เข้างาน');
+  attCamUI('opening');
+  show('attcam');
+  var md=navigator.mediaDevices;
+  if(!(md && md.getUserMedia)){ attCamUI('nocam'); return; }
+  var pr;
+  try{ pr=md.getUserMedia({video:{facingMode:'user'}, audio:false}); }catch(e){ attCamUI('nocam'); return; }
+  pr.then(function(stream){
+    if(seq!==ATT_CAM_SEQ || attCur()!=='attcam'){ stream.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} }); return; }   // ออกจากหน้ากล้องไปแล้ว
+    ATT_STREAM=stream;
+    var v=document.getElementById('atc-video');
+    v.setAttribute('playsinline',''); v.setAttribute('muted',''); v.muted=true;
+    v.srcObject=stream;
+    try{ var p=v.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
+    var n=0;
+    clearInterval(ATT_CAM_TIMER);
+    ATT_CAM_TIMER=setInterval(function(){
+      if(seq!==ATT_CAM_SEQ){ clearInterval(ATT_CAM_TIMER); return; }
+      if(v.videoWidth>0 && v.readyState>=2){ clearInterval(ATT_CAM_TIMER); attCamUI('live'); return; }
+      if(++n>=40){ clearInterval(ATT_CAM_TIMER); attCamUI('stuck'); }   // ~8 วิ ยังไม่ขึ้นภาพ
+    }, 200);
+  }).catch(function(e){
+    if(seq!==ATT_CAM_SEQ) return;
+    var nm=(e&&e.name)||'';
+    if(nm==='NotAllowedError'||nm==='SecurityError'||nm==='PermissionDeniedError') attCamUI('denied');
+    else if(nm==='NotReadableError'||nm==='TrackStartError'||nm==='AbortError') attCamUI('busy');
+    else attCamUI('nocam');
+  });
+}
+function attCamStop(){
+  ATT_CAM_SEQ++;
+  clearInterval(ATT_CAM_TIMER); ATT_CAM_TIMER=null;
+  if(ATT_STREAM){ try{ ATT_STREAM.getTracks().forEach(function(t){ try{ t.stop(); }catch(e){} }); }catch(e){} }
+  ATT_STREAM=null;
+  var v=document.getElementById('atc-video');
+  if(v && v.srcObject){ try{ v.pause(); }catch(e){} v.srcObject=null; }
+}
+function attCamSteps(){
+  var ios='<ol><li>ตั้งค่า › <b>Safari</b> › <b>กล้อง</b> › อนุญาต</li><li>หรือใน Safari กด <b>aA</b> › การตั้งค่าเว็บไซต์ › กล้อง › <b>อนุญาต</b></li><li>กลับมาแล้วกด “ลองเปิดกล้องอีกครั้ง”</li></ol>';
+  var and='<ol><li>ใน Chrome กด <b>รูปแม่กุญแจ</b> ข้างช่องที่อยู่ › <b>สิทธิ์</b> › กล้อง › <b>อนุญาต</b></li><li>กลับมาแล้วกด “ลองเปิดกล้องอีกครั้ง”</li></ol>';
+  return ATT_IOS?ios:(ATT_ANDROID?and:(ios+and));
+}
+function attCamUI(state){
+  var st=document.getElementById('atc-state'), shot=document.getElementById('atc-shot'), btns=document.getElementById('atc-btns'),
+      retry=document.getElementById('atc-retry'), fb=document.getElementById('atc-fb'), note=document.getElementById('atc-note');
+  if(!st) return;
+  var html='', showRetry=false, showFb=false;
+  var line=ATT_IN_LINE?'<div style="margin-top:6px;color:#f2cd70">เปิดผ่าน LINE อยู่ — กล้องมักใช้ไม่ได้ ให้เปิดแอปใน Safari/Chrome แทน</div>':'';
+  if(state==='opening') html='<span class="spinner"></span><div>กำลังเปิดกล้อง… ถ้ามือถือถาม ให้กด <b>อนุญาต</b></div>';
+  else if(state==='live') html='';
+  else if(state==='denied'){ html='<b>ยังไม่ได้อนุญาตให้ใช้กล้อง</b>'+attCamSteps()+line; showRetry=true; showFb=true; }
+  else if(state==='busy'){ html='<b>เปิดกล้องไม่ได้</b><div>อาจมีแอปอื่นใช้กล้องอยู่ — ปิดแอปอื่น แล้วกด “ลองเปิดกล้องอีกครั้ง”</div>'+line; showRetry=true; showFb=true; }
+  else if(state==='stuck'){ html='<b>กล้องไม่ขึ้นภาพ</b><div>กด “ลองเปิดกล้องอีกครั้ง” หรือใช้กล้องของมือถือถ่ายแทน</div>'+line; showRetry=true; showFb=true; }
+  else if(state==='paused'){ html='<b>ปิดกล้องไว้ก่อน</b><div>เพราะสลับไปแอปอื่น — กด “ลองเปิดกล้องอีกครั้ง”</div>'; showRetry=true; showFb=true; }
+  else if(state==='badfile'){ html='<b>อ่านรูปไม่ได้</b><div>ลองถ่ายใหม่อีกครั้ง</div>'; showRetry=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia); showFb=true; }
+  else { html='<b>แอปเปิดกล้องเองไม่ได้ในมือถือนี้</b><div>กดปุ่มด้านล่างเพื่อถ่ายเซลฟี่ด้วยกล้องของมือถือแทน</div>'+line; showFb=true; }
+  st.innerHTML=html;
+  st.style.display=(state==='live')?'none':'';
+  shot.disabled=(state!=='live');
+  shot.classList.toggle('hidden', state!=='live' && state!=='opening');
+  btns.classList.toggle('hidden', !(showRetry||showFb));
+  retry.classList.toggle('hidden', !showRetry);
+  fb.classList.toggle('hidden', !showFb);
+  fb.style.marginTop=showRetry?'10px':'0';
+  note.textContent=(state==='live'||state==='opening')?'ใช้กล้องหน้า · เลือกรูปจากอัลบั้มไม่ได้':'';
+}
+function attShoot(){
+  var v=document.getElementById('atc-video');
+  var w=v.videoWidth, h=v.videoHeight;
+  if(!ATT_STREAM || !w || !h){ attCamUI('stuck'); return; }
+  var s=Math.min(1, 640/Math.max(w,h)), cw=Math.max(1,Math.round(w*s)), ch=Math.max(1,Math.round(h*s));
+  var cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+  // วาดแบบไม่กลับด้าน = ภาพจริง ตัวเลขบนจอเครื่องสแกนอ่านออก (พรีวิวกลับด้านแบบกระจกด้วย CSS เท่านั้น)
+  try{ cv.getContext('2d').drawImage(v,0,0,cw,ch); }catch(e){ attCamUI('stuck'); return; }
+  var b64=(cv.toDataURL('image/jpeg',0.7).split(',')[1])||'';
+  if(b64.length<200){ attCamUI('stuck'); return; }
+  ATT_PHOTO={b64:b64, at:Date.now()};
+  attCamStop();
+  attRenderConfirm(); show('attconfirm');
+}
+function attPickFile(){ var f=document.getElementById('atc-file'); f.value=''; f.click(); }   // สำรอง: กล้องของมือถือ (ต้องแตะปุ่มเอง)
+function attOnFile(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  resizeImage(file, 640, 0.7, function(b64){
+    if(!b64){ attCamUI('badfile'); return; }
+    ATT_PHOTO={b64:b64, at:Date.now()};
+    attCamStop(); attRenderConfirm(); show('attconfirm');
+  }, function(){ attCamUI('badfile'); });
+}
+function attRetake(){ if(ATT_SENDING) return; ATT_PHOTO=null; attCamStart(); }   // กำลังส่งอยู่ = ห้ามถ่ายใหม่ (กันส่งซ้อน)
+function attCamCancel(){ attCamStop(); ATT_PHOTO=null; ATT_INSIST=false; show('clock'); attRenderClock(); }
+
+/* ---------- ตรวจรูป + ส่ง ---------- */
+function attRenderConfirm(){
+  var isIn=(ATT_TYPE!=='out');
+  document.getElementById('acf-img').src=ATT_PHOTO?('data:image/jpeg;base64,'+ATT_PHOTO.b64):'';
+  var b=document.getElementById('acf-send');
+  delete b.dataset.html; b.disabled=false;
+  b.className='bigbtn '+(isIn?'in':'out');
+  b.innerHTML='ใช้รูปนี้ · '+(isIn?'เข้างาน':'ออกงาน')+'<span class="att-sub">'+(isIn?'အလုပ်ဝင်':'အလုပ်ဆင်း')+'</span>';
+  var ins=document.getElementById('acf-insist');
+  if(ATT_INSIST){ ins.className='msg show warn'; ins.textContent='ส่งแบบ “อยู่ร้านแล้ว” — เจ้าของร้านจะตรวจรูปนี้ ต้องเห็นจอเครื่องสแกนชัด ๆ'; }
+  else { ins.className='msg'; ins.textContent=''; }
+  document.getElementById('acf-wait').textContent='';
+  clearMsg(document.getElementById('acf-msg'));
+  attGeoRender();
+}
+async function attSend(){
+  if(ATT_SENDING) return;
+  if(!ATT_PHOTO || !ATT_PHOTO.b64){ attCamStart(); return; }      // ต้องมีเซลฟี่ก่อนส่งเสมอ
+  ATT_SENDING=true;
+  var b=document.getElementById('acf-send'), w=document.getElementById('acf-wait'), m=document.getElementById('acf-msg');
+  clearMsg(m); attBtnBusy(b,true);
+  var waited=await attWaitFix(function(el){ w.textContent='กำลังหาตำแหน่ง… (รอได้อีก '+Math.max(1,Math.ceil((ATT_WAIT_FIX_MS-el)/1000))+' วิ)'; });
+  if(!ATT_PHOTO || attCur()!=='attconfirm'){ ATT_SENDING=false; attBtnBusy(b,false); w.textContent=''; return; }   // กดออกไประหว่างรอ = ไม่ส่ง
+  var f=attFreshFix();   // เฉพาะตำแหน่งที่ได้มาไม่เกิน 1 นาที — เก่ากว่านั้นไม่ส่ง
+  w.textContent=f?'กำลังส่ง…':'ไม่ได้ตำแหน่ง — ส่งได้ แต่เจ้าของร้านจะตรวจรายการนี้ · กำลังส่ง…';
+  if(!ATT_CID) ATT_CID=uuid();
+  var p={device_id:attDeviceId(), photo:ATT_PHOTO.b64, mime:'image/jpeg', client_id:ATT_CID, wait_ms:waited};
+  if(f){
+    p.lat=f.lat; p.lng=f.lng; p.fix_age_ms=Math.max(0,Math.round(attFixAge(f)));
+    if(f.acc>0) p.acc=Math.max(1,Math.round(f.acc));   // ไม่รู้ความแม่นยำ = ไม่ส่ง acc เลย (หลังบ้านตัดสินเป็น "ไม่มีตำแหน่ง" ตามกติกา) ; ห้ามแต่งตัวเลขเอง
+  }
+  if(ATT_INSIST) p.insist=1;
+  var r=await api(ATT_TYPE==='out'?'clockOut':'clockIn', p);
+  ATT_SENDING=false; attBtnBusy(b,false); w.textContent='';
+  attHandleResult(r||{});
+}
+function attHandleResult(r){
+  var here=(attCur()==='attconfirm'), m=document.getElementById('acf-msg');
+  if(r.ok){
+    if(!here){   // ผู้ใช้กดไปหน้าอื่นระหว่างส่ง — บอกผลด้วยแถบล่างจอแทน ไม่ดึงกลับ
+      try{ offToast('✅ '+(((r.type||ATT_TYPE)==='out')?'ออกงาน':'เข้างาน')+'แล้ว '+(attHM(r.time)||'')+' น.'); }catch(e){}
+      ATT_PHOTO=null; ATT_CID=''; return;
+    }
+    attOnSuccess(r); return;
+  }
+  if(!here) return;
+  if(r.netfail){ attShowNoNet(function(){ attRenderConfirm(); show('attconfirm'); attSend(); }); return; }   // ส่งซ้ำด้วยรูปเดิม + client_id เดิม
+  if(r.need_consent){ if(ATT_ST) ATT_ST.consent=false; attShowConsent(); return; }
+  if(r.far){ attOnFar(r); return; }
+  if(r.need_fix){ ATT_PHOTO=null; ATT_CID=''; openClock('⚠️ '+(r.error||'ยังไม่ได้กดเข้างานวันนี้')+' — ถ้าลืมกดออกเมื่อคืน ใส่เวลาที่ออกจริงในกล่องสีเหลืองก่อน'); return; }
+  if(r.busy){ msg(m, (r.error||'ระบบกำลังยุ่ง ลองอีกครั้ง')+' — กดปุ่มด้านบนอีกครั้งได้เลย ไม่ต้องถ่ายรูปใหม่', 'warn'); return; }
+  var e=r.error||'';
+  if(/เข้างานอยู่แล้ว|ยังไม่ได้กดเข้างาน/.test(e)){ ATT_PHOTO=null; ATT_CID=''; openClock('⚠️ '+e); return; }
+  msg(m, (e||'บันทึกไม่สำเร็จ')+' — กดอีกครั้งได้');
+}
+function attLocPill(loc, dist){
+  var d=attHas(dist)?attDist(dist):'';
+  if(loc==='ok') return attPill('ok','อยู่ที่ร้าน'+(d?(' · '+d):''),1);
+  if(loc==='unsure') return attPill('warn','ตำแหน่งไม่ชัด · เจ้าของร้านจะตรวจ',1);
+  if(loc==='far') return attPill('warn','ห่างร้าน'+(d?(' '+d):'')+' · เจ้าของร้านจะตรวจ',1);
+  if(loc==='none') return attPill('warn','ไม่มีตำแหน่ง · เจ้าของร้านจะตรวจ',1);
+  if(loc==='noshop') return attPill('mute','ร้านยังไม่ได้ตั้งจุด',1);
+  return attPill('mute','—',1);
+}
+function attOnSuccess(r){
+  var type=(r.type==='out'||r.type==='in')?r.type:ATT_TYPE, fl=attFlags(r.flags);
+  var lastIn=ATT_LAST_IN;
+  ATT_PHOTO=null; ATT_CID=''; ATT_INSIST=false; ATT_FAR_TIMES=[];
+  var tm=attHM(r.time)||'—', h='';
+  var noPhoto=fl.indexOf('no_photo')>=0;
+  var locP=attLocPill(r.loc, r.dist_m), photoP=noPhoto?attPill('warn','ส่งรูปไม่สำเร็จ · เจ้าของร้านจะตรวจ',1):attPill('ok','ส่งแล้ว',1);
+  var review=fl.some(function(f){ return f!=='manual'; });
+  if(type==='in'){
+    h+='<div class="att-hero" style="padding-top:18px"><div class="att-ico okc">'+ATT_SVG_OK+'</div>'+
+       '<div class="att-h2" style="margin-top:6px">เข้างานแล้ว</div>'+
+       '<div class="att-bigtime">'+esc(tm)+' น.</div>'+
+       '<div class="att-onbg" style="font-size:14px">เวลาจากระบบ · แก้นาฬิกามือถือไม่มีผล</div></div>'+
+       '<div class="card att-rows">'+
+         attRow('วันที่', attDayTH(r.biz_date||bizDateISO(),1))+
+         '<div class="att-row"><span class="k">ตำแหน่ง</span>'+locP+'</div>'+
+         '<div class="att-row"><span class="k">เซลฟี่</span>'+photoP+'</div>'+
+       '</div>';
+    if((r.forgot||[]).length) h+='<div class="msg show warn">⚠️ มีวันที่ยังไม่ได้กดออกงาน — กด “เสร็จ” แล้วใส่เวลาที่ออกจริงในกล่องสีเหลือง</div>';
+  } else {
+    var allOk=(r.loc==='ok' && !noPhoto);
+    h+='<div class="att-hero" style="padding-top:18px"><div class="att-ico outc">'+ATT_SVG_OK+'</div>'+
+       '<div class="att-h2" style="margin-top:6px">ออกงานแล้ว</div>'+
+       '<div class="att-bigtime">'+esc(tm)+' น.</div>'+
+       '<div class="att-onbg" style="font-size:14px">ขอบคุณที่ทำงานวันนี้</div></div>'+
+       '<div class="card att-rows">'+
+         (lastIn?attRow('เข้างาน', lastIn):'')+
+         attRow('ออกงาน', tm)+
+         (attHas(r.worked_min)?attRow('รวมวันนี้', attDur(r.worked_min)):'')+
+         (allOk ? ('<div class="att-row"><span class="k">ตำแหน่ง · เซลฟี่</span>'+attPill('ok','ครบ',1)+'</div>')
+                : ('<div class="att-row"><span class="k">ตำแหน่ง</span>'+locP+'</div><div class="att-row"><span class="k">เซลฟี่</span>'+photoP+'</div>'))+
+       '</div>';
+  }
+  if(review) h+='<div class="att-hint">รายการนี้มีป้ายให้เจ้าของร้านตรวจ</div>';
+  h+='<button class="btn ghost adminbtn" onclick="'+(type==='in'?'openClock()':'openAttHist()')+'">'+(type==='in'?'เสร็จ':'ดูประวัติของฉัน')+'</button>';
+  document.getElementById('adn-body').innerHTML=h;
+  show('attdone');
+  try{ todayRefresh(); }catch(e){}
+}
+
+/* ---------- ยังไม่ถึงร้าน ---------- */
+function attOnFar(r){
+  var now=Date.now();
+  ATT_FAR_TIMES=ATT_FAR_TIMES.filter(function(t){ return now-t<ATT_FAR_WINDOW_MS; }); ATT_FAR_TIMES.push(now);
+  ATT_CID=''; ATT_INSIST=false;
+  var d=attHas(r.dist_m)?attDist(r.dist_m):'', canInsist=ATT_FAR_TIMES.length>=2;
+  var h='<div class="card att-badcard">'+
+    '<div style="display:flex;align-items:center;gap:10px;color:#b23b32">'+ATT_SVG_WARN+'<span style="font-size:21px;font-weight:800">ยังไม่ถึงร้าน</span></div>'+
+    (d?('<div style="margin-top:8px">ตอนนี้ห่างร้านประมาณ <b class="att-num">'+esc(d)+'</b></div>'):'')+
+    '<div class="muted" style="font-size:15px;margin-top:6px">ระบบยังไม่บันทึกเวลา ให้กดใหม่เมื่อถึงร้านแล้ว</div>'+
+    '<div class="muted" style="font-size:13px;margin-top:6px">การกดครั้งนี้ถูกจดไว้ให้เจ้าของร้านเห็น</div></div>'+
+    '<button class="btn" onclick="attFarRetry(false)">ลองใหม่</button>'+
+    (canInsist ? '<button class="btn ghost adminbtn" style="margin-top:12px" onclick="attFarRetry(true)">อยู่ร้านแล้ว — ส่งเซลฟี่ให้เจ้าของร้านตรวจ</button>' : '')+
+    '<div class="card" style="background:var(--bg2);font-size:14px;margin-top:16px"><div style="font-weight:700;margin-bottom:4px">อยู่ร้านแล้ว แต่ยังขึ้นแบบนี้?</div>'+
+    '<div class="muted">'+(canInsist ? 'กดปุ่ม “อยู่ร้านแล้ว” ด้านบน แล้วถ่ายเซลฟี่ให้เห็นจอเครื่องสแกนชัด ๆ เจ้าของร้านจะตรวจให้'
+                                    : 'กด “ลองใหม่” อีกครั้ง ถ้ายังไม่ผ่าน จะมีปุ่ม “อยู่ร้านแล้ว” ให้ถ่ายเซลฟี่ส่งให้เจ้าของร้านตรวจ')+'</div></div>';
+  document.getElementById('afr-body').innerHTML=h;
+  show('attfar'); tickClock();
+}
+function attFarRetry(insist){
+  ATT_INSIST=!!insist; ATT_CID=uuid();
+  ATT_FIX=null;    // ขอตำแหน่งใหม่ (ตัวเดิมอาจคลาดเคลื่อน) — ตอนส่งรอได้สูงสุด 20 วิ
+  if(ATT_PHOTO && (Date.now()-ATT_PHOTO.at)<ATT_PHOTO_REUSE_MS){ attRenderConfirm(); show('attconfirm'); attSend(); }
+  else { ATT_PHOTO=null; attCamStart(); }
+}
+
+/* ---------- หาตำแหน่งไม่ได้ (ยังลงเวลาได้ แต่ขึ้นป้ายให้เจ้าของร้านตรวจ) ---------- */
+function attGpsSteps(){
+  var ios='<div style="font-weight:700">แก้ให้ครั้งหน้าผ่าน (iPhone)</div><ol class="att-steps">'+
+    '<li>ตั้งค่า › ความเป็นส่วนตัวและความปลอดภัย › <b>บริการหาตำแหน่ง</b> › เปิด</li>'+
+    '<li>ในหน้าเดียวกัน แตะ <b>เว็บไซต์ Safari</b> › เลือก <b>ขณะใช้แอป</b> + เปิด <b>ตำแหน่งที่แม่นยำ</b></li>'+
+    '<li>ใน Safari กด <b>aA</b> (ข้างช่องที่อยู่) › <b>การตั้งค่าเว็บไซต์</b> › ตำแหน่ง › <b>อนุญาต</b></li>'+
+    '<li>ถ้าเลือก “ถาม” ไว้ Safari จะจำได้ 1 วันแล้วถามใหม่ — ถามเมื่อไหร่ให้กด <b>อนุญาต</b></li>'+
+    '<li>เปิดแอปจากไอคอนบนหน้าจอแล้วยังไม่ผ่าน ให้เปิดผ่าน <b>Safari</b> แทน</li></ol>';
+  var and='<div style="font-weight:700">แก้ให้ครั้งหน้าผ่าน (Android)</div><ol class="att-steps">'+
+    '<li>ดึงแถบด้านบนของจอลงมา › เปิด <b>ตำแหน่ง</b> (Location)</li>'+
+    '<li>ใน Chrome กด <b>รูปแม่กุญแจ</b> ข้างช่องที่อยู่ › <b>สิทธิ์</b> › ตำแหน่ง › <b>อนุญาต</b></li>'+
+    '<li>ตั้งค่า › ตำแหน่ง › เปิด <b>ความแม่นยำของตำแหน่ง</b> (Google)</li></ol>';
+  if(ATT_IOS) return ios;
+  if(ATT_ANDROID) return and;
+  return ios+'<div style="height:10px"></div>'+and;
+}
+function attShowNoGps(){
+  var again=(attCur()==='attnogps' && ATT_NOGPS_SHOWN);
+  var st=ATT_ST||{}, inNow=!!st.open || st.status==='in', code=ATT_GEO_ERR;
+  var why= code===1 ? 'ไม่ได้อนุญาตให้แอปดูตำแหน่ง'
+         : code===-1 ? 'มือถือ/เบราว์เซอร์นี้หาตำแหน่งไม่ได้'
+         : code===3 ? 'หาตำแหน่งนานเกินไป — ยืนนิ่ง ๆ สักครู่ แล้วกด “ลองหาตำแหน่งอีกครั้ง”'
+         : 'มือถือหาสัญญาณตำแหน่งไม่ได้ — ลองยืนใกล้ประตู/หน้าต่าง และเปิด Wi-Fi ไว้ (ไม่ต้องต่อก็ได้) จะหาได้เร็วขึ้น';
+  var h='<div class="card att-warncard">'+
+      attPill('warn', ATT_SVG_PIN+'หาตำแหน่งไม่ได้')+
+      '<div style="margin-top:10px;font-weight:700">'+esc(why)+'</div>'+
+      '<div style="margin-top:6px">ยังลงเวลาได้ แต่รายการนี้จะขึ้นป้ายให้เจ้าของร้านตรวจ</div></div>'+
+    '<button class="bigbtn '+(inNow?'out':'in')+'" onclick="attTapPunch()">'+(inNow?'ออกงาน':'เข้างาน')+
+      '<span class="att-sub">'+(inNow?'အလုပ်ဆင်း':'အလုပ်ဝင်')+' · ถ่ายเซลฟี่</span></button>'+
+    (code!==-1 ? '<button class="btn ghost adminbtn" onclick="attNoGpsRetry()">ลองหาตำแหน่งอีกครั้ง</button>' : '')+
+    '<div class="msg" id="ang-msg"></div>'+
+    '<div style="height:12px"></div>'+attLineWarn()+
+    '<div class="card" style="background:var(--bg2);font-size:14px">'+attGpsSteps()+'</div>';
+  document.getElementById('ang-body').innerHTML=h;
+  if(again && code===1) msg(document.getElementById('ang-msg'),'ยังไม่ได้รับอนุญาต — ทำตามขั้นตอนด้านล่างก่อน แล้วค่อยกดลองอีกครั้ง','warn');
+  ATT_NOGPS_SHOWN=true;
+  show('attnogps'); tickClock();
+}
+function attNoGpsRetry(){
+  attGeoStart();
+  msg(document.getElementById('ang-msg'),'กำลังหาตำแหน่ง… ถ้ามือถือถาม ให้กด “อนุญาต”','warn');
+}
+
+/* ---------- ไม่มีอินเทอร์เน็ต (ไม่มีคิวส่งค้าง — ต้องมีเน็ตตอนกด) ---------- */
+function attShowNoNet(retry){
+  ATT_NONET_RETRY=retry||null;
+  var p=document.getElementById('ann-photo');
+  p.textContent=ATT_PHOTO?'เก็บไว้แล้ว ไม่ต้องถ่ายใหม่':'—';
+  p.parentNode.classList.toggle('hidden', !ATT_PHOTO);
+  clearMsg(document.getElementById('ann-msg'));
+  show('attnonet');
+}
+function attNoNetRetry(){
+  if(navigator.onLine===false){ msg(document.getElementById('ann-msg'),'มือถือยังไม่ได้ต่อเน็ต — ต่อ Wi-Fi หรือเปิดเน็ตมือถือก่อน','warn'); return; }
+  var f=ATT_NONET_RETRY; if(f) f(); else openClock();
+}
+
+/* ---------- ประวัติของฉัน ---------- */
+function attStatBox(lab, val, color){
+  return '<div class="card" style="text-align:center;padding:12px 6px;margin:0"><div class="muted" style="font-size:13px">'+esc(lab)+'</div>'+
+    '<div class="att-num" style="font-size:22px;font-weight:800'+(color?(';color:'+color):'')+'">'+esc(val)+'</div></div>';
+}
+async function openAttHist(ym){
+  ATT_HIST_YM=ym||ATT_HIST_YM||attCurYm();
+  if(ATT_HIST_YM>attCurYm()) ATT_HIST_YM=attCurYm();
+  document.getElementById('ah-ym').textContent=attYmTH(ATT_HIST_YM);
+  document.getElementById('ah-next').disabled=(ATT_HIST_YM>=attCurYm());
+  var box=document.getElementById('ah-body');
+  box.innerHTML='<div class="center" style="padding:24px"><span class="spinner"></span></div>';
+  show('atthist');
+  var want=ATT_HIST_YM, r=await api('myAttendance',{ym:want});
+  if(want!==ATT_HIST_YM || attCur()!=='atthist') return;
+  if(!r||!r.ok){ box.innerHTML='<div class="card center muted">'+esc(attErrText(r,'โหลดไม่สำเร็จ'))+'</div>'; return; }
+  var h='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px">'+
+    attStatBox('วันทำงาน', String(+r.days||0))+attStatBox('ชั่วโมงรวม', attHMM(r.minutes))+
+    attStatBox('รอยืนยัน', String(+r.pending||0), (+r.pending>0)?'#c98a00':'')+'</div>';
+  var sh=r.shifts||[];
+  if(!sh.length) h+='<div class="card center muted">เดือนนี้ยังไม่มีการลงเวลา</div>';
+  sh.forEach(function(s){
+    var st=s.state, fl=attFlags(s.flags);
+    var pill= st==='pending'?attPill('warn','รอยืนยัน',1) : st==='open'?attPill('ok','กำลังทำงาน',1) : st==='forgot'?attPill('bad','ลืมกดออก',1) : attPill('ok','ครบ',1);
+    var line='เข้า '+(attHM(s.in_time)||'—');
+    if(s.out_time) line+=' · ออก '+attHM(s.out_time)+(s.out_self?' (แจ้งเอง)':'');
+    else line+=(st==='open')?' · ยังไม่ออก':' · ยังไม่ได้กดออก';
+    if(s.out_time && attHas(s.minutes)) line+=' · รวม '+attHMM(s.minutes);
+    h+='<div class="card'+((st==='pending'||st==='forgot')?' att-warncard':'')+'" style="padding:14px 16px;margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>'+esc(attDayTH(s.biz_date))+'</b>'+pill+'</div>'+
+      '<div class="muted att-num" style="font-size:15px;margin-top:4px">'+esc(line)+'</div>'+
+      (st==='forgot'?'<div class="muted" style="font-size:12.5px;margin-top:4px">แจ้งเวลาออกจริงได้ที่หน้าลงเวลา (กล่องสีเหลือง)</div>':'')+
+      (fl.indexOf('manual')>=0?'<div class="muted" style="font-size:12.5px;margin-top:4px">เจ้าของร้านลงเวลาให้</div>':'')+
+      '</div>';
+  });
+  box.innerHTML=h;
+}
+function attHistGo(n){ var ym=attYmAdd(ATT_HIST_YM||attCurYm(), n); if(ym>attCurYm()) return; openAttHist(ym); }
+
+/* ====================== เจ้าของร้าน: ดู/ตรวจ/แก้/ลงเวลาให้/ตั้งค่า ====================== */
+function attNeedsRev(rec){   // ต้องตรวจ = รอยืนยัน หรือ มีป้ายอื่นนอกจาก "ลงเวลาให้" และยังไม่ได้ตรวจ (ยกเลิก/ถูกปฏิเสธ ไม่นับ)
+  if(!rec) return false;
+  if(typeof rec.needs_review==='boolean') return rec.needs_review;   // หลังบ้านคิดมาให้แล้ว = ยึดของหลังบ้าน (กติกาเดียวกัน)
+  if(rec.status==='void'||rec.status==='rejected') return false;
+  if(rec.status==='pending') return true;
+  if(rec.reviewed) return false;
+  return attFlags(rec.flags).some(function(f){ return f!=='manual'; });
+}
+function attNoteDevice(n){ var m=/device=([^|;,\n]+)/.exec(String(n||'')); return m?m[1].trim():''; }
+function attFlagText(f, rec){
+  switch(f){
+    case 'no_loc': return 'ไม่มีตำแหน่ง';
+    case 'weak_loc': return 'ตำแหน่งไม่ชัด';
+    case 'far': return 'ห่างร้าน'+((rec&&attHas(rec.dist_m))?(' '+attDist(rec.dist_m)):'');
+    case 'would_reject': return '(ช่วงทดลอง: จะถูกปฏิเสธ)';
+    case 'insist': return 'ยืนยันว่าอยู่ร้าน';
+    case 'same_device': return 'มือถือเดียวกับ '+(attNoteDevice(rec&&rec.note)||'คนอื่น');
+    case 'no_photo': return 'ไม่มีรูป';
+    case 'manual': return 'ลงเวลาให้';
+    case 'self_report': return 'แจ้งเอง';
+    case 'forgot_open': return 'ลืมกดออก';
+  }
+  return f;
+}
+function attNoteText(n){
+  var s=String(n||'');
+  s=s.replace(/device=([^|;,\n]+)/g, function(_,x){ return 'มือถือเดียวกับ '+x.trim(); });
+  s=s.replace(/\|?\s*purged\b/g, ' · รูปลบแล้วตามกำหนด 60 วัน');
+  return s.replace(/^[\s|;,·]+|[\s|;,]+$/g,'').trim();
+}
+function attTopFlag(rec){
+  var fl=attFlags(rec.flags);
+  for(var i=0;i<ATT_FLAG_ORDER.length;i++) if(fl.indexOf(ATT_FLAG_ORDER[i])>=0) return ATT_FLAG_ORDER[i];
+  if(rec.status==='pending') return 'pending';
+  return fl.filter(function(f){ return f!=='manual'; })[0]||'';
+}
+function attRecs(p){   // แตกกะ (เข้า+ออก) เป็นรายการทีละแถว
+  var out=[];
+  ((p&&p.shifts)||[]).forEach(function(s,si){
+    if(s.in) out.push({rec:s.in, type:'in', si:si, shift:s});
+    if(s.out) out.push({rec:s.out, type:'out', si:si, shift:s});
+  });
+  return out;
+}
+function attPersonTopFlag(p){
+  var best=null, bi=999;
+  attRecs(p).forEach(function(x){
+    if(!attNeedsRev(x.rec)) return;
+    var f=attTopFlag(x.rec), k=ATT_FLAG_ORDER.indexOf(f); if(k<0) k=500;
+    if(k<bi){ bi=k; best={f:f, rec:x.rec}; }
+  });
+  if(!best) return {f:'', t:'ต้องตรวจ'};
+  return {f:best.f, t:(best.f==='pending'?'รอยืนยัน':(attFlagText(best.f, best.rec)||'ต้องตรวจ'))};
+}
+function attRecPill(rec){
+  if(rec.status==='void') return attPill('mute','ยกเลิกแล้ว',1);
+  if(rec.status==='rejected') return attPill('bad','ถูกปฏิเสธ',1);
+  if(rec.status==='pending') return attPill('warn','รอยืนยัน',1);
+  if(attNeedsRev(rec)){ var f=attTopFlag(rec); return attPill(f==='same_device'?'bad':'warn', esc(attFlagText(f,rec)),1); }
+  if(rec.reviewed) return attPill('ok','ตรวจแล้ว',1);
+  return attPill('ok','ปกติ',1);
+}
+function attLocText(rec){
+  var d=attHas(rec.dist_m)?attDist(rec.dist_m):'', a=attHas(rec.acc_m)?(' (±'+Math.round(+rec.acc_m)+' ม.)'):'';
+  switch(rec.loc){
+    case 'ok': return 'อยู่ที่ร้าน'+(d?(' · ห่าง '+d):'')+a;
+    case 'unsure': return 'ไม่ชัด'+(d?(' · ห่าง ~'+d):'')+a;
+    case 'far': return 'ห่างร้าน'+(d?(' '+d):'')+a;
+    case 'none': return 'มือถือไม่ส่งมา';
+    case 'noshop': return 'ยังไม่ได้ตั้งจุดร้าน';
+  }
+  if(rec.source==='manual') return '— (ลงเวลาให้)';
+  if(rec.source==='self') return '— (แจ้งเอง)';
+  return '—';
+}
+
+/* ---------- เวลาเข้างานรายวัน ---------- */
+async function openAttDay(from, date){
+  if(from) ATT_DAY_FROM=from;
+  ATT_DAY_DATE=date||ATT_DAY_DATE||bizDateISO();
+  if(ATT_DAY_DATE>bizDateISO()) ATT_DAY_DATE=bizDateISO();
+  clearMsg(document.getElementById('ad-msg'));
+  attDayHead();
+  document.getElementById('ad-body').innerHTML='<div class="center" style="padding:24px"><span class="spinner"></span></div>';
+  show('attday');
+  await attLoadDay(true);
+}
+function attDayHead(){
+  document.getElementById('ad-date').textContent=attDayTH(ATT_DAY_DATE)+(ATT_DAY_DATE===bizDateISO()?' (วันนี้)':'');
+  document.getElementById('ad-next').disabled=(ATT_DAY_DATE>=bizDateISO());
+}
+async function attLoadDay(render){
+  var want=ATT_DAY_DATE;
+  var r=await api('attDay',{date:want});
+  if(want!==ATT_DAY_DATE) return false;
+  if(!r||!r.ok){
+    if(render && attCur()==='attday') document.getElementById('ad-body').innerHTML='<div class="card center muted">'+esc(attErrText(r,'โหลดไม่สำเร็จ'))+'</div>';
+    return false;
+  }
+  r._date=want;
+  ATT_DAY=r;
+  if(render && attCur()==='attday') attRenderDay();
+  return true;
+}
+function attDayGo(n){ var d=attAddDays(ATT_DAY_DATE||bizDateISO(), n); if(d>bizDateISO()) return; openAttDay(null, d); }
+function attDayBack(){ if(ATT_DAY_FROM==='clock') openClock(); else show('home'); }
+function attBackDay(){
+  clearMsg(document.getElementById('ad-msg'));
+  if(ATT_DAY && ATT_DAY._date===ATT_DAY_DATE){ attDayHead(); attRenderDay(); show('attday'); }
+  else openAttDay();
+}
+function attRenderDay(){
+  var r=ATT_DAY||{}, c=r.counts||{}, people=r.people||[], h='';
+  h+='<div class="att-pills">'+attPill('ok','มาแล้ว '+(+c.came||0))+attPill('mute','ยังไม่มา '+(+c.not_came||0))+
+     ((+c.review>0)?attPill('warn','ต้องตรวจ '+(+c.review)):'')+'</div>';
+  if(r.shop_set===false) h+='<div class="editbar" style="background:#fff8ea;color:#8a5a00">📍 ยังไม่ได้ตั้งจุดร้าน — ระบบยังเทียบระยะไม่ได้ '+
+     '<button type="button" class="att-linkbtn" onclick="openAttSet()">ตั้งค่า ›</button></div>';
+  if(r.mode==='trial') h+='<div class="att-hint" style="justify-content:flex-start;text-align:left;margin:0 2px 10px">โหมดช่วงทดลอง: บันทึกทุกครั้ง ยังไม่ปฏิเสธใคร</div>';
+  if(!people.length) h+='<div class="card center muted">ยังไม่มีพนักงานในระบบ</div>';
+  else h+='<div class="card" style="padding:4px 14px">'+people.map(attPersonRow).join('')+'</div>';
+  document.getElementById('ad-body').innerHTML=h;
+}
+function attPersonRow(p, i){
+  // กะที่เจ้าของ "ยกเลิก" แล้ว (state void) ไม่นับว่ามา ไม่นับชั่วโมง — ยึดธง came ของหลังบ้าน (นับแบบเดียวกับตัวเลขด้านบน)
+  var sh=p.shifts||[], rej=p.rejected||[];
+  var live=sh.filter(function(s){ return s.state!=='void'; }), nVoid=sh.length-live.length;
+  var came=(typeof p.came==='boolean') ? p.came : live.length>0;
+  var sub=live.length ? live.map(function(s){ var a='เข้า '+(attHM(s.in&&s.in.time)||'—'); if(s.out) a+=' · ออก '+(attHM(s.out.time)||'—'); return a; }).join(' / ') : 'ยังไม่ลงเวลา';
+  if(nVoid) sub+=' · ยกเลิกแล้ว '+nVoid+' รายการ';
+  var pill;
+  if(+p.review>0 || attRecs(p).some(function(x){ return attNeedsRev(x.rec); })){
+    var top=attPersonTopFlag(p); pill=attPill(top.f==='same_device'?'bad':'warn', esc(top.t)+' ›',1);
+  } else if(!came || !live.length){
+    pill=rej.length?attPill('bad','ถูกปฏิเสธ '+rej.length+' ›',1):(nVoid?attPill('mute','ยกเลิก ›',1):attPill('mute','—',1));
+  } else {
+    var last=live[live.length-1];
+    if(last.state==='open') pill=attPill('ok','ในร้าน',1);
+    else if(last.state==='pending') pill=attPill('warn','รอยืนยัน ›',1);
+    else if(last.state==='forgot') pill=attPill('warn','ลืมกดออก ›',1);
+    else { var tot=0; live.forEach(function(s){ tot+=(+s.minutes||0); }); pill=attPill('ok','รวม '+attHMM(tot),1); }
+  }
+  var rejLine=rej.length?('<div class="rej">'+esc('ถูกปฏิเสธ (ไกลร้าน) '+rej.slice(0,3).map(function(x){ return (attHM(x.time)||'—')+(attHas(x.dist_m)?(' · '+attDist(x.dist_m)):''); }).join(', '))+'</div>'):'';
+  var tap=sh.length>0||rej.length>0, nm=String(p.name||'—'), ini=nm.replace(/^[เแโใไ]/,'').charAt(0).toUpperCase()||'?';   // มีรายการที่ยกเลิก/ถูกปฏิเสธ ก็ยังแตะเข้าไปดูได้
+  return '<div class="att-prow'+(tap?' tap':'')+'"'+(tap?(' onclick="openAttRev('+i+')"'):'')+'>'+
+    '<span class="who"><span class="att-av'+(came?'':' none')+'">'+esc(ini)+'</span>'+
+    '<span style="min-width:0"><b>'+esc(nm)+'</b><div class="sub att-num">'+esc(sub)+'</div>'+rejLine+'</span></span>'+pill+'</div>';
+}
+
+/* ---------- ตรวจรายการ (รูป + อนุมัติ / แก้เวลา / ยกเลิก — ยืนยันในหน้า ไม่ใช้ confirm()) ---------- */
+function openAttRev(i, recId){
+  var p=((ATT_DAY&&ATT_DAY.people)||[])[i]; if(!p) return;
+  var recs=attRecs(p), pick=null;
+  if(recId) pick=recs.filter(function(x){ return x.rec.rec_id===recId; })[0]||null;
+  if(!pick) pick=recs.filter(function(x){ return attNeedsRev(x.rec); })[0]||null;
+  if(!pick) pick=recs.filter(function(x){ return x.rec.status!=='void'; })[0]||null;   // เปิดรายการที่ยังใช้อยู่ก่อนรายการที่ยกเลิกแล้ว
+  if(!pick) pick=recs[0]||null;
+  ATT_REV_I=i; ATT_REV_ID=pick?pick.rec.rec_id:''; ATT_REV_PANEL='';
+  attRenderRev();
+  show('attrev');
+}
+function attRevPick(k){
+  var p=((ATT_DAY&&ATT_DAY.people)||[])[ATT_REV_I], x=attRecs(p)[k]; if(!x) return;
+  ATT_REV_ID=x.rec.rec_id; ATT_REV_PANEL=''; attRenderRev(); window.scrollTo(0,0);
+}
+function attRevPanel(kind){ ATT_REV_PANEL=(ATT_REV_PANEL===kind)?'':kind; attRenderRev(); }
+function attRevPhotoHtml(rec){
+  if(!rec.photo) return '<div style="padding:30px 16px">ไม่มีรูป'+(/purged/.test(String(rec.note||''))?' (ลบแล้วตามกำหนด 60 วัน)':'')+'</div>';
+  var u=ATT_PH_CACHE[rec.rec_id];
+  if(u) return '<img alt="เซลฟี่" src="'+esc(u)+'" onclick="openLightbox(this.src)">';
+  return '<div style="padding:30px 16px"><span class="spinner"></span><div style="margin-top:8px">กำลังโหลดรูป…</div></div>';
+}
+async function attLoadPhoto(id){
+  if(!id || ATT_PH_CACHE[id] || ATT_PH_PEND[id]) return;
+  ATT_PH_PEND[id]=1;
+  var r=await api('attPhoto',{rec_id:id});
+  delete ATT_PH_PEND[id];
+  if(r && r.ok && r.dataUrl) ATT_PH_CACHE[id]=r.dataUrl;
+  var el=document.getElementById('ar-photo'); if(!el || ATT_REV_ID!==id) return;
+  if(r && r.ok && r.dataUrl) el.innerHTML='<img alt="เซลฟี่" src="'+esc(r.dataUrl)+'" onclick="openLightbox(this.src)">';
+  else el.innerHTML='<div style="padding:30px 16px">โหลดรูปไม่ได้ — '+esc(attErrText(r,'ลองใหม่'))+
+    '<div><button type="button" class="att-linkbtn" style="color:#bcd4f7" onclick="attLoadPhoto(ATT_REV_ID)">ลองใหม่</button></div></div>';
+}
+function attRenderRev(note, kind){
+  var p=((ATT_DAY&&ATT_DAY.people)||[])[ATT_REV_I], box=document.getElementById('ar-body');
+  if(!p){ box.innerHTML='<div class="card center muted">ไม่พบรายการ</div>'; return; }
+  var recs=attRecs(p), k=-1;
+  recs.forEach(function(x,j){ if(x.rec.rec_id===ATT_REV_ID) k=j; });
+  if(k<0 && recs.length){ k=0; ATT_REV_ID=recs[0].rec.rec_id; }
+  var cur=k>=0?recs[k]:null, h='', nm=esc(p.name||'—');
+  if(recs.length>1){
+    h+='<div class="att-recsw">'+recs.map(function(x,j){
+      return '<button type="button" class="'+(j===k?'on':'')+'" onclick="attRevPick('+j+')">'+(x.type==='in'?'เข้า ':'ออก ')+esc(attHM(x.rec.time)||'—')+(x.rec.status==='void'?' (ยกเลิก)':'')+(attNeedsRev(x.rec)?' ⚠️':'')+'</button>';
+    }).join('')+'</div>';
+  }
+  if(cur){
+    var rec=cur.rec, fl=attFlags(rec.flags), live=(rec.status!=='void' && rec.status!=='rejected'), need=attNeedsRev(rec);
+    var src= rec.source==='manual'?'(ลงเวลาให้)' : (rec.source==='self'?'(แจ้งเอง)':'(เวลาระบบ)');
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin:2px 2px 12px">'+
+         '<div style="min-width:0"><div class="att-h2">'+nm+' · '+(cur.type==='in'?'เข้างาน':'ออกงาน')+'</div>'+
+         '<div class="att-onbg att-num" style="font-size:14px">'+esc(attDayTH(ATT_DAY_DATE)+' · '+(attHMS(rec.time)||'—')+' น. '+src)+'</div></div>'+
+         attRecPill(rec)+'</div>';
+    h+='<div class="att-revph" id="ar-photo">'+attRevPhotoHtml(rec)+'</div>';
+    var rows='';
+    if(rec.photo) rows+=attRow('นาฬิกาเครื่องสแกน','ดูในรูปด้านบน');
+    rows+=attRow('ตำแหน่ง', attLocText(rec));
+    var tags=fl.map(function(f){ return attFlagText(f,rec); }).filter(function(x){ return !!x; });
+    if(tags.length) rows+=attRow('ป้าย', tags.join(' · '));
+    if(cur.type==='out' && cur.shift && cur.shift.in) rows+=attRow('กะนี้', 'เข้า '+(attHM(cur.shift.in.time)||'—')+(attHas(cur.shift.minutes)?(' · รวม '+attHMM(cur.shift.minutes)):''));
+    if(cur.type==='in' && cur.shift && !cur.shift.out) rows+=attRow('ออกงาน', cur.shift.state==='forgot'?'ลืมกดออก':(cur.shift.state==='open'?'ยังทำงานอยู่':'ยังไม่ได้กดออก'));
+    if(rec.status==='void') rows+=attRow('สถานะ','ยกเลิกแล้ว — ไม่นับชั่วโมง');
+    if(rec.reviewed) rows+=attRow('ตรวจแล้ว', rec.reviewed);
+    var nt=attNoteText(rec.note); if(nt) rows+=attRow('หมายเหตุ', nt);
+    h+='<div class="card att-rows">'+rows+'</div>';
+    if(live){
+      if(need) h+='<button class="bigbtn in att-mid" id="ar-approve" onclick="attDecide(\'approve\')">'+(rec.status==='pending'?'อนุมัติเวลาที่แจ้ง':'อนุมัติ')+'</button>';
+      h+='<div class="att-two"><button type="button" class="btn ghost adminbtn" onclick="attRevPanel(\'edit\')">แก้เวลา</button>'+
+         '<button type="button" class="btn ghost adminbtn" style="color:#ffd2cc;border-color:rgba(255,190,180,.75)" onclick="attRevPanel(\'void\')">ยกเลิกรายการ</button></div>';
+      if(ATT_REV_PANEL==='edit'){
+        h+='<div class="card" style="margin-top:12px"><b>แก้เวลา</b>'+
+          '<div class="row2" style="grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);align-items:end"><div><label for="ar-time">เวลาใหม่</label><input id="ar-time" type="time" value="'+esc(attHM(rec.time))+'"></div>'+
+          '<div><label for="ar-date">วันที่จริงของเวลานี้ (ถ้าข้ามเที่ยงคืน)</label><input id="ar-date" type="date"></div></div>'+
+          '<div class="muted" style="font-size:12.5px;margin-top:6px">'+(cur.type==='out'
+            ? 'ช่องนี้คือวันที่ตามปฏิทินจริง (ไม่ใช่วันทำงาน) · เว้นว่าง = ระบบคิดจากเวลาเข้างานให้ (เวลาออกน้อยกว่าเวลาเข้า = หลังเที่ยงคืน วันถัดไป)'
+            : 'ช่องนี้คือวันที่ตามปฏิทินจริง (ไม่ใช่วันทำงาน) · เว้นว่าง = วันเดิมของรายการ')+'</div>'+
+          '<label for="ar-why">เหตุผล (ต้องกรอก)</label><input id="ar-why" type="text" maxlength="200" placeholder="เช่น ลืมกด มาถึงจริง 13:50">'+
+          '<div class="att-two"><button type="button" class="btn" id="ar-editok" onclick="attDecide(\'edit\')">บันทึกเวลาใหม่</button>'+
+          '<button type="button" class="btn ghost" onclick="attRevPanel(\'edit\')">ไม่แก้</button></div></div>';
+      }
+      if(ATT_REV_PANEL==='void'){
+        h+='<div class="card att-badcard" style="margin-top:12px"><b style="color:#b23b32">ยกเลิกรายการนี้?</b>'+
+          '<div class="muted" style="font-size:13px;margin-top:4px">รายการที่ยกเลิกจะไม่ถูกนับชั่วโมง แต่ยังเก็บไว้ในประวัติ</div>'+
+          '<label for="ar-vwhy">เหตุผล (ต้องกรอก)</label><input id="ar-vwhy" type="text" maxlength="200" placeholder="เช่น กดผิดคน / กดซ้ำ">'+
+          '<div class="att-two"><button type="button" class="btn danger" id="ar-voidok" onclick="attDecide(\'void\')">ยืนยันยกเลิก</button>'+
+          '<button type="button" class="btn ghost" onclick="attRevPanel(\'void\')">ไม่ยกเลิก</button></div></div>';
+      }
+    }
+  } else h+='<div class="att-h2" style="margin:2px 2px 12px">'+nm+'</div>';
+  var rej=p.rejected||[];
+  if(rej.length){
+    h+='<div class="card att-badcard" style="font-size:14px;margin-top:12px"><b style="color:#b23b32">ถูกปฏิเสธ (ไกลร้าน) '+rej.length+' ครั้ง</b>'+
+      rej.map(function(x){ return '<div class="muted att-num">'+esc((attHM(x.time)||'—')+(attHas(x.dist_m)?(' · ห่าง '+attDist(x.dist_m)):''))+'</div>'; }).join('')+
+      '<div class="muted" style="font-size:12.5px;margin-top:6px">เป็นแค่บันทึกการกด ไม่นับเป็นเวลาทำงาน</div></div>';
+  }
+  h+='<div class="msg" id="ar-msg"></div>';
+  h+='<div class="att-hint" style="margin-top:12px">ทุกการแก้บันทึกว่าใครแก้ เมื่อไหร่ ของเดิมไม่ถูกลบ</div>';
+  box.innerHTML=h;
+  if(note) msg(document.getElementById('ar-msg'), note, kind||'ok');
+  if(cur && cur.rec.photo) attLoadPhoto(cur.rec.rec_id);
+}
+async function attDecide(act){
+  var p=((ATT_DAY&&ATT_DAY.people)||[])[ATT_REV_I]; if(!p || !ATT_REV_ID) return;
+  var m=document.getElementById('ar-msg'); clearMsg(m);
+  var data={rec_id:ATT_REV_ID, act:act}, btn=null;   // ใช้ช่อง act (ช่อง action ถูกใช้เป็นชื่อคำสั่งของ api() อยู่แล้ว)
+  if(act==='approve'){ btn=document.getElementById('ar-approve'); data.reason=''; }
+  else if(act==='edit'){
+    var tm=(document.getElementById('ar-time')||{}).value||'', dt=(document.getElementById('ar-date')||{}).value||'',
+        why=String((document.getElementById('ar-why')||{}).value||'').trim();
+    if(!/^\d{2}:\d{2}$/.test(tm)){ msg(m,'ใส่เวลาใหม่ก่อน'); return; }
+    if(!why){ msg(m,'กรุณากรอกเหตุผลที่แก้เวลา'); return; }
+    data.time=tm; data.reason=why; if(dt) data.date=dt;
+    btn=document.getElementById('ar-editok');
+  } else if(act==='void'){
+    var vw=String((document.getElementById('ar-vwhy')||{}).value||'').trim();
+    if(!vw){ msg(m,'กรุณากรอกเหตุผลที่ยกเลิก'); return; }
+    data.reason=vw; btn=document.getElementById('ar-voidok');
+  } else return;
+  attBtnBusy(btn,true);
+  var r=await api('attDecide', data);
+  attBtnBusy(btn,false);
+  if(!r||!r.ok){ msg(m, attErrText(r,'ทำรายการไม่สำเร็จ')); return; }
+  var empId=p.emp_id;
+  var okTxt= act==='approve'?'✅ อนุมัติแล้ว' : (act==='edit'?'✅ แก้เวลาแล้ว (ของเดิมเก็บไว้ในประวัติ)':'✅ ยกเลิกรายการแล้ว');
+  ATT_REV_PANEL='';
+  await attLoadDay(false);
+  var people=(ATT_DAY&&ATT_DAY.people)||[], ni=-1;
+  people.forEach(function(x,j){ if(x.emp_id===empId) ni=j; });
+  if(ni<0){ attBackDay(); msg(document.getElementById('ad-msg'), okTxt, 'ok'); return; }
+  ATT_REV_I=ni;
+  if(act==='approve'){
+    var next=attRecs(people[ni]).filter(function(x){ return attNeedsRev(x.rec); })[0];
+    if(next){ ATT_REV_ID=next.rec.rec_id; attRenderRev(okTxt+' — รายการถัดไปของคนนี้', 'ok'); window.scrollTo(0,0); return; }
+    attBackDay(); msg(document.getElementById('ad-msg'), okTxt+' · '+(people[ni].name||''), 'ok'); return;
+  }
+  attRenderRev(okTxt, 'ok');
+}
+
+/* ---------- สรุปรายเดือน (ชั่วโมงเท่านั้น — ยังคิดเป็นเงินไม่ได้) ---------- */
+async function openAttMonth(ym){
+  ATT_MONTH_YM=ym||ATT_MONTH_YM||(ATT_DAY_DATE||bizDateISO()).slice(0,7);
+  if(ATT_MONTH_YM>attCurYm()) ATT_MONTH_YM=attCurYm();
+  document.getElementById('amo-ym').textContent=attYmTH(ATT_MONTH_YM);
+  document.getElementById('amo-next').disabled=(ATT_MONTH_YM>=attCurYm());
+  clearMsg(document.getElementById('amo-msg'));
+  var box=document.getElementById('amo-body');
+  box.innerHTML='<div class="center" style="padding:24px"><span class="spinner"></span></div>';
+  show('attmonth');
+  var want=ATT_MONTH_YM, r=await api('attMonth',{ym:want});
+  if(want!==ATT_MONTH_YM || attCur()!=='attmonth') return;
+  if(!r||!r.ok){ box.innerHTML='<div class="card center muted">'+esc(attErrText(r,'โหลดไม่สำเร็จ'))+'</div>'; return; }
+  var ps=r.people||[];
+  if(!ps.length){ box.innerHTML='<div class="card center muted">ยังไม่มีข้อมูลเดือนนี้</div>'; return; }
+  var rows=ps.map(function(p){
+    var inc=(+p.incomplete||0)+(+p.pending||0);
+    return '<tr><td class="d">'+esc(p.name||'—')+'</td><td class="num">'+(+p.days||0)+'</td><td class="num">'+esc(attHMM(p.minutes))+'</td>'+
+      '<td class="num"'+(inc>0?' style="color:#8a5a00;font-weight:800"':'')+'>'+inc+'</td></tr>';
+  }).join('');
+  box.innerHTML='<table class="cash-tb" style="margin-bottom:10px"><thead><tr><th class="l">ชื่อ</th><th>วัน</th><th>ชั่วโมง</th><th>ไม่ครบ</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function attMonthGo(n){ var ym=attYmAdd(ATT_MONTH_YM||attCurYm(), n); if(ym>attCurYm()) return; openAttMonth(ym); }
+async function attMonthExport(){
+  var b=document.getElementById('amo-exp'), m=document.getElementById('amo-msg'); clearMsg(m);
+  attBtnBusy(b,true);
+  var r=await api('attMonthExport',{ym:ATT_MONTH_YM});
+  attBtnBusy(b,false);
+  if(!r||!r.ok){ msg(m, attErrText(r,'ส่งออกไม่สำเร็จ')); return; }
+  msg(m,'✅ ส่งออกแล้ว — แท็บ “'+(r.tab||('ลงเวลา_สรุป_'+ATT_MONTH_YM))+'” ในชีต Mana App DB','ok');
+}
+
+/* ---------- ลงเวลาให้พนักงาน (ไม่มีมือถือ / แบตหมด / ลืมกด) ---------- */
+async function openAttMan(){
+  var m=document.getElementById('am-msg'); clearMsg(m);
+  if(!ATT_DAY){ ATT_DAY_DATE=ATT_DAY_DATE||bizDateISO(); await attLoadDay(false); }
+  var ps=(ATT_DAY&&ATT_DAY.people)||[];
+  document.getElementById('am-who').innerHTML='<option value="">— เลือกพนักงาน —</option>'+
+    ps.map(function(p){ return '<option value="'+esc(p.emp_id)+'">'+esc(p.name||p.emp_id)+'</option>'; }).join('');
+  attManType('in');
+  document.getElementById('am-date').value=ATT_DAY_DATE||bizDateISO();
+  var d=new Date(); document.getElementById('am-time').value=attP2(d.getHours())+':'+attP2(d.getMinutes());
+  attManWhen();
+  document.getElementById('am-why').value='';
+  document.getElementById('am-note').textContent='รายการนี้จะขึ้นป้าย “ลงเวลาให้ โดย '+((ME&&(ME.nickname||ME.name))||'เจ้าของร้าน')+'” และเก็บประวัติไว้';
+  var b=document.getElementById('am-save'); delete b.dataset.html; b.disabled=false; b.textContent='บันทึก';
+  show('attman');
+  if(!ps.length) msg(m,'โหลดรายชื่อพนักงานไม่ได้ — กลับไปหน้าเวลาเข้างานแล้วลองใหม่');
+}
+// บอกวันที่จริงที่จะบันทึก — หลังบ้านถือ "วันที่" ในฟอร์มนี้เป็นวันทำงาน: เวลา 00:00–03:59 = วันปฏิทินถัดไป (กฎเที่ยงคืนเดียวกับทั้งแอป)
+function attManWhen(){
+  var el=document.getElementById('am-when'); if(!el) return;
+  var dt=(document.getElementById('am-date')||{}).value||'', tm=(document.getElementById('am-time')||{}).value||'';
+  var m=/^(\d{2}):(\d{2})$/.exec(tm);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(dt) || !m){ el.textContent=''; return; }
+  var after=(+m[1]<NIGHT_UNTIL), cal=after?attAddDays(dt,1):dt;
+  el.textContent='จะบันทึกเป็น: '+attDayTH(cal,1)+' เวลา '+tm+' น.'+(after?(' (หลังเที่ยงคืนของกะ '+attDayTH(dt)+')'):'');
+}
+function attManType(t){
+  ATT_MAN_TYPE=(t==='out')?'out':'in';
+  document.getElementById('am-t-in').className=(ATT_MAN_TYPE==='in')?'on in':'';
+  document.getElementById('am-t-out').className=(ATT_MAN_TYPE==='out')?'on out':'';
+}
+async function attManSave(){
+  var m=document.getElementById('am-msg'); clearMsg(m);
+  var emp=document.getElementById('am-who').value, dt=document.getElementById('am-date').value,
+      tm=document.getElementById('am-time').value, why=document.getElementById('am-why').value.trim();
+  if(!emp){ msg(m,'เลือกพนักงานก่อน'); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){ msg(m,'เลือกวันที่'); return; }
+  if(!/^\d{2}:\d{2}$/.test(tm)){ msg(m,'ใส่เวลา'); return; }
+  if(!why){ msg(m,'กรุณากรอกเหตุผล'); return; }
+  var b=document.getElementById('am-save'); attBtnBusy(b,true);
+  var r=await api('attManual',{emp_id:emp, type:ATT_MAN_TYPE, date:dt, time:tm, reason:why});
+  attBtnBusy(b,false);
+  if(!r||!r.ok){ msg(m, attErrText(r,'บันทึกไม่สำเร็จ')); return; }
+  var nm=''; ((ATT_DAY&&ATT_DAY.people)||[]).forEach(function(p){ if(p.emp_id===emp) nm=p.name||''; });
+  var typ=ATT_MAN_TYPE;
+  await openAttDay(null, ATT_DAY_DATE);
+  msg(document.getElementById('ad-msg'), '✅ ลงเวลา'+(typ==='in'?'เข้า':'ออก')+'งานให้ '+nm+' '+tm+' น. แล้ว','ok');
+}
+
+/* ---------- ตั้งค่า (จุดร้าน / ระยะ / โหมด) ---------- */
+function attSetAt(s){ var m=/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(s||'')); return m?((+m[3])+' '+ATT_MON[+m[2]-1]+' '+(+m[1]+543)+' '+m[4]+':'+m[5]):String(s||''); }
+async function openAttSet(){
+  clearMsg(document.getElementById('as-msg'));
+  ATT_SET_MEASURE=false; ATT_SET_MODECONF=false; attSetGeoStop();
+  document.getElementById('as-body').innerHTML='<div class="center" style="padding:24px"><span class="spinner"></span></div>';
+  show('attset');
+  await attSetLoad();
+}
+async function attSetLoad(){
+  var r=await api('attSettings',{});
+  if(attCur()!=='attset') return false;
+  if(!r||!r.ok){ document.getElementById('as-body').innerHTML='<div class="card center muted">'+esc(attErrText(r,'โหลดไม่สำเร็จ'))+'</div>'; return false; }
+  ATT_SET=r; attRenderSet();
+  return true;
+}
+function attRenderSet(){
+  var s=ATT_SET||{}, sh=s.shop, rad=+s.radius||200, mode=(s.mode==='enforce')?'enforce':'trial', far=+s.far_m||500, h='';
+  h+='<div class="card"><b>จุดร้าน</b>'+
+     '<div class="att-map'+(sh?'':' none')+'" style="margin-top:10px">'+ATT_SVG_PIN+'</div>'+
+     '<div class="muted" style="font-size:13px;margin-top:8px">'+
+       (sh ? esc('ตั้งเมื่อ '+attSetAt(sh.set_at)+(sh.set_by?(' โดย '+sh.set_by):'')+(attHas(sh.acc)?(' · คลาดเคลื่อน ±'+Math.round(+sh.acc)+' ม.'):''))
+           : '<b style="color:#b23b32">ยังไม่ได้ตั้งจุดร้าน</b> — ระบบยังเทียบระยะไม่ได้ (ลงเวลาได้ แต่ยังไม่ตรวจตำแหน่ง)')+'</div>';
+  if(!ATT_SET_MEASURE) h+='<button type="button" class="btn ghost" onclick="attSetMeasure()">ตั้งจุดร้านจากตำแหน่งที่ยืนอยู่</button>';
+  else h+='<div class="editbar" style="margin-top:12px;background:#eef3fb;border-color:#c9d8f0;color:var(--text)">'+
+       '<div id="as-mtext"></div>'+
+       '<div class="att-two"><button type="button" class="btn" id="as-saveshop" onclick="attSetSaveShop()" disabled>บันทึกจุดนี้</button>'+
+       '<button type="button" class="btn ghost" onclick="attSetMeasureCancel()">ยกเลิก</button></div></div>';
+  h+='</div>';
+  h+='<div class="card"><b>ระยะที่นับว่า "อยู่ร้าน"</b><div class="att-seg" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-top:10px">'+
+     ((Array.isArray(s.radii)&&s.radii.length)?s.radii:[150,200,250,300]).map(function(v){ v=+v; return '<button type="button" class="'+(v===rad?'on':'')+'" onclick="attSetRadius('+v+')">'+v+' ม.</button>'; }).join('')+'</div>'+
+     '<div class="muted" style="font-size:13px;margin-top:8px">ไกลเกิน '+far+' ม. = ไม่รับการกดเข้างาน (เฉพาะโหมดใช้จริง)</div></div>';
+  h+='<div class="card"><b>โหมด</b>'+
+     '<div class="att-radio'+(mode==='trial'?' on':'')+'" onclick="attSetMode(\'trial\')"><span class="rb"></span><span><b>ช่วงทดลอง</b><br><span class="muted" style="font-size:13px">บันทึกทุกครั้ง ยังไม่ปฏิเสธใคร (ไกลร้าน = ขึ้นป้ายให้ตรวจ)</span></span></div>'+
+     '<div class="att-radio'+(mode==='enforce'?' on':'')+'" onclick="attSetMode(\'enforce\')"><span class="rb"></span><span><b>ใช้จริง</b><br><span class="muted" style="font-size:13px">ไม่รับการกดเข้างานจากที่ไกล</span></span></div>'+
+     (ATT_SET_MODECONF ? ('<div class="editbar" style="margin-top:10px;background:#fff8ea;color:#8a5a00">เปลี่ยนเป็น <b>ใช้จริง</b>? พนักงานที่กดเข้างานไกลเกิน '+far+' ม. จะถูกปฏิเสธ (ยังกด “อยู่ร้านแล้ว” ส่งเซลฟี่ให้ตรวจได้)'+
+       '<div class="att-two"><button type="button" class="btn" onclick="attSetModeConfirm()">ยืนยันใช้จริง</button>'+
+       '<button type="button" class="btn ghost" onclick="attSetModeCancel()">ยังไม่เปลี่ยน</button></div></div>') : '')+
+     '</div>';
+  document.getElementById('as-body').innerHTML=h;
+  if(ATT_SET_MEASURE) attSetMeasureRender();
+}
+function attSetMeasure(){
+  ATT_SET_MEASURE=true; ATT_SFIX=null; ATT_SGEO_ERR=0;
+  attSetGeoStop();
+  attRenderSet();
+  if(!('geolocation' in navigator)){ ATT_SGEO_ERR=-1; attSetMeasureRender(); return; }
+  try{
+    ATT_SGEO_ID=navigator.geolocation.watchPosition(function(pos){
+      var c=pos&&pos.coords; if(!c) return;
+      var acc=+c.accuracy; if(!isFinite(acc)||acc<=0) acc=9999;
+      var f={lat:+c.latitude, lng:+c.longitude, acc:acc};
+      if(!isFinite(f.lat)||!isFinite(f.lng)) return;
+      if(!ATT_SFIX || f.acc<=ATT_SFIX.acc) ATT_SFIX=f;     // ยืนนิ่ง ๆ → เก็บตัวที่แม่นที่สุด
+      ATT_SGEO_ERR=0; attSetMeasureRender();
+    }, function(err){
+      ATT_SGEO_ERR=(err&&+err.code)||2;
+      if(ATT_SGEO_ERR===1) attSetGeoStop();
+      attSetMeasureRender();
+    }, ATT_GEO_OPTS);
+  }catch(e){ ATT_SGEO_ERR=-1; attSetMeasureRender(); }
+}
+// อัปเดตเฉพาะข้อความ + สถานะปุ่ม (ไม่สร้างปุ่มใหม่ทุกครั้งที่ได้ตำแหน่ง กันแตะพลาด)
+function attSetMeasureRender(){
+  var t=document.getElementById('as-mtext'), b=document.getElementById('as-saveshop'); if(!t) return;
+  var f=ATT_SFIX, e=ATT_SGEO_ERR, h='';
+  if(e===1 && !f) h='<b style="color:#b23b32">ไม่ได้อนุญาตตำแหน่ง</b><div class="muted" style="font-size:13px">อนุญาตตำแหน่ง + เปิด “ตำแหน่งที่แม่นยำ” แล้วกดตั้งจุดร้านใหม่</div>';
+  else if(e===-1) h='<b style="color:#b23b32">มือถือนี้หาตำแหน่งไม่ได้</b>';
+  else if(!f) h='<span class="att-spin"></span> กำลังวัดตำแหน่ง… ยืนนิ่ง ๆ ใกล้ประตูร้าน';
+  else h='ความแม่นที่ดีที่สุดตอนนี้ <b>±'+Math.round(f.acc)+' ม.</b> '+
+       (f.acc<=attShopMaxAcc() ? '<span style="color:#177a4a;font-weight:700">✓ ใช้ได้</span>'
+                                : '<span style="color:#8a5a00">(ต้องไม่เกิน ±'+attShopMaxAcc()+' ม. — ยืนนิ่ง ๆ รอสักครู่)</span>');
+  t.innerHTML=h;
+  if(b && !b.dataset.html) b.disabled=!(f && f.acc<=attShopMaxAcc());
+}
+function attShopMaxAcc(){ return (ATT_SET && +ATT_SET.max_acc>0) ? +ATT_SET.max_acc : ATT_SHOP_MAX_ACC; }   // หลังบ้านส่งเกณฑ์มาเอง = ใช้ของหลังบ้าน
+function attSetGeoStop(){ if(ATT_SGEO_ID!=null){ try{ navigator.geolocation.clearWatch(ATT_SGEO_ID); }catch(e){} } ATT_SGEO_ID=null; }
+function attSetMeasureCancel(){ attSetGeoStop(); ATT_SET_MEASURE=false; attRenderSet(); }
+async function attSetSaveShop(){
+  var f=ATT_SFIX; if(!f) return;
+  var b=document.getElementById('as-saveshop'), m=document.getElementById('as-msg'); clearMsg(m);
+  attBtnBusy(b,true);
+  var r=await api('attSettings',{set:{shop:{lat:f.lat, lng:f.lng, acc:Math.round(f.acc)}}});
+  attBtnBusy(b,false);
+  if(!r||!r.ok){ msg(m, attErrText(r,'บันทึกไม่สำเร็จ')); attSetMeasureRender(); return; }
+  attSetGeoStop(); ATT_SET_MEASURE=false;
+  await attSetLoad();
+  msg(m,'✅ ตั้งจุดร้านแล้ว (±'+Math.round(f.acc)+' ม.)','ok');
+}
+async function attSetSave(setObj, okTxt){
+  var m=document.getElementById('as-msg');
+  msg(m,'กำลังบันทึก…','warn');
+  var r=await api('attSettings',{set:setObj});
+  if(!r||!r.ok){ msg(m, attErrText(r,'บันทึกไม่สำเร็จ')); return false; }
+  await attSetLoad();
+  msg(m, okTxt, 'ok');
+  return true;
+}
+function attSetRadius(v){
+  if(ATT_SET && +ATT_SET.radius===v) return;
+  attSetSave({radius:v}, '✅ เปลี่ยนระยะเป็น '+v+' ม. แล้ว');
+}
+function attSetMode(mode){
+  var cur=(ATT_SET&&ATT_SET.mode==='enforce')?'enforce':'trial';
+  if(mode===cur){ if(ATT_SET_MODECONF){ ATT_SET_MODECONF=false; attRenderSet(); } return; }
+  if(mode==='enforce'){ ATT_SET_MODECONF=true; attRenderSet(); return; }   // เปลี่ยนเป็นใช้จริง = ยืนยันในหน้าก่อน
+  ATT_SET_MODECONF=false; attSetSave({mode:'trial'}, '✅ เปลี่ยนเป็นช่วงทดลองแล้ว');
+}
+function attSetModeConfirm(){ ATT_SET_MODECONF=false; attSetSave({mode:'enforce'}, '✅ เปลี่ยนเป็นใช้จริงแล้ว'); }
+function attSetModeCancel(){ ATT_SET_MODECONF=false; attRenderSet(); }
 
 /* ---------- เงินสด (Service + ผู้ดูแล) — ตรงตารางร้าน: วันที่ | ยอดขาย | รายการ | รวม | เซ็น ---------- */
 let CASH_ROWS = [];        // บันทึกล่าสุด (ไว้คิด "ยอดยกมา" = รวมของวันก่อน + รู้ว่าวันไหนบันทึกแล้ว)
@@ -4124,6 +5539,15 @@ const HELP_TOPICS = [
       'ตอนปิดร้านนับของแพคที่เหลือ → ดูหัวข้อ <b>🧊 Stock ของแพค</b>'
     ], tip:'💡 ลืมบันทึกตอนทำ = ไปกรอกช่อง "เข้า" เองตอนนับกลางคืนได้ ยอดยังถูก แต่จะไม่รู้ว่าของรอบนั้นทำได้กี่แพค · ถ้ารับของมาแล้วยังไม่ได้บันทึก หน้าแรกจะขึ้นเตือนให้เอง · ชั่งเศษไว้ทุกรอบ จะรู้ว่าของ 1 โล/1 ตัว ได้เนื้อกี่เปอร์เซ็นต์ และเห็นทันทีถ้ารอบไหนเปลืองผิดปกติ' },
 
+  { id:'att', ico:'⏰', name:'ลงเวลาเข้า–ออกงาน', sub:'กดเข้า/ออกงานด้วยมือถือ + เซลฟี่ทุกครั้ง', attOnly:true, steps:[
+      'หน้าหลัก → แตะ <b>⏰ ลงเวลา</b> (ครั้งแรกอ่านเงื่อนไขแล้วกด <b>รับทราบ</b> — มือถือจะถามขอ “ตำแหน่ง” และ “กล้อง” ให้กด <b>อนุญาต</b>)',
+      'ยืนอยู่<b>ที่ร้าน</b> รอป้ายตำแหน่งขึ้นสีเขียว <b>อยู่ที่ร้าน</b> → กด <b>เข้างาน</b> (ตอนเลิกงานปุ่มจะเปลี่ยนเป็น <b>ออกงาน</b> สีแดง)',
+      'ถ่าย<b>เซลฟี่หน้าเครื่องสแกนนิ้ว</b> ให้เห็นทั้ง<b>หน้า</b>และ<b>จอเครื่องสแกน</b> (เห็นนาฬิกาบนจอ) — ถ่ายทุกครั้งทั้งเข้าและออก',
+      'ตรวจรูป → กด <b>ใช้รูปนี้</b> → ขึ้น <b>เข้างานแล้ว / ออกงานแล้ว</b> พร้อมเวลา = บันทึกเรียบร้อย (ใช้เวลาของระบบ แก้นาฬิกามือถือไม่มีผล)',
+      '<b>ลืมกดออกเมื่อคืน</b> → หน้าลงเวลาจะขึ้นกล่องสีเหลือง ใส่เวลาที่ออกจริง แล้วกด <b>ส่งให้เจ้าของร้านตรวจ</b> (วันนี้ยังกดเข้างานได้ตามปกติ)',
+      'ดูวันและชั่วโมงทำงานของตัวเอง → กด <b>ดูประวัติของฉัน</b>'
+    ], tip:'💡 ต้อง<b>มีเน็ต</b>ตอนกด (ใช้เวลาจริงของระบบ) · ขึ้น “หาตำแหน่งไม่ได้” = ยังกดได้ แต่เจ้าของร้านจะตรวจ — ทำตามวิธีแก้ในหน้านั้นให้ครั้งหน้าผ่าน · เปิดแอปจากไอคอนหรือ Safari/Chrome <b>ไม่ใช่จากลิงก์ใน LINE</b> (กล้อง/ตำแหน่งมักใช้ไม่ได้) · ไม่มีมือถือ/แบตหมด ให้บอกเจ้าของร้านลงเวลาให้' },
+
   { id:'equip', ico:'🧰', name:'สำรวจอุปกรณ์', sub:'ถ่ายรูป + นับ ให้เจ้าของอนุมัติ', steps:[
       'หน้าหลัก → แตะ <b>อุปกรณ์</b> → <b>📋 สำรวจอุปกรณ์</b> → เลือกฝั่ง <b>🍳 ครัว</b> หรือ <b>🍽️ หน้าร้าน</b> (ระบบเลือกตามทีมให้ก่อน)',
       'แตะหมวดเพื่อกางตาราง — <b>1 ช่อง = 1 แบบ</b> ช่องตั้งชื่อไว้เป็นเลข (จาน 1, จาน 2 …) ถ่ายช่องไหนก่อนก็ได้ · มุมรูปบอกสถานะ <b>✓</b> อนุมัติแล้ว · <b>⏳</b> รออนุมัติ · <b>!</b> ต้องแก้',
@@ -4171,7 +5595,7 @@ function openHelp(){
   // เรนเดอร์ใหม่ทุกครั้ง — สิทธิ์ของคนที่ล็อกอินอยู่อาจเปลี่ยน (เข้าออกคนละบัญชี)
   const canCash = !!(ME && (ME.is_admin || ME.team === 'service'));
   document.getElementById('hp-list').innerHTML =
-    HELP_TOPICS.filter(t => !t.cashOnly || canCash).map(helpCard).join('');
+    HELP_TOPICS.filter(t => (!t.cashOnly || canCash) && (!t.attOnly || ATT_READY===true)).map(helpCard).join('');
   show('help');
 }
 function helpCard(t){
@@ -4383,16 +5807,8 @@ function fmtPhone(p){
   return p.length===10 ? p.replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3') : p;
 }
 
-/* ---------- เวลาเข้างาน = ยังเป็นแบบร่าง ให้อยู่เฉพาะ DEV ----------
-   แอปจริง (root): ตัดหน้าจอเข้า–ออกงาน + หน้ารายงานออกจาก DOM ไปเลย พนักงานไม่เห็น ไม่มีทางเข้าถึง
-   DEV (/app/dev/): มีไทล์ ⏰ ในหน้าหลัก ไว้พัฒนา/ทดลองต่อ
-   จะเปิดใช้จริงเมื่อไหร่ = ลบบล็อกนี้ทิ้ง (หลังบ้าน Attendance.gs ยังอยู่ครบ ไม่ได้ถอด) */
-(function(){
-  if(IS_DEV){ var t=document.getElementById('ho-clock-tile'); if(t) t.classList.remove('hidden'); return; }
-  ['ho-clock-tile','screen-clock','screen-report'].forEach(function(id){
-    var el=document.getElementById(id); if(el && el.parentNode) el.parentNode.removeChild(el);
-  });
-})();
+/* ---------- ลงเวลา: ไทล์ ⏰ โผล่ตามธง ping.att (attShowTile ใน showRecvTileIfReady) ----------
+   หลังบ้านรุ่นเก่า (ยังไม่มีลงเวลา v2) ไม่ส่งธงนี้ → ไทล์ซ่อนอยู่เอง ไม่ต้องตัดหน้าจอทิ้งแบบเดิม */
 
 /* ---------- boot: auto-login ด้วยโทเค็นเดิม ---------- */
 (async function(){
