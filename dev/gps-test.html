@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a4191">
+<title>ทดสอบ GPS — Mana Mana</title>
+<style>
+  :root{
+    --bg:#1a1614; --bg2:#241e1a; --card:#2c2520; --line:#3a322c;
+    --accent:#d8492f; --accent2:#e9763f; --gold:#e3b23c;
+    --text:#f4ece2; --muted:#a99b8c; --ok:#4caf72; --danger:#e0533d; --warn:#e3b23c;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans Thai","Helvetica Neue",sans-serif;
+    background:radial-gradient(140% 100% at 50% 0%,#2a221d 0%,var(--bg) 55%);
+    color:var(--text);min-height:100vh;line-height:1.55;font-size:16px}
+  .wrap{max-width:480px;margin:0 auto;padding:18px 16px 40px}
+  h1{font-size:22px;margin:6px 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+  .lab{font-size:13px;color:var(--muted);font-weight:600;margin:0 0 6px}
+  input{width:100%;padding:12px 14px;font-size:16px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);color:var(--text);outline:none}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:15px;cursor:pointer}
+  .chip.on{background:var(--accent2);border-color:var(--accent2);color:#1a1614;font-weight:700}
+  .big{width:100%;padding:16px;font-size:18px;font-weight:800;border:0;border-radius:14px;cursor:pointer;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .big:disabled{opacity:.55}
+  .ghost{width:100%;padding:12px;font-size:15px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);cursor:pointer;margin-top:10px}
+  .bar{height:8px;border-radius:99px;background:var(--bg2);overflow:hidden;margin-top:12px}
+  .bar>i{display:block;height:100%;width:0;background:var(--gold);transition:width .25s linear}
+  .live{font-size:14px;color:var(--muted);margin-top:8px;min-height:21px}
+  .verdict{font-size:22px;font-weight:800;margin:2px 0 8px}
+  .v-ok{color:var(--ok)} .v-mid{color:var(--warn)} .v-bad{color:var(--danger)}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child{color:var(--muted);width:46%;padding-right:8px}
+  td:last-child{font-weight:600;word-break:break-word}
+  .help{background:var(--bg2);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px;line-height:1.6}
+  .help b{color:var(--gold)}
+  .help ol{margin:6px 0 0;padding-left:20px}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+  video{width:100%;max-height:220px;border-radius:12px;background:#000;margin-top:10px;transform:scaleX(-1)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧪 ทดสอบตำแหน่ง (GPS)</h1>
+  <div class="sub">สำหรับระบบลงเวลาเข้างาน · ทดสอบที่ร้านเท่านั้น · หน้านี้ไม่ส่งข้อมูลไปที่ไหน</div>
+
+  <div class="card">
+    <div class="lab">ชื่อเล่นคนทดสอบ</div>
+    <input id="who" type="text" placeholder="เช่น นก" autocomplete="off">
+    <div class="lab" style="margin-top:14px">ตอนนี้ยืนอยู่ตรงไหน</div>
+    <div class="chips" id="spots"></div>
+  </div>
+
+  <div class="card">
+    <button class="big" id="go" onclick="runTest()">▶ เริ่มทดสอบ (20 วินาที)</button>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="live" id="live">กดปุ่ม แล้วถ้ามือถือถามเรื่องตำแหน่ง ให้กด "อนุญาต"</div>
+  </div>
+
+  <!-- ผลลัพธ์: ออกแบบให้แคปหน้าจอเดียวจบ -->
+  <div class="card hidden" id="result">
+    <div class="verdict" id="verdict"></div>
+    <table id="rtable"></table>
+    <div class="help hidden" id="fix"></div>
+    <div class="note">📸 แคปหน้าจอส่วนนี้ส่งให้คุณนุช แล้วลองซ้ำอีกจุดหนึ่งในร้าน (เช่น ในครัว)</div>
+    <button class="ghost hidden" id="setshop" onclick="setShop()">📍 ตั้งจุดนี้เป็น "จุดร้าน" (ทำครั้งเดียว ที่ประตูหน้าร้าน)</button>
+  </div>
+
+  <div class="card">
+    <div class="lab">ทดสอบกล้องหน้า (สำหรับเซลฟี่ตอนระบบไม่แน่ใจ)</div>
+    <button class="ghost" style="margin-top:0" id="camgo" onclick="testCam()">📷 ทดสอบกล้องหน้า</button>
+    <video id="vid" class="hidden" playsinline muted></video>
+    <div class="live" id="camres"></div>
+  </div>
+
+  <div class="note" id="devinfo"></div>
+</div>
+
+<script>
+var SPOTS=['หน้าร้าน','ในครัว','ประตูหลัง','หน้าร้าน (ข้างนอก)','อื่น ๆ'];
+var SPOT='';
+var TEST_MS=20000;
+var SHOP_KEY='mana_gpstest_shop';
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+/* ---------- เครื่อง / โหมดที่เปิด ---------- */
+function deviceInfo(){
+  var ua=navigator.userAgent||'';
+  var ios=/iPhone|iPad|iPod/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  var android=/Android/.test(ua);
+  var iosVer=''; var m=ua.match(/OS (\d+)[_.](\d+)/); if(ios&&m) iosVer=m[1]+'.'+m[2];
+  var andVer=''; var a=ua.match(/Android (\d+(\.\d+)?)/); if(a) andVer=a[1];
+  var line=/Line\//i.test(ua);
+  var standalone=(window.navigator.standalone===true) ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  var browser = line ? 'ในแอป LINE' : /CriOS|Chrome/.test(ua) ? 'Chrome' : /FxiOS|Firefox/.test(ua) ? 'Firefox' :
+    /SamsungBrowser/.test(ua) ? 'Samsung Internet' : /Safari/.test(ua) ? 'Safari' : 'อื่น ๆ';
+  var mode = line ? 'เปิดจากลิงก์ใน LINE' : standalone ? 'เปิดจากไอคอนบนหน้าจอ' : 'เปิดในเบราว์เซอร์ ('+browser+')';
+  var os = ios ? ('iPhone iOS '+(iosVer||'?')) : android ? ('Android '+(andVer||'?')) : 'คอม/อื่น ๆ';
+  return {ios:ios, android:android, line:line, standalone:standalone, os:os, mode:mode, browser:browser};
+}
+var DEV=deviceInfo();
+$('devinfo').textContent='เครื่องนี้: '+DEV.os+' · '+DEV.mode;
+
+/* ---------- เลือกจุดที่ยืน ---------- */
+$('spots').innerHTML=SPOTS.map(function(s,i){ return '<span class="chip" data-i="'+i+'" onclick="pickSpot('+i+')">'+esc(s)+'</span>'; }).join('');
+function pickSpot(i){
+  SPOT=SPOTS[i];
+  [].forEach.call(document.querySelectorAll('.chip'),function(c){ c.classList.toggle('on', +c.getAttribute('data-i')===i); });
+}
+try{ var w=localStorage.getItem('mana_gpstest_who'); if(w) $('who').value=w; }catch(e){}
+
+/* ---------- ระยะ ---------- */
+function dist(a,b,c,d){
+  function r(x){return x*Math.PI/180;}
+  var R=6371000, dLa=r(c-a), dLo=r(d-b);
+  var h=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dLo/2)*Math.sin(dLo/2);
+  return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+}
+function getShop(){ try{ var v=JSON.parse(localStorage.getItem(SHOP_KEY)||'null'); return (v&&isFinite(v.lat)&&isFinite(v.lng))?v:null; }catch(e){ return null; } }
+
+/* ---------- ทดสอบตำแหน่ง ---------- */
+var LAST=null;
+function runTest(){
+  try{ localStorage.setItem('mana_gpstest_who',$('who').value.trim()); }catch(e){}
+  $('result').classList.add('hidden'); $('fix').classList.add('hidden'); $('setshop').classList.add('hidden');
+  if(!('geolocation' in navigator)){ finish({err:'nogeo'}); return; }
+  var btn=$('go'); btn.disabled=true; btn.textContent='กำลังทดสอบ…';
+  var t0=performance.now(), started=Date.now();
+  var fixes=[], firstMs=null, best=null, errCode=null, done=false;
+  var bar=$('prog'); bar.style.width='0%';
+  var tick=setInterval(function(){
+    var el=performance.now()-t0;
+    bar.style.width=Math.min(100,el/TEST_MS*100)+'%';
+    if(!fixes.length) $('live').textContent='รอตำแหน่ง… '+Math.floor(el/1000)+' วิ';
+  },250);
+  var wid;
+  function stop(){
+    if(done) return; done=true;
+    clearInterval(tick); bar.style.width='100%';
+    try{ navigator.geolocation.clearWatch(wid); }catch(e){}
+    btn.disabled=false; btn.textContent='▶ ทดสอบอีกครั้ง';
+    // ไม่ได้ตำแหน่งเลยและไม่มี error (เช่น กดอนุญาตช้าเกิน 20 วิ) = ถือเป็นหมดเวลา
+    finish({fixes:fixes, firstMs:firstMs, best:best, err:(fixes.length?null:(errCode==null?3:errCode)), when:started});
+  }
+  try{
+    wid=navigator.geolocation.watchPosition(function(p){
+      var c=p.coords, ms=performance.now()-t0;
+      if(firstMs===null) firstMs=ms;
+      var f={lat:c.latitude, lng:c.longitude, acc:c.accuracy, alt:(c.altitude!=null), ms:ms};
+      fixes.push(f);
+      if(!best || f.acc<best.acc) best=f;
+      $('live').textContent='ได้ตำแหน่งแล้ว '+fixes.length+' ครั้ง · คลาดเคลื่อน ±'+Math.round(c.accuracy)+' ม. (ดีที่สุด ±'+Math.round(best.acc)+' ม.)';
+    },function(e){
+      errCode=e.code;
+      if(e.code===1) stop();   // ปฏิเสธสิทธิ์ = จบเลย ไม่ต้องรอ
+    },{enableHighAccuracy:true, maximumAge:0, timeout:TEST_MS});
+  }catch(e){ errCode='ex'; }
+  setTimeout(stop, TEST_MS);
+}
+
+function finish(r){
+  LAST=r;
+  var v=$('verdict'), fx=$('fix'), rows=[];
+  var who=$('who').value.trim()||'—';
+  var now=new Date(); var p=function(n){return (n<10?'0':'')+n;};
+  var stamp=now.getDate()+'/'+(now.getMonth()+1)+' '+p(now.getHours())+':'+p(now.getMinutes());
+  rows.push(['คนทดสอบ',who],['จุดที่ยืน',SPOT||'—'],['เครื่อง',DEV.os],['เปิดแบบ',DEV.mode],['เวลาที่ทดสอบ',stamp]);
+
+  var cls, txt, help='';
+  if(r.err==='nogeo'){
+    cls='v-bad'; txt='❌ มือถือ/เบราว์เซอร์นี้ไม่รองรับตำแหน่ง';
+    help=helpOpenProper();
+  } else if(r.err!=null){
+    cls='v-bad';
+    if(r.err===1){ txt='❌ ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง'; help=helpDenied(); }
+    else if(r.err===2){ txt='❌ มือถือหาตำแหน่งไม่ได้'; help=helpUnavailable(); }
+    else { txt='❌ ไม่ได้ตำแหน่งภายใน 20 วินาที'; help=helpTimeout(); }
+    rows.push(['รหัสปัญหา', String(r.err)]);
+  } else {
+    var b=r.best, acc=Math.round(b.acc), first=(r.firstMs/1000).toFixed(1);
+    if(acc<=50){ cls='v-ok'; txt='✅ ใช้ได้ดี'; }
+    else if(acc<=150){ cls='v-mid'; txt='🟡 พอใช้ (คลาดเคลื่อนค่อนข้างมาก)'; help=helpWeak(false); }
+    else { cls='v-bad'; txt='❌ คลาดเคลื่อนมากเกินไป'; help=helpWeak(acc>=1000); }
+    rows.push(['ได้ตำแหน่งครั้งแรก', first+' วินาที'],
+              ['คลาดเคลื่อน (ดีที่สุด)', '± '+acc+' ม.'],
+              ['ได้ตำแหน่งทั้งหมด', r.fixes.length+' ครั้งใน 20 วิ']);
+    var shop=getShop();
+    if(shop){ rows.push(['ห่างจาก "จุดร้าน"', Math.round(dist(shop.lat,shop.lng,b.lat,b.lng))+' ม.']); }
+    rows.push(['พิกัด', b.lat.toFixed(5)+', '+b.lng.toFixed(5)]);
+    if(acc<=30) $('setshop').classList.remove('hidden');
+  }
+  if(DEV.line && !help) help=helpOpenProper();
+  v.className='verdict '+cls; v.textContent=txt;
+  $('rtable').innerHTML=rows.map(function(x){ return '<tr><td>'+esc(x[0])+'</td><td>'+esc(x[1])+'</td></tr>'; }).join('');
+  if(help){ fx.innerHTML=help; fx.classList.remove('hidden'); }
+  $('result').classList.remove('hidden');
+  $('live').textContent=r.err==null?'ทดสอบเสร็จแล้ว ดูผลด้านล่าง':'ทดสอบเสร็จแล้ว ดูวิธีแก้ด้านล่าง';
+  setTimeout(function(){ $('result').scrollIntoView({behavior:'smooth',block:'start'}); },100);
+}
+
+/* ---------- วิธีแก้ (ภาษาง่าย) ---------- */
+function helpDenied(){
+  if(DEV.ios) return '<b>วิธีแก้บน iPhone</b><ol>'+
+    '<li>เปิด <b>ตั้งค่า › ความเป็นส่วนตัวและความปลอดภัย › บริการหาตำแหน่ง</b> ให้เปิดอยู่</li>'+
+    '<li>ในหน้าเดียวกัน เลื่อนหา <b>เว็บไซต์ Safari</b> › เลือก <b>ขณะใช้แอป</b> และเปิด <b>ตำแหน่งที่แม่นยำ</b></li>'+
+    '<li>กลับมาที่ Safari กดปุ่ม <b>aA</b> ข้างช่องที่อยู่เว็บ › <b>การตั้งค่าเว็บไซต์</b> › <b>ตำแหน่ง</b> › <b>อนุญาต</b></li>'+
+    '<li>ปิดหน้านี้แล้วเปิดใหม่ ทดสอบอีกครั้ง</li></ol>';
+  if(DEV.android) return '<b>วิธีแก้บน Android</b><ol>'+
+    '<li>ดึงแถบด้านบนลงมา เปิด <b>ตำแหน่ง (Location)</b></li>'+
+    '<li>ใน Chrome กดรูปแม่กุญแจหรือไอคอนข้างช่องที่อยู่เว็บ › <b>สิทธิ์</b> › <b>ตำแหน่ง</b> › <b>อนุญาต</b></li>'+
+    '<li>ถ้ามีให้เลือก <b>แม่นยำ / โดยประมาณ</b> ให้เลือก <b>แม่นยำ</b></li>'+
+    '<li>ทดสอบอีกครั้ง</li></ol>';
+  return '<b>ต้องอนุญาตให้เว็บนี้ใช้ตำแหน่ง</b> แล้วทดสอบอีกครั้ง';
+}
+function helpUnavailable(){
+  return '<b>วิธีแก้</b><ol><li>เปิด <b>ตำแหน่ง/บริการหาตำแหน่ง</b> ของมือถือ</li>'+
+    '<li>ปิด <b>โหมดประหยัดแบต</b> ชั่วคราว</li><li>เปิด Wi-Fi ไว้ (ช่วยหาตำแหน่งในอาคาร แม้ไม่ได้ต่อก็ช่วย)</li><li>ทดสอบอีกครั้ง</li></ol>';
+}
+function helpTimeout(){
+  return '<b>มือถือหาตำแหน่งช้า</b><ol><li>ถ้ามือถือเพิ่งถามเรื่องสิทธิ์ตำแหน่ง ให้กด <b>ทดสอบอีกครั้ง</b> ได้เลย</li><li>เปิด Wi-Fi ไว้</li><li>ปิดโหมดประหยัดแบต</li>'+
+    '<li>ลองยืนใกล้ประตูหรือหน้าต่าง แล้วทดสอบอีกครั้ง</li></ol>';
+}
+function helpWeak(approx){
+  var s='<b>ตำแหน่งยังไม่แม่นพอ</b><ol>';
+  if(approx){
+    s+= DEV.ios ? '<li>น่าจะปิด <b>ตำแหน่งที่แม่นยำ</b> อยู่: ตั้งค่า › ความเป็นส่วนตัวและความปลอดภัย › บริการหาตำแหน่ง › เว็บไซต์ Safari › เปิด <b>ตำแหน่งที่แม่นยำ</b></li>'
+                : '<li>น่าจะเลือก <b>ตำแหน่งโดยประมาณ</b> อยู่: ให้เปลี่ยนเป็น <b>แม่นยำ</b> ในสิทธิ์ตำแหน่งของ Chrome และของมือถือ</li>';
+  }
+  s+='<li>เปิด Wi-Fi ไว้ ปิดโหมดประหยัดแบต</li><li>ลองทดสอบซ้ำอีกครั้ง (ครั้งที่ 2 มักแม่นขึ้น)</li></ol>';
+  return s;
+}
+function helpOpenProper(){
+  return '<b>เปิดหน้านี้ผิดที่</b><ol><li>ถ้าเปิดจากลิงก์ใน LINE ให้กด <b>⋯</b> มุมขวาบน › <b>เปิดในเบราว์เซอร์</b> (Safari หรือ Chrome)</li><li>แล้วทดสอบอีกครั้ง</li></ol>';
+}
+
+/* ---------- ตั้งจุดร้าน (เก็บในเครื่องนี้เท่านั้น) ---------- */
+function setShop(){
+  if(!LAST||!LAST.best) return;
+  if(!confirm('ตั้งจุดที่ยืนอยู่ตอนนี้เป็น "จุดร้าน" ในเครื่องนี้ไหม?\n(ควรยืนที่ประตูหน้าร้าน)')) return;
+  try{ localStorage.setItem(SHOP_KEY, JSON.stringify({lat:LAST.best.lat, lng:LAST.best.lng, acc:LAST.best.acc})); }catch(e){}
+  $('setshop').textContent='✅ ตั้งจุดร้านแล้ว — ทดสอบครั้งต่อไปจะบอกระยะห่างให้';
+  $('setshop').disabled=true;
+}
+
+/* ---------- ทดสอบกล้องหน้า ---------- */
+function testCam(){
+  var out=$('camres'), vid=$('vid');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ out.textContent='❌ เครื่อง/โหมดนี้เปิดกล้องจากหน้าเว็บไม่ได้'; return; }
+  out.textContent='กำลังเปิดกล้อง… ถ้าถามสิทธิ์ ให้กด "อนุญาต"';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}).then(function(st){
+    vid.srcObject=st; vid.classList.remove('hidden');
+    var pr=vid.play(); if(pr&&pr.catch) pr.catch(function(){});
+    out.textContent='✅ กล้องหน้าใช้ได้ (ปิดเองใน 3 วินาที)';
+    setTimeout(function(){ st.getTracks().forEach(function(t){t.stop();}); vid.classList.add('hidden'); vid.srcObject=null; },3000);
+  }).catch(function(e){
+    out.textContent='❌ เปิดกล้องไม่ได้ ('+(e&&e.name||'error')+') — ให้อนุญาตกล้องสำหรับเว็บนี้ แล้วลองใหม่';
+  });
+}
+</script>
+</body>
+</html>
