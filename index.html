@@ -83,6 +83,51 @@
     background:var(--bg2);border:1px solid var(--line);padding:2px 7px;border-radius:999px}
   .tile.admin{background:linear-gradient(160deg,#332019,#2c2520);border-color:rgba(227,178,60,.3)}
 
+  /* ---------- หน้าหลัก v2: จัดกลุ่มตาม "เรื่อง" (คน&เวลา / ของในร้าน / เงิน / อุปกรณ์) ----------
+     งานของเจ้าของอยู่ในกลุ่มเดียวกับงานพนักงาน ไม่แยกเป็นกลุ่ม "ผู้ดูแล" ; เพิ่มระบบใหม่ = เพิ่มปุ่มในกลุ่มเดิม */
+  .grp{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:12px;
+    display:flex;flex-direction:column;gap:10px}
+  .grp .gh{display:flex;align-items:baseline;gap:8px;padding:0 4px;flex-wrap:wrap}
+  .grp .gt{font-size:13.5px;font-weight:800;color:var(--gold);letter-spacing:.2px}
+  .grp .gs{font-size:11.5px;color:var(--muted)}
+  .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .t2{position:relative;display:flex;flex-direction:column;gap:4px;min-height:86px;padding:12px 12px 10px;border-radius:13px;
+    background:var(--bg2);border:1px solid var(--line);text-align:left;font:inherit;color:var(--text);cursor:pointer;width:100%}
+  .t2:active{transform:scale(.98)}
+  .t2.wide{grid-column:1/-1}
+  .t2 .ic{font-size:22px;line-height:1}
+  .t2 .nm{font-size:14.5px;font-weight:700;line-height:1.2}
+  .t2 .st{font-size:11.5px;color:var(--muted);line-height:1.3}
+  .t2 .st.ok{color:#177a4a}
+  .t2 .st.warn{color:#8a5a00}
+  .t2 .key{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--bg2);border:1px solid var(--line);border-radius:999px;
+    padding:1px 6px;margin-left:4px;white-space:nowrap}
+  .t2 .bdg{position:absolute;top:8px;right:8px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;
+    background:var(--danger);color:#fff;font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .bigt{grid-column:1/-1;display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:13px;border:0;width:100%;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;text-align:left;font:inherit;cursor:pointer;
+    box-shadow:0 8px 20px rgba(10,65,145,.22)}
+  .bigt.in{background:var(--bg2);border:1px solid rgba(31,157,87,.45);color:var(--text);box-shadow:none}
+  .bigt .bt{font-size:16px;font-weight:800}
+  .bigt .bs{font-size:12px;color:rgba(255,255,255,.88)}
+  .bigt.in .bs{color:#177a4a}
+  .bigt .go{font-size:12.5px;font-weight:800;border-radius:999px;padding:7px 13px;white-space:nowrap;
+    background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45)}
+  .bigt.in .go{background:var(--accent);border:0;color:#fff}
+  .todayline{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px;margin:2px 0 10px}
+  .todayline .tl{font-size:13px;color:var(--muted)}
+  /* แผ่น "ฉัน" — ของส่วนตัว + ตั้งค่า ย้ายออกจากหน้าหลัก */
+  .mesheet{background:var(--bg2);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:12px}
+  .merow{display:flex;align-items:center;gap:13px;width:100%;min-height:54px;padding:11px 14px;border:0;
+    border-bottom:1px solid var(--line);background:transparent;text-align:left;font:inherit;color:var(--text);cursor:pointer}
+  .merow:last-child{border-bottom:0}
+  .merow .ic{font-size:21px;width:26px;text-align:center;flex:0 0 26px}
+  .merow>span:nth-child(2){flex:1;min-width:0}
+  .merow .nm{display:block;font-size:15px;font-weight:700}
+  .merow .ds{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+  .merow .ar{margin-left:auto;color:var(--muted);font-size:18px}
+  .mecap{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.4px;padding:0 4px 6px}
+
   /* Employee list */
   .emp{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:11px}
   .emp .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -293,6 +338,14 @@
   .brandmark .sub,#st-date,#rp-date,.clockdate{ color:rgba(255,255,255,.82); }
   .brandbar .bn,.topbar .who,.clock{ color:#fff; }
   .topbar .hi,.sect-title,.st-tip,.geo{ color:rgba(255,255,255,.75); }
+  /* หน้าหลัก v2 — ข้อความที่อยู่นอกการ์ด (พื้นน้ำเงิน) ต้องเป็นสีอ่อน */
+  .todayline .tl,.mecap{ color:rgba(255,255,255,.78); }
+  #screen-me .health{ background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+    color:var(--text);font-size:12.5px;line-height:1.6 }
+  #screen-me .health .bad{ color:var(--danger);font-weight:700 }
+  #screen-me .health .hlink{ color:var(--accent);font-weight:700 }
+  .todayline .rf{ background:none;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;
+    width:32px;height:32px;font-size:15px;line-height:1;cursor:pointer }
   .page-label{ color:rgba(255,255,255,.88); }
   .footnote{ color:rgba(255,255,255,.5); }
   .backbtn{ color:#bcd4f7; }
@@ -724,74 +777,154 @@
         <div class="hi">ยินดีต้อนรับ 👋</div>
         <div class="who"><span id="ho-name">—</span> <span class="chip" id="ho-chip">staff</span></div>
       </div>
-      <div class="avatar" id="ho-avatar">M</div>
+      <button type="button" class="avatar" id="ho-avatar" onclick="openMe()" aria-label="เมนูของฉัน" style="border:0;font:inherit;cursor:pointer">M</button>
     </div>
     <div id="ho-verwarn" class="msg"></div>
     <!-- ของค้างส่ง (เฟส 3) — โผล่เมื่อมีข้อมูลที่เน็ตหลุดตอนกดส่ง -->
     <div id="ho-outbox" class="msg"></div>
-    <!-- แถบ "วันนี้" — โผล่เมื่อหลังบ้านรองรับ (ping.today) เท่านั้น -->
-    <div id="ho-today" class="today hidden">
-      <div class="today-h"><span id="ho-today-t">วันนี้</span><button type="button" class="rf" title="รีเฟรช" onclick="loadToday(1)">⟳</button></div>
-      <div class="today-chips" id="ho-today-chips"></div>
+    <!-- แถบ "วันนี้" — โผล่เมื่อหลังบ้านรองรับ (ping.today) เท่านั้น ; สถานะรายเมนูไปอยู่ในปุ่มแต่ละอันแล้ว -->
+    <div id="ho-today" class="hidden">
+      <div class="todayline">
+        <span class="tl" id="ho-today-t">วันนี้</span>
+        <button type="button" class="rf" title="รีเฟรช" onclick="loadToday(1)">⟳</button>
+      </div>
       <div class="msg" id="ho-today-warn"></div>
-      <div class="health hidden" id="ho-health"></div>
     </div>
 
-    <div class="sect-title">ระบบงาน</div>
-    <div class="grid">
-      <!-- ลงเวลา = โผล่เมื่อหลังบ้านรองรับลงเวลา v2 (ping.att) เท่านั้น — หลังบ้านรุ่นเก่าไม่มีธงนี้ ไทล์จึงซ่อนอยู่ (อัปเว็บก่อน deploy GAS ได้) -->
-      <div class="tile hidden" id="ho-clock-tile" onclick="openClock()" style="grid-column:1/-1">
-        <div class="ico">⏰</div>
-        <div><div class="tname">ลงเวลา</div><div class="tdesc">เข้า–ออกงาน · ถ่ายเซลฟี่ทุกครั้ง</div></div>
-      </div>
-      <div class="tile" onclick="openStock()" style="grid-column:1/-1">
-        <div class="ico">📦</div>
-        <div><div class="tname">Stock</div><div class="tdesc">กรอกสต็อกประจำวัน</div></div>
-      </div>
-      <div class="tile hidden" id="ho-recv-tile" onclick="openRecv()" style="grid-column:1/-1">
-        <div class="ico">📥</div>
-        <div><div class="tname">รับของเข้า</div><div class="tdesc">บันทึกของที่รับเข้าร้าน + รูปใบส่งของ</div></div>
-      </div>
-      <!-- ทำแพค = โผล่เมื่อหลังบ้านรองรับ (ping.pack) เท่านั้น — อัปเว็บก่อน deploy GAS ได้ -->
-      <div class="tile hidden" id="ho-pack-tile" onclick="openPack()" style="grid-column:1/-1">
-        <div class="ico">🧊</div>
-        <div><div class="tname">ทำแพค</div><div class="tdesc">ตัดแต่ง/แพควัตถุดิบ — บันทึกว่าได้กี่แพค</div></div>
-      </div>
-      <!-- เช็คอุปกรณ์ = โผล่เมื่อหลังบ้านรองรับ (ping.equip) เท่านั้น — อัปเว็บก่อน deploy GAS ได้ -->
-      <div class="tile hidden" id="ho-equip-tile" onclick="openEqHub()" style="grid-column:1/-1">
-        <div class="ico">🧰</div>
-        <div><div class="tname">อุปกรณ์</div><div class="tdesc">สำรวจ + ถ่ายรูป · เช็คเดือนละครั้ง</div></div>
-      </div>
-      <div class="tile hidden" id="ho-cash-tile" onclick="openCash()" style="grid-column:1/-1">
-        <div class="ico">💵</div>
-        <div><div class="tname">เงินสด</div><div class="tdesc">บันทึกเงินสดรายวัน · ทีม Service</div></div>
-      </div>
-    </div>
-
-    <div class="sect-title">ช่วยเหลือ</div>
-    <div class="grid">
-      <div class="tile" onclick="openHelp()" style="grid-column:1/-1">
-        <div class="ico">❓</div>
-        <div><div class="tname">วิธีใช้งาน</div><div class="tdesc">คลิปสอน + ขั้นตอนของแต่ละเมนู</div></div>
+    <!-- ============ หน้าหลัก v2: 4 เรื่อง ============ -->
+    <!-- เรื่องที่ 1: คน & เวลา -->
+    <div class="grp hidden" id="grp-time">
+      <div class="gh"><div class="gt">👥 คน &amp; เวลา</div><div class="gs">เข้า-ออกงาน · ชั่วโมง · ทะเบียนพนักงาน</div></div>
+      <div class="tiles">
+        <!-- ลงเวลา = โผล่เมื่อหลังบ้านรองรับลงเวลา v2 (ping.att) เท่านั้น — อัปเว็บก่อน deploy GAS ได้ -->
+        <button type="button" class="bigt hidden" id="ho-clock-tile" onclick="openClock()">
+          <span style="font-size:28px;line-height:1">⏰</span>
+          <span style="flex:1;min-width:0">
+            <span class="bt" style="display:block">ลงเวลา</span>
+            <span class="bs" id="ho-clock-sub">เข้า–ออกงาน · ถ่ายเซลฟี่ทุกครั้ง</span>
+          </span>
+          <span class="go" id="ho-clock-go">เปิด</span>
+        </button>
+        <button type="button" class="t2 hidden" id="ho-attrev-tile" onclick="openAttDay('home')">
+          <span class="bdg hidden" id="ho-attrev-bdg">0</span>
+          <span class="ic">⏱</span>
+          <span class="nm">ตรวจลงเวลา <span class="key">เจ้าของ</span></span>
+          <span class="st" id="st-attrev">วันนี้ · ใครมาแล้วบ้าง</span>
+        </button>
+        <button type="button" class="t2 hidden" id="ho-attmonth-tile" onclick="openAttMonth()">
+          <span class="ic">📊</span>
+          <span class="nm">สรุปชั่วโมง <span class="key">เจ้าของ</span></span>
+          <span class="st">รายเดือน · รายคน</span>
+        </button>
+        <button type="button" class="t2 wide hidden" id="ho-admin-tile" onclick="openAdmin()">
+          <span class="ic">👤</span>
+          <span class="nm">ทะเบียนพนักงาน <span class="key">เจ้าของ</span></span>
+          <span class="st" id="st-admin">เพิ่ม/แก้ไข/รีเซ็ต PIN</span>
+        </button>
       </div>
     </div>
 
-    <div id="ho-admin-sect" class="hidden">
-      <div class="sect-title">สำหรับผู้ดูแล</div>
-      <div class="grid">
-        <div class="tile admin" onclick="openAdmin()">
-          <div class="ico">👥</div>
-          <div><div class="tname">จัดการพนักงาน</div><div class="tdesc">เพิ่ม/แก้ไข/รีเซ็ต PIN</div></div>
-        </div>
+    <!-- เรื่องที่ 2: ของในร้าน -->
+    <div class="grp" id="grp-stuff">
+      <div class="gh"><div class="gt">📦 ของในร้าน</div><div class="gs">นับ · รับเข้า · แพค</div></div>
+      <div class="tiles">
+        <button type="button" class="t2" id="ho-stock-tile" onclick="openStock()">
+          <span class="ic">🐟</span>
+          <span class="nm">นับสต็อก</span>
+          <span class="st" id="st-stock">กรอกสต็อกประจำวัน</span>
+        </button>
+        <button type="button" class="t2 hidden" id="ho-recv-tile" onclick="openRecv()">
+          <span class="ic">📥</span>
+          <span class="nm">รับของเข้า</span>
+          <span class="st" id="st-recv">บันทึกของที่รับเข้าร้าน</span>
+        </button>
+        <!-- ทำแพค = โผล่เมื่อหลังบ้านรองรับ (ping.pack) เท่านั้น -->
+        <button type="button" class="t2 wide hidden" id="ho-pack-tile" onclick="openPack()">
+          <span class="ic">🧊</span>
+          <span class="nm">ทำแพค</span>
+          <span class="st" id="st-pack">ตัดแต่ง/แพควัตถุดิบ — ได้กี่แพค</span>
+        </button>
       </div>
     </div>
 
-    <div class="sect-title">บัญชี</div>
-    <div class="card">
-      <button class="btn ghost" onclick="openChangePin()">เปลี่ยน PIN ของฉัน</button>
-      <button class="btn ghost" style="margin-top:12px" onclick="logout()">ออกจากระบบ</button>
+    <!-- เรื่องที่ 3: เงิน -->
+    <div class="grp hidden" id="grp-money">
+      <div class="gh"><div class="gt">💵 เงิน</div><div class="gs">เงินสดในลิ้นชัก</div></div>
+      <div class="tiles">
+        <button type="button" class="t2 wide hidden" id="ho-cash-tile" onclick="openCash()">
+          <span class="ic">💵</span>
+          <span class="nm">เงินสด</span>
+          <span class="st" id="st-cash">บันทึกเงินสดรายวัน</span>
+        </button>
+      </div>
     </div>
+
+    <!-- เรื่องที่ 4: อุปกรณ์ -->
+    <div class="grp hidden" id="grp-equip">
+      <div class="gh"><div class="gt">🧰 อุปกรณ์</div><div class="gs">สำรวจ · อนุมัติ</div></div>
+      <div class="tiles">
+        <!-- เช็คอุปกรณ์ = โผล่เมื่อหลังบ้านรองรับ (ping.equip) เท่านั้น -->
+        <button type="button" class="t2 hidden" id="ho-equip-tile" onclick="openEqHub()">
+          <span class="ic">🧰</span>
+          <span class="nm">สำรวจอุปกรณ์</span>
+          <span class="st">ถ่ายรูป + นับจำนวน</span>
+        </button>
+        <button type="button" class="t2 hidden" id="ho-eqappr-tile" onclick="openEqAppr()">
+          <span class="bdg hidden" id="ho-eqappr-bdg">0</span>
+          <span class="ic">✅</span>
+          <span class="nm">อนุมัติ <span class="key">เจ้าของ</span></span>
+          <span class="st" id="st-eqappr">ตรวจของที่พนักงานถ่ายมา</span>
+        </button>
+      </div>
+    </div>
+
     <div class="footnote">Mana Mana Back Office<br><span id="ho-vertext"></span></div>
+  </section>
+
+  <!-- ============ แผ่น "ฉัน" — ของส่วนตัว + ตั้งค่า (ย้ายออกจากหน้าหลัก) ============ -->
+  <section id="screen-me" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div style="display:flex;align-items:center;gap:14px;margin:4px 2px 18px">
+      <div class="avatar" id="me-avatar" style="width:52px;height:52px;font-size:20px">M</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:17px;font-weight:800" id="me-name">—</div>
+        <div style="font-size:12.5px;color:var(--muted)" id="me-sub">—</div>
+      </div>
+    </div>
+
+    <div class="mecap">ของฉัน</div>
+    <div class="mesheet">
+      <button type="button" class="merow hidden" id="me-hist" onclick="openAttHist()">
+        <span class="ic">🕐</span><span><span class="nm">ประวัติลงเวลาของฉัน</span><span class="ds" id="me-hist-sub">เข้า-ออกงานย้อนหลัง</span></span><span class="ar">›</span>
+      </button>
+      <button type="button" class="merow" onclick="openHelp()">
+        <span class="ic">❓</span><span><span class="nm">วิธีใช้งาน</span><span class="ds">คลิปสอน + ขั้นตอนทุกเมนู</span></span><span class="ar">›</span>
+      </button>
+    </div>
+
+    <div class="mecap hidden" id="me-owner-cap">ตั้งค่าร้าน</div>
+    <div class="mesheet hidden" id="me-owner-box">
+      <button type="button" class="merow hidden" id="me-attset" onclick="openAttSet()">
+        <span class="ic">⚙️</span><span><span class="nm">ตั้งค่าลงเวลา</span><span class="ds">จุดร้าน · รัศมี · โหมดทดลอง/ใช้จริง</span></span><span class="ar">›</span>
+      </button>
+      <button type="button" class="merow hidden" id="me-attman" onclick="openAttMan()">
+        <span class="ic">✍️</span><span><span class="nm">ลงเวลาให้พนักงาน</span><span class="ds">กรณีลืมกด/มือถือมีปัญหา</span></span><span class="ar">›</span>
+      </button>
+    </div>
+
+    <div class="mecap hidden" id="me-health-cap">สุขภาพระบบ</div>
+    <div class="health hidden" id="ho-health" style="margin-bottom:12px"></div>
+
+    <div class="mecap">บัญชี</div>
+    <div class="mesheet">
+      <button type="button" class="merow" onclick="openChangePin()">
+        <span class="ic">🔑</span><span><span class="nm">เปลี่ยน PIN</span><span class="ds">รหัสเข้าแอป 6 หลัก</span></span><span class="ar">›</span>
+      </button>
+      <button type="button" class="merow" onclick="logout()">
+        <span class="ic">🚪</span><span><span class="nm" style="color:var(--danger)">ออกจากระบบ</span></span>
+      </button>
+    </div>
+    <div class="footnote">Mana Mana Back Office<br><span id="me-vertext"></span></div>
   </section>
 
   <!-- ============ ADMIN: EMPLOYEES ============ -->
@@ -1806,7 +1939,7 @@ function offDropPackDraft(){ offDraftClear('pack'); OFF_HIDE['pack']=1; offPackB
 
 function show(id){
   try{ attLeave(id); }catch(e){}   // ลงเวลา: ออกจากหน้าจอที่ใช้กล้อง/ตำแหน่ง = ปิดกล้อง + หยุดดูตำแหน่งทันที
-  ['login','register','home','stock','stockcat','clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet',
+  ['login','register','home','me','stock','stockcat','clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet',
    'atthist','attday','attrev','attmonth','attman','attset','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
@@ -1844,16 +1977,50 @@ async function doLogin(){
 
 function enterHome(){
   const name = ME.nickname || ME.name || '—';
+  const initial = (name[0]||'M').toUpperCase();
   document.getElementById('ho-name').textContent = name;
-  document.getElementById('ho-avatar').textContent = (name[0]||'M').toUpperCase();
+  document.getElementById('ho-avatar').textContent = initial;
   const chip = document.getElementById('ho-chip');
   chip.textContent = ROLE_TH[ME.role] || ME.role;
   chip.className = 'chip ' + ME.role;
-  document.getElementById('ho-admin-sect').classList.toggle('hidden', !ME.is_admin);
+  // แผ่น "ฉัน"
+  document.getElementById('me-avatar').textContent = initial;
+  document.getElementById('me-name').textContent = ME.name || name;
+  document.getElementById('me-sub').textContent = [(ROLE_TH[ME.role]||ME.role), (TEAM_TH&&TEAM_TH[ME.team])||'' ].filter(Boolean).join(' · ');
+  // ปุ่มของเจ้าของ — อยู่ในกลุ่มเรื่องเดียวกับงานพนักงาน ไม่แยกเป็นกลุ่ม "ผู้ดูแล"
+  var isOwner = !!(ME && ME.role==='owner');
+  document.getElementById('ho-admin-tile').classList.toggle('hidden', !ME.is_admin);
   document.getElementById('ho-cash-tile').classList.toggle('hidden', !(ME.is_admin || ME.team === 'service'));
+  document.getElementById('me-owner-cap').classList.toggle('hidden', !isOwner);
+  document.getElementById('me-owner-box').classList.toggle('hidden', !isOwner);
+  // ทีม Service ใช้เมนูเงินสดเป็นงานหลัก → เลื่อนกลุ่ม "เงิน" ขึ้นก่อน "ของในร้าน"
+  if(!ME.is_admin && ME.team==='service'){
+    var gm=document.getElementById('grp-money'), gs=document.getElementById('grp-stuff');
+    if(gm && gs && gm.parentNode) gm.parentNode.insertBefore(gm, gs);
+  }
+  syncGroups();
   showRecvTileIfReady().then(function(){ if(TODAY_READY) loadToday(); });   // แถบ "วันนี้" โผล่หลังรู้ว่าหลังบ้านรองรับ
   offStart();   // ของค้างส่ง + เฝ้าร่างในเครื่อง (เฟส 3)
   show("home");
+}
+function openMe(){ show('me'); }
+// กลุ่มไหนไม่มีปุ่มที่คนนี้เห็นเลย = ซ่อนทั้งกลุ่ม (กันหัวข้อลอยไม่มีอะไรอยู่ข้างใน)
+function syncGroups(){
+  ['grp-time','grp-stuff','grp-money','grp-equip'].forEach(function(id){
+    var g=document.getElementById(id); if(!g) return;
+    var vis=Array.prototype.filter.call(g.querySelectorAll('.t2,.bigt'), function(t){ return !t.classList.contains('hidden'); });
+    g.classList.toggle('hidden', vis.length===0);
+  });
+}
+// ตั้งข้อความสถานะใต้ชื่อปุ่ม — ok=เขียว warn=ส้ม ว่าง=เทา
+function tileSt(id, text, kind){
+  var el=document.getElementById(id); if(!el) return;
+  el.className='st'+(kind?(' '+kind):'');
+  el.innerHTML=(kind?('<span class="dot" style="width:7px;height:7px;background:'+(kind==='ok'?'#1f9d57':'#c98200')+'"></span>'):'')+esc(text);
+}
+function tileBdg(id, n){
+  var el=document.getElementById(id); if(!el) return;
+  if(+n>0){ el.textContent=n; el.classList.remove('hidden'); } else el.classList.add('hidden');
 }
 
 // เมนู "รับของเข้า" โผล่เมื่อหลังบ้านรองรับแล้วเท่านั้น (เว็บอัปก่อน GAS ได้ ไม่ทำให้พนักงานกดแล้วเจอ error)
@@ -1870,16 +2037,21 @@ async function showRecvTileIfReady(){
   showPackTile();
   eqShowTile();
   attShowTile();
+  syncGroups();
 }
 function showPackTile(){
   if(PACK_READY!==true) return;   // หลังบ้านยังไม่มีเมนูทำแพค → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
   var t=document.getElementById('ho-pack-tile'); if(t) t.classList.remove('hidden');
+  syncGroups();
 }
 
 // เลขรุ่นเว็บ vs หลังบ้าน — ไม่ได้บล็อกอะไร (ฟีเจอร์แต่ละตัวยังกันด้วยธง ping ของตัวเองเหมือนเดิม) แค่เตือนกันงงเวลาเว็บใหม่กว่าหลังบ้านที่ยัง deploy ไม่ทัน
 function updateVerBadge(){
+  const vtxt = 'เว็บ v'+APP_VER+(BACKEND_VER!=null ? (' · หลังบ้าน v'+BACKEND_VER) : '');
   const vt=document.getElementById('ho-vertext');
-  if(vt) vt.textContent = 'เว็บ v'+APP_VER+(BACKEND_VER!=null ? (' · หลังบ้าน v'+BACKEND_VER) : '');
+  if(vt) vt.textContent = vtxt;
+  const vt2=document.getElementById('me-vertext');
+  if(vt2) vt2.textContent = vtxt;
   const el=document.getElementById('ho-verwarn');
   if(!el) return;
   if(BACKEND_VER!=null && BACKEND_VER<APP_VER){
@@ -1908,11 +2080,6 @@ function isNightShift(){ return (new Date()).getHours() < NIGHT_UNTIL; }
    เจ้าของสั่ง 22 ส.ค. 2026 ข้อ 1: ให้ทุกคนเห็นชื่อคนส่ง+เวลา ; แถบเงินสดเห็นเฉพาะคนที่เข้าเมนูเงินสดได้ */
 let TODAY_READY=null, TODAY=null, TODAY_BUSY=false;
 function stockGroupIndex(name){ for(var i=0;i<STOCK_GROUPS.length;i++) if(STOCK_GROUPS[i].name===name) return i; return -1; }
-function tChip(ico,label,doneTxt,pendTxt,go){
-  var done=!!doneTxt;
-  return '<div class="tchip'+(done?' done':'')+'" onclick="'+go+'">'+
-    '<span>'+ico+' '+esc(label)+'</span><span class="w">'+(done?('✓ '+esc(doneTxt)):esc(pendTxt))+'</span></div>';
-}
 function tWho(c){   // "นก 23:40" — ฟอร์มเว็บเก่าไม่บันทึกชื่อคน จะเหลือแค่เวลา
   var s=[(c.by||''), (c.time||'')].filter(function(x){return x;}).join(' ');
   return s || 'ส่งแล้ว';
@@ -1938,23 +2105,40 @@ async function loadToday(force){
 function renderToday(){
   var r=TODAY||{}, st=r.stock||{}, cats={};
   (st.cats||[]).forEach(function(c){ cats[c.cat]=c; });
-  document.getElementById('ho-today-t').textContent='วันนี้ · '+cashDMY(r.date)+(isNightShift()?' (คืนที่ร้านเพิ่งปิด)':'');
-  var chips=[];
-  ['ปลาดิบ','ไข่','เครื่องดื่ม'].forEach(function(n){
-    var gi=stockGroupIndex(n); if(gi<0) return;
-    var c=cats[n];
-    chips.push(tChip(STOCK_GROUPS[gi].icon, n, c?tWho(c):'', 'ยังไม่ส่ง', 'openStockCat('+gi+')'));
-  });
-  if(r.cash) chips.push(tChip('💵','เงินสด', r.cash.saved?[r.cash.by,r.cash.time].filter(function(x){return x;}).join(' '):'', 'ยังไม่กรอก','openCash()'));
+  // สถานะวันนี้ไปอยู่ "ในปุ่ม" ของแต่ละเรื่อง (v2) — บรรทัดบนเหลือแค่วันที่ + สรุปว่าส่งแล้ว/ค้างกี่เรื่อง
+  var done=0, pend=0;
+  function tick(ok){ if(ok) done++; else pend++; }
+  var watch=['ปลาดิบ','ไข่','เครื่องดื่ม'], sent=[], miss=[];
+  watch.forEach(function(n){ if(stockGroupIndex(n)<0) return; (cats[n]?sent:miss).push(n); });
+  if(miss.length) tileSt('st-stock','ยังไม่ส่ง: '+miss.join(' · '),'warn');
+  else if(sent.length) tileSt('st-stock','ส่งครบ '+sent.length+'/'+sent.length+' หมวด · '+tWho(cats[sent[sent.length-1]]),'ok');
+  tick(miss.length===0 && sent.length>0);
   var rc=r.recv||{};
-  chips.push(tChip('📥','รับของเข้า', rc.count?((rc.count+' ครั้ง')+(rc.by&&rc.by.length?(' · '+rc.by.join(', ')):'')):'', 'ยังไม่มี','openRecv()'));
-  // ⏰ ลงเวลา — หลังบ้านส่ง att มาให้เฉพาะเจ้าของร้าน (คนอื่นไม่มีบรรทัดนี้)
+  if(rc.count) tileSt('st-recv', rc.count+' ครั้ง'+(rc.by&&rc.by.length?(' · '+rc.by.join(', ')):''), 'ok');
+  else tileSt('st-recv','ยังไม่มีวันนี้','');
+  tick(!!rc.count);
+  if(r.cash){
+    var cs=r.cash.saved;
+    tileSt('st-cash', cs?([r.cash.by,r.cash.time].filter(function(x){return x;}).join(' ')||'กรอกแล้ว'):'ยังไม่กรอกวันนี้', cs?'ok':'warn');
+    tick(!!cs);
+  }
+  if((r.packwait||[]).length) tileSt('st-pack','รับของมาแล้วยังไม่บันทึกว่าได้กี่แพค','warn');
+  else tileSt('st-pack','ตัดแต่ง/แพควัตถุดิบ — ได้กี่แพค','');
+  // ⏰ ตรวจลงเวลา — หลังบ้านส่ง att มาให้เฉพาะเจ้าของร้าน (คนอื่นไม่มีบรรทัดนี้)
   var at=r.att||null;
   if(at){
-    var atxt='มาแล้ว '+(+at.came||0)+'/'+(+at.total||0);
-    chips.push(tChip('⏰','ลงเวลา', ((+at.total>0) && (+at.came>=+at.total) && !(+at.review>0)) ? atxt : '', atxt, "openAttDay('home')"));
+    var full=((+at.total>0) && (+at.came>=+at.total) && !(+at.review>0));
+    tileSt('st-attrev','มาแล้ว '+(+at.came||0)+'/'+(+at.total||0)+((+at.review>0)?(' · รอตรวจ '+(+at.review)):''), full?'ok':'warn');
+    tileBdg('ho-attrev-bdg', +at.review||0);
   }
-  document.getElementById('ho-today-chips').innerHTML=chips.join('');
+  var hh=r.health||{};
+  tileBdg('ho-eqappr-bdg', +hh.eq_pending||0);
+  if(+hh.eq_pending>0) tileSt('st-eqappr','รอ '+(+hh.eq_pending)+' แบบ','warn');
+  else tileSt('st-eqappr','ตรวจของที่พนักงานถ่ายมา','');
+  if(+hh.pending>0) tileSt('st-admin','รออนุมัติ '+(+hh.pending)+' คน','warn');
+  else tileSt('st-admin','เพิ่ม/แก้ไข/รีเซ็ต PIN','');
+  document.getElementById('ho-today-t').textContent='วันนี้ · '+cashDMY(r.date)+(isNightShift()?' (คืนที่ร้านเพิ่งปิด)':'')+
+    (done?(' · ส่งแล้ว '+done):'')+(pend?(' · ยังค้าง '+pend):'');
   // เตือนเฉพาะรายการที่มีปัญหาจริง (โชว์พร้อมกันได้หลายเรื่อง คนละบรรทัด)
   var warns=[];
   if(at && (((at.not_came||[]).length) || (+at.review>0))){
@@ -1982,6 +2166,8 @@ function renderToday(){
 // 🩺 สุขภาพระบบ — ผู้ดูแลเท่านั้น (หลังบ้านส่ง health มาให้เฉพาะผู้ดูแล ไม่ได้ซ่อนแค่ฝั่งหน้าเว็บ)
 function renderHealth(h){
   var el=document.getElementById('ho-health'); if(!el) return;
+  var cap=document.getElementById('me-health-cap');
+  if(cap) cap.classList.toggle('hidden', !h);
   if(!h){ el.className='health hidden'; el.innerHTML=''; return; }
   var parts=[];
   var pos=h.pos||{};
@@ -2946,6 +3132,38 @@ function attDeviceId(){   // รหัสสุ่มประจำเครื
 function attShowTile(){
   if(ATT_READY!==true) return;   // หลังบ้านยังไม่มีลงเวลา v2 → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
   var t=document.getElementById('ho-clock-tile'); if(t) t.classList.remove('hidden');
+  var own=!!(ME && ME.role==='owner');
+  ['ho-attrev-tile','ho-attmonth-tile'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.toggle('hidden', !own); });
+  ['me-attset','me-attman'].forEach(function(id){ var e=document.getElementById(id); if(e) e.classList.toggle('hidden', !own); });
+  var h=document.getElementById('me-hist'); if(h) h.classList.remove('hidden');
+  syncGroups();
+  attHomeSync();
+}
+// ปุ่มใหญ่ "ลงเวลา" บนหน้าหลัก บอกสถานะจริง (ยังไม่เข้า / กำลังทำงาน / ออกงานแล้ว)
+async function attHomeSync(){
+  if(ATT_READY!==true) return;
+  var r=await api('attendanceStatus',{});
+  if(!r || !r.ok) return;
+  ATT_ST=r;
+  attHomeRender();
+}
+function attHomeRender(){
+  var tile=document.getElementById('ho-clock-tile'); if(!tile) return;
+  var sub=document.getElementById('ho-clock-sub'), go=document.getElementById('ho-clock-go');
+  var st=ATT_ST||{}, open=st.open||null, inNow=!!open || st.status==='in', t=st.today||{};
+  if(inNow){
+    tile.classList.add('in');
+    sub.textContent='✓ เข้างานแล้ว'+(open&&open.in_time?(' '+attHM(open.in_time)):'');
+    go.textContent='ออกงาน';
+  } else if(t.first_in && t.last_out){
+    tile.classList.add('in');
+    sub.textContent='ออกงานแล้ววันนี้ · '+(attHM(t.last_out)||'');
+    go.textContent='เปิด';
+  } else {
+    tile.classList.remove('in');
+    sub.textContent=(st.forgot&&st.forgot.length)?'มีกะที่ลืมกดออก — แตะเพื่อปิดให้เรียบร้อย':'ยังไม่ได้เข้างานวันนี้';
+    go.textContent='เข้างาน';
+  }
 }
 // busy() เดิมเก็บแค่ textContent → ข้อความพม่าใต้ปุ่มจะหาย จึงเก็บ innerHTML เองแทน
 function attBtnBusy(btn, on){
@@ -5021,6 +5239,8 @@ function eqIsOwner(){ return !!(ME && ME.role==='owner'); }
 function eqShowTile(){
   if(EQUIP_READY!==true) return;   // หลังบ้านยังไม่มีเมนูนี้ → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
   var t=document.getElementById('ho-equip-tile'); if(t) t.classList.remove('hidden');
+  var a=document.getElementById('ho-eqappr-tile'); if(a) a.classList.toggle('hidden', !eqIsOwner());   // อนุมัติ = เจ้าของเท่านั้น (อยู่ในเรื่อง "อุปกรณ์" เดียวกัน)
+  syncGroups();
 }
 // เลขท้ายชื่อที่ถูกใช้ไปแล้วในหมวดนั้น ("จาน 4" → 4) — ใช้หาเลขว่างของช่องถัดไป
 function eqUsedNums(rows, cat){
