@@ -1272,7 +1272,7 @@
       <div id="cash-payouts"></div>
       <button class="btn ghost sm" id="cash-addline" type="button" onclick="cashAddLine()" style="margin-top:8px">+ เพิ่มรายการ</button>
       <label style="margin-top:14px">เซ็น (เวลามีคนเอาเงินออก/ค้างเซ็น)</label>
-      <input id="cash-sign" type="text" placeholder="เช่น ชื่อคน หรือ เซ็นแล้ว — ไม่มีเว้นว่าง">
+      <input id="cash-sign" type="text" placeholder="เช่น ชื่อคน หรือ เซ็นแล้ว — ไม่มีเว้นว่าง" oninput="cashCalc()">
       <div class="card" style="margin:14px 0 0;padding:14px;background:var(--bg2)">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span class="muted">ยอดยกมา (จากวันก่อน)</span>
@@ -1282,6 +1282,7 @@
         <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">+ ยอดขาย</span><b id="cash-sales-d">0</b></div>
         <div style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted">− รายจ่าย</span><b id="cash-ptotal">0</b></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><b>= รวม (ยอดสะสม)</b><b id="cash-total" style="font-size:22px;color:var(--accent2)">0</b></div>
+        <div id="cash-wdnote" class="hidden" style="font-size:12px;margin-top:8px;line-height:1.5"></div>
       </div>
       <label style="margin-top:14px">หมายเหตุ (ถ้ามี)</label>
       <textarea id="cash-note" rows="2" placeholder="(ถ้ามี)"></textarea>
@@ -4586,8 +4587,10 @@ function cashCarryNote(){
   el.className = show ? 'muted' : 'hidden';
   if(!show){ el.textContent=''; return; }
   var p=carryPrevRow(CASH_DATE_CUR);
+  // แถวใหม่เก็บยอดที่เบิกไว้ที่ withdraw (total เป็น 0 แล้ว) ; แถวเก่าก่อน 10 ต.ค. 2026 ยังเก็บยอดเต็มใน total
+  var took = Number(p.withdraw||0) || Number(p.total||0);
   el.textContent = '🔒 วันที่ ' + cashDMY(p.date) + ' มีเซ็น (' + String(p.sign).trim() + ') = เก็บเงินไปแล้ว ' +
-                   Number(p.total||0).toLocaleString('en-US') + ' — เริ่มรอบใหม่ที่ 0 ให้แล้ว ถ้าไม่ใช่แก้ทับได้';
+                   took.toLocaleString('en-US') + ' — เริ่มรอบใหม่ที่ 0 ให้แล้ว ถ้าไม่ใช่แก้ทับได้';
 }
 function cashOnDate(){   // เปลี่ยนวัน → วันที่มีข้อมูลแล้วให้โหลดของเดิมมาแก้ ; วันใหม่ให้เติม "ยอดยกมา" อัตโนมัติ
   cashShowDate(document.getElementById('cash-date').value);
@@ -4611,13 +4614,22 @@ function cashCollect(){
   });
   return out;
 }
+// ช่องเซ็น = มีคนเบิกเงินออกไปแล้ว → ยอดรวมของวันนั้นเหลือ 0 (เจ้าของสั่ง 10 ต.ค. 2026)
+// หลังบ้านคิดซ้ำแบบเดียวกันตอนบันทึก — ตรงนี้แค่ให้เห็นทันทีตอนพิมพ์
+function cashSignOn(){ var el=document.getElementById('cash-sign'); return !!(el && String(el.value||'').trim()); }
 function cashCalc(){
   var pt=cashCollect().reduce(function(s,x){return s+(x.amt||0);},0);
   var sales=parseFloat(document.getElementById('cash-sales').value)||0;
   var carry=parseFloat(document.getElementById('cash-carry').value)||0;
+  var gross=carry+sales-pt, signed=cashSignOn();
   document.getElementById('cash-sales-d').textContent=sales.toLocaleString('en-US');
   document.getElementById('cash-ptotal').textContent=pt.toLocaleString('en-US');
-  document.getElementById('cash-total').textContent=(carry+sales-pt).toLocaleString('en-US');
+  document.getElementById('cash-total').textContent=(signed?0:gross).toLocaleString('en-US');
+  var w=document.getElementById('cash-wdnote');
+  if(w){
+    w.className = signed ? 'editbar night' : 'hidden';
+    w.innerHTML = signed ? ('💸 มีเซ็น = เบิกเงินออกไป <b>'+gross.toLocaleString('en-US')+'</b> บาท → เงินในลิ้นชักเหลือ <b>0</b> (วันถัดไปยกมา 0)') : '';
+  }
 }
 async function sendCash(){
   var m=document.getElementById('cash-msg'); clearMsg(m);
@@ -4682,7 +4694,8 @@ async function loadCashList(){
       '<td class="d">'+(canEdit?'<u onclick="cashPick(\''+key+'\')">'+d+'</u>':d)+'</td>'+
       '<td class="num">'+Number(x.sales||0).toLocaleString('en-US')+'</td>'+
       '<td class="it">'+items+'</td>'+
-      '<td class="tot">'+Number(x.total||0).toLocaleString('en-US')+'</td>'+
+      '<td class="tot">'+Number(x.total||0).toLocaleString('en-US')+
+        (Number(x.withdraw||0)>0?'<div style="font-size:11px;font-weight:400;opacity:.7;white-space:nowrap">เบิก '+Number(x.withdraw).toLocaleString('en-US')+'</div>':'')+'</td>'+
       '<td class="sg">'+esc(x.sign||'')+'</td>'+
       (canEdit?'<td class="act">'+
         '<button class="iconbtn" title="แก้ไขวันนี้" onclick="cashPick(\''+key+'\')">✏️</button>'+
