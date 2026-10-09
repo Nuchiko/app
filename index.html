@@ -1373,7 +1373,7 @@
   <section id="screen-resnew" class="hidden">
     <button class="backbtn" onclick="show('res')">‹ กลับ</button>
     <div class="topbar" style="padding-top:0"><div class="who" id="rs-f1title">จองใหม่</div></div>
-    <div class="page-label" style="margin:-6px 2px 10px;font-size:13px">แตะปุ่มด่วนได้เลย ไม่ต้องพิมพ์</div>
+    <div class="page-label" style="margin:-6px 2px 10px;font-size:13px">เลือกวัน · เวลา · จำนวนคน</div>
     <div class="card">
       <label for="rs-date">จองวันไหน</label>
       <div class="rs-qb" id="rs-qdate" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
@@ -1381,12 +1381,11 @@
       <div id="rs-datetxt" style="font-size:12.5px;font-weight:700;color:var(--accent2);margin-top:6px"></div>
 
       <label for="rs-time" style="margin-top:16px">กี่โมง</label>
-      <div class="rs-qb" id="rs-qtime" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
       <input id="rs-time" type="time" onchange="rsSync()">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:6px">แตะรูปนาฬิกาท้ายช่องเพื่อเลือกเวลา</div>
 
       <label for="rs-pax" style="margin-top:16px">กี่คน</label>
-      <div class="rs-qb" id="rs-qpax" style="grid-template-columns:repeat(6,minmax(0,1fr))"></div>
-      <input id="rs-pax" type="number" inputmode="numeric" min="1" max="99" placeholder="จำนวนคน" oninput="rsSync()">
+      <select id="rs-pax" onchange="rsSync()"></select>
       <div class="msg" id="rs-f1msg"></div>
     </div>
     <button class="btn" onclick="rsStep2()">ถัดไป — ใส่ชื่อ/เบอร์ ›</button>
@@ -6239,8 +6238,8 @@ let RS_ONE=null;         // รายการที่เปิดดูอย�
 const RES_ZONES=['ชั้น 1','ชั้น 2','เคาน์เตอร์','Outdoor'];   // 4 โซนตามที่เจ้าของบอก (9 ต.ค. 2026)
 const RES_CHANS=[['phone','โทร'],['line','LINE'],['page','เพจ'],['walkin','เดินเข้า']];
 const RES_TAGS=[['birthday','🎂 วันเกิด'],['allergy','🥜 แพ้อาหาร'],['kids','👶 มีเด็ก'],['quiet','🔇 ขอที่เงียบ']];
-const RES_TIMES=['17:00','18:00','18:30','19:00','19:30','20:00'];   // ร้านเปิดเที่ยง–เที่ยงคืน ช่วงที่จองกันจริงคือหัวค่ำ
-const RES_PAXES=[2,3,4,6,8,10];
+const RES_MAX_PAX=25;                  // เจ้าของกำหนด 9 ต.ค. 2026 — ต้องตรงกับ RES_MAX_PAX ใน Code.gs
+// เวลา = ช่องนาฬิกาอย่างเดียว · จำนวนคน = dropdown 1–25 (เจ้าของสั่ง 9 ต.ค. 2026: ไม่เอาปุ่มกด)
 const RES_DOW=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
 const RES_ST_TH={booked:'จองไว้', arrived:'มาแล้ว', noshow:'ไม่มา', cancelled:'ยกเลิก'};
 const RES_ST_CLS={booked:'b', arrived:'a', noshow:'n', cancelled:'c'};
@@ -6341,8 +6340,16 @@ function resOpenNew(){
   OFF_HIDE['res']=0;
   rsFill(); show('resnew');
 }
+// ตัวเลือกจำนวนคนใน dropdown: 1–25 (สร้างครั้งเดียว)
+function rsPaxOptions(){
+  var sel=document.getElementById('rs-pax'); if(!sel || sel.options.length) return;
+  var h='<option value="">เลือกจำนวนคน</option>';
+  for(var i=1;i<=RES_MAX_PAX;i++) h+='<option value="'+i+'">'+i+' คน</option>';
+  sel.innerHTML=h;
+}
 function rsFill(){
   var f=RS_FORM||rsBlank();
+  rsPaxOptions();
   document.getElementById('rs-date').value=f.date||'';
   document.getElementById('rs-time').value=f.time||'';
   document.getElementById('rs-pax').value=f.pax||'';
@@ -6359,6 +6366,7 @@ function rsFill(){
 // อ่านค่าจากช่องกรอก → RS_FORM แล้ววาดปุ่มด่วนให้ตรงกับค่าปัจจุบัน
 function rsSync(){
   var f=RS_FORM||(RS_FORM=rsBlank());
+  rsPaxOptions();
   f.date=document.getElementById('rs-date').value||'';
   f.time=document.getElementById('rs-time').value||'';
   f.pax=document.getElementById('rs-pax').value||'';
@@ -6371,8 +6379,6 @@ function rsSync(){
     rsBtn('คืนนี้', f.date===today, "rsSet('date','"+today+"')")+
     rsBtn('พรุ่งนี้', f.date===tom, "rsSet('date','"+tom+"')")+
     rsBtn('เสาร์นี้', f.date===sat, "rsSet('date','"+sat+"')");
-  document.getElementById('rs-qtime').innerHTML=RES_TIMES.map(function(t){ return rsBtn(t, f.time===t, "rsSet('time','"+t+"')"); }).join('');
-  document.getElementById('rs-qpax').innerHTML=RES_PAXES.map(function(n){ return rsBtn(String(n), String(f.pax)===String(n), "rsSet('pax','"+n+"')"); }).join('');
   document.getElementById('rs-qzone').innerHTML=RES_ZONES.map(function(z){ return rsBtn(z, f.zone===z, "rsSet('zone','"+z+"')"); }).join('');
   document.getElementById('rs-qchan').innerHTML=RES_CHANS.map(function(c){ return rsBtn(c[1], f.channel===c[0], "rsSet('channel','"+c[0]+"')"); }).join('');
   var tags=rsTagList();
@@ -6402,7 +6408,9 @@ function rsStep2(){
   var f=RS_FORM;
   if(!f.date){ msg(m,'กรุณาเลือกวันที่จอง'); return; }
   if(!f.time){ msg(m,'กรุณาระบุเวลาที่จอง'); return; }
-  if(!(parseInt(f.pax,10)>0)){ msg(m,'กรุณาระบุจำนวนคน'); return; }
+  var px=parseInt(f.pax,10);
+  if(!(px>0)){ msg(m,'กรุณาระบุจำนวนคน'); return; }
+  if(px>RES_MAX_PAX){ msg(m,'จองได้สูงสุด '+RES_MAX_PAX+' คน — ถ้ามากกว่านี้ให้แยกเป็นหลายรายการ'); return; }
   show('resinfo'); rsSync();
 }
 async function sendRes(){
