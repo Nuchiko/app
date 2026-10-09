@@ -353,6 +353,13 @@
   /* ปุ่มโปร่งที่วางบน "พื้นน้ำเงิน" (ไม่ได้อยู่ในการ์ดขาว) ต้องเป็นตัวหนังสือขาว
      — ไม่งั้น .btn.ghost ให้ color:var(--text) = น้ำเงินเข้ม แล้วจมหายไปกับพื้น (บั๊กเดิมของปุ่มลงทะเบียน §9.6.2) */
   .btn.ghost.onblue{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.6);color:#fff}
+  /* flex item ปริยายมี min-width:auto → กล่องสรุปที่ข้อความยาวจะดันจนล้นขอบขวาบนจอ 375px (ตัวเลขที่ 3 โดนตัด)
+     ต้อง min-width:0 ให้ย่อได้ — จำกัดเฉพาะหน้าโต๊ะจอง ไม่ไปแตะหน้าเงินสด/ลงเวลาที่จัดมาลงตัวแล้ว */
+  #screen-resmonth .summary .box, #rs-findout .summary .box{min-width:0;padding:12px 6px}
+  #screen-resmonth .summary .lab, #rs-findout .summary .lab{font-size:11px}
+  .rs-nav{display:flex;align-items:center;gap:8px;margin:0 2px 12px}
+  .rs-nav .btn{flex:0 0 auto;white-space:nowrap}
+  .rs-nav .lbl{flex:1;min-width:0;text-align:center;color:#fff;font-weight:800;font-size:15px}
   .btn.ghost.onblue.warn{background:rgba(224,83,61,.26);border-color:rgba(255,255,255,.55)}
 
   /* ============= ธีมน้ำเงินเข้ม–ขาว (พื้นน้ำเงินตามโลโก้ #0a4191 การ์ดขาว) ============= */
@@ -871,6 +878,11 @@
           </span>
           <span class="go" id="ho-res-go">เปิด</span>
         </button>
+        <button type="button" class="t2 wide hidden" id="ho-resmonth-tile" onclick="openResMonth()">
+          <span class="ic">📊</span>
+          <span class="nm">สรุปโต๊ะจอง <span class="key">เจ้าของ</span></span>
+          <span class="st" id="st-resmonth">รายเดือน · มา/ไม่มา · ลูกค้าประจำ</span>
+        </button>
       </div>
     </div>
 
@@ -1342,6 +1354,7 @@
   <section id="screen-res" class="hidden">
     <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
     <div class="topbar" style="padding-top:0"><div class="who">📅 โต๊ะจอง</div></div>
+    <button type="button" class="btn ghost onblue sm hidden" id="rs-findbtn" onclick="openResFind()" style="float:right;margin-top:-44px">🔍 ค้นหา</button>
     <div class="rs-strip" id="rs-strip"></div>
     <div style="display:flex;gap:8px;align-items:center;margin:0 2px 12px">
       <label for="rs-pick" style="margin:0;font-size:12.5px;white-space:nowrap">วันอื่น</label>
@@ -1386,7 +1399,9 @@
     <div class="page-label" id="rs-f2sub" style="margin:-6px 2px 10px;font-size:13px">—</div>
     <div class="card">
       <label for="rs-phone">เบอร์โทร <span style="font-weight:400">· เว้นได้ถ้าลูกค้าไม่ให้</span></label>
-      <input id="rs-phone" type="tel" inputmode="tel" placeholder="เช่น 089-555-1212" oninput="rsSync()">
+      <input id="rs-phone" type="tel" inputmode="tel" placeholder="เช่น 089-555-1212" oninput="rsSync();rsPhoneLookupLater()">
+      <!-- กล่อง "เคยมาแล้ว" โผล่เองเมื่อพิมพ์เบอร์ครบและเคยจองมาก่อน (เฟส 2) -->
+      <div class="msg" id="rs-cust"></div>
 
       <label for="rs-name" style="margin-top:15px">ชื่อที่จอง</label>
       <input id="rs-name" type="text" placeholder="เช่น คุณโอ๊ต" oninput="rsSync()">
@@ -1409,9 +1424,33 @@
 
   <!-- หน้า 4: เปิดรายการจอง — ติ๊กมาแล้ว/ไม่มา · แก้ · ยกเลิก -->
   <section id="screen-resone" class="hidden">
-    <button class="backbtn" onclick="show('res')">‹ กลับ</button>
+    <button class="backbtn" onclick="resOneBack()">‹ กลับ</button>
     <div id="rs-one"></div>
     <div class="msg" id="rs-onemsg"></div>
+  </section>
+
+  <!-- หน้า 5 (เฟส 2): ค้นหาลูกค้า — ลูกค้าโทรมาถาม/เลื่อน/ยกเลิก -->
+  <section id="screen-resfind" class="hidden">
+    <button class="backbtn" onclick="show('res')">‹ กลับ</button>
+    <div class="topbar" style="padding-top:0"><div class="who">🔍 ค้นหาการจอง</div></div>
+    <div class="page-label" style="margin:-6px 2px 10px;font-size:13px">พิมพ์เบอร์ 4 ตัวท้าย หรือชื่อลูกค้า</div>
+    <input id="rs-q" type="search" inputmode="numeric" placeholder="เช่น 1212 หรือ คุณโอ๊ต" onkeydown="if(event.key==='Enter')resDoFind()">
+    <button class="btn" onclick="resDoFind()">ค้นหา</button>
+    <div class="msg" id="rs-findmsg"></div>
+    <div id="rs-findout" style="margin-top:14px"></div>
+  </section>
+
+  <!-- หน้า 6 (เฟส 2): สรุปรายเดือน — เจ้าของร้านเท่านั้น -->
+  <section id="screen-resmonth" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">📊 สรุปโต๊ะจอง</div></div>
+    <div class="rs-nav">
+      <button type="button" class="btn ghost onblue sm" onclick="resMonthGo(-1)" aria-label="เดือนก่อนหน้า">‹ ก่อน</button>
+      <div class="lbl" id="rs-mlabel">—</div>
+      <button type="button" class="btn ghost onblue sm" onclick="resMonthGo(1)" aria-label="เดือนถัดไป">ถัดไป ›</button>
+    </div>
+    <div class="msg" id="rs-mmsg"></div>
+    <div id="rs-mout"></div>
   </section>
 
   <!-- ============ ทำแพค (ตัดแต่ง/แพควัตถุดิบ) ============ -->
@@ -2070,7 +2109,7 @@ function show(id){
   try{ attLeave(id); }catch(e){}   // ลงเวลา: ออกจากหน้าจอที่ใช้กล้อง/ตำแหน่ง = ปิดกล้อง + หยุดดูตำแหน่งทันที
   ['login','register','home','me','stock','stockcat','clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet',
    'atthist','attday','attrev','attmonth','attman','attset','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr',
-   'res','resnew','resinfo','resone','help'].forEach(s=>{
+   'res','resnew','resinfo','resone','resfind','resmonth','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -2157,10 +2196,10 @@ function tileBdg(id, n){
 // เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
 async function showRecvTileIfReady(){
   const tile=document.getElementById('ho-recv-tile');
-  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); resShowTile(); return; }
+  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); resShowTile(); resShowTile2(); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); RES_READY = (r.res===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); RES_READY = (r.res===true); RES2_READY = (r.res2===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
@@ -2168,6 +2207,7 @@ async function showRecvTileIfReady(){
   eqShowTile();
   attShowTile();
   resShowTile();
+  resShowTile2();
   syncGroups();
 }
 function showPackTile(){
@@ -5856,7 +5896,9 @@ const HELP_TOPICS = [
       'หน้าถัดไปใส่ <b>เบอร์โทร</b> และ <b>ชื่อ</b> → เลือก <b>โซน</b> (ชั้น 1 / ชั้น 2 / เคาน์เตอร์ / Outdoor — ลูกค้าไม่ระบุก็เว้นว่างได้) → <b>จองมาทางไหน</b> → หมายเหตุ (แตะป้าย 🎂 วันเกิด ได้)',
       'กด <b>บันทึกการจอง</b> — คนอื่นเห็นทันที',
       '<b>ลูกค้ามาถึง</b> → แตะการจองนั้นในรายการ → กด <b>✓ มาแล้ว</b> (ถ้าไม่มาเลย กด <b>✕ ไม่มา</b>)',
-      'ลูกค้าโทรเลื่อน/ยกเลิก → แตะการจอง → <b>🕐 เลื่อนเวลา</b> หรือ <b>🗑 ยกเลิกการจอง</b> (ยกเลิกแล้วยังเห็นในรายการ ขีดฆ่าไว้ กู้คืนได้)'
+      'ลูกค้าโทรเลื่อน/ยกเลิก → แตะการจอง → <b>🕐 เลื่อนเวลา</b> หรือ <b>🗑 ยกเลิกการจอง</b> (ยกเลิกแล้วยังเห็นในรายการ ขีดฆ่าไว้ กู้คืนได้)',
+      '<b>หาการจองไม่เจอ / ลูกค้าโทรมาแต่จำวันไม่ได้</b> → กด <b>🔍 ค้นหา</b> มุมขวาบน แล้วพิมพ์ <b>เบอร์ 4 ตัวท้าย</b> หรือชื่อ — จะเห็นประวัติด้วยว่าเคยมากี่ครั้ง ไม่มากี่ครั้ง',
+      'ตอนจองใหม่ ถ้าพิมพ์เบอร์แล้วเป็นลูกค้าเก่า ระบบจะขึ้นแถบเขียว <b>“เคยมาแล้ว”</b> และ<b>เติมชื่อให้เอง</b> (แก้ทับได้)'
     ], tip:'💡 เบอร์โทรเว้นได้ถ้าลูกค้าไม่ให้ แต่ระบบจะเตือนครั้งหนึ่ง (ไม่มีเบอร์ = ติดต่อกลับไม่ได้ถ้าต้องเลื่อน) · เบอร์เดิมจองวันเดิมซ้ำ ระบบจะถามก่อนว่าจองเพิ่มอีกโต๊ะหรือเป็นรายการเดิม · <b>ติ๊ก “มาแล้ว/ไม่มา” ให้ครบทุกคืน</b> ไม่งั้นตัวเลขลูกค้าไม่มาจะเพี้ยน · วันที่ผ่านไปแล้วแก้/ยกเลิกได้เฉพาะเจ้าของร้าน (ติ๊กสถานะยังทำได้) · ครัวเปิดดูได้แต่ไม่เห็นชื่อ-เบอร์ลูกค้า' },
 
   { id:'stock', ico:'📦', name:'Stock ปลาดิบ', sub:'กรอกสต็อกประจำวัน', clip:'stock-fish.gif', steps:[
@@ -6419,9 +6461,11 @@ async function sendRes(){
 }
 
 /* ---------- เปิดรายการจอง: ติ๊กมาแล้ว/ไม่มา · แก้ · ยกเลิก ---------- */
-function resOpen(id){
-  var x=((RS_DATA&&RS_DATA.rows)||[]).filter(function(r){ return r.res_id===id; })[0];
+// row = ส่งมาจากหน้าค้นหา (รายการนั้นอาจไม่ได้อยู่ในช่วงวันที่หน้ารายการโหลดไว้)
+function resOpen(id, row){
+  var x=row || ((RS_DATA&&RS_DATA.rows)||[]).filter(function(r){ return r.res_id===id; })[0];
   if(!x) return;
+  if(!row) RS_ONE_FROM='res';
   RS_ONE=x;
   clearMsg(document.getElementById('rs-onemsg'));
   var st=x.status||'booked', editable=resCanEditDate(x.date), cancelled=(st==='cancelled');
@@ -6465,6 +6509,7 @@ async function resTick(st){
   var r=await api('resSetStatus', {res_id:RS_ONE.res_id, st:st});
   if(!r.ok){ msg(m, (r.netfail?'เน็ตมีปัญหา — ลองอีกครั้ง':(r.error||'บันทึกไม่สำเร็จ'))); return; }
   var txt=(st==='arrived'?'✅ ติ๊กว่า "มาแล้ว" แล้ว':(st==='noshow'?'บันทึกว่า "ไม่มา" แล้ว':'กลับเป็น "จองไว้" แล้ว'));
+  if(RS_ONE_FROM==='resfind'){ msg(m, txt, 'ok'); await resDoFind(); show('resfind'); todayRefresh(); return; }
   show('res');
   msg(document.getElementById('rs-listmsg'), txt+' · '+(RS_ONE.time||'')+' '+(RS_ONE.name||''), 'ok');
   await resLoad(1);
@@ -6479,6 +6524,7 @@ async function resCancelAsk(){
   var m=document.getElementById('rs-onemsg'); clearMsg(m);
   var r=await api('resCancel', {res_id:x.res_id, reason:reason});
   if(!r.ok){ msg(m, (r.netfail?'เน็ตมีปัญหา — ลองอีกครั้ง':(r.error||'ยกเลิกไม่สำเร็จ'))); return; }
+  if(RS_ONE_FROM==='resfind'){ msg(m,'ยกเลิกการจองแล้ว','ok'); await resDoFind(); show('resfind'); todayRefresh(); return; }
   show('res');
   msg(document.getElementById('rs-listmsg'), 'ยกเลิกการจองแล้ว · '+(x.time||'')+' '+(x.name||''), 'ok');
   await resLoad(1);
@@ -6524,6 +6570,167 @@ function offRestoreRes(){
   rsFill(); show('resnew');
 }
 function offDropResDraft(){ offDraftClear('res'); OFF_HIDE['res']=1; resDraftBar(); }
+
+/* ---------- โต๊ะจอง เฟส 2: ค้นด้วยเบอร์ + ประวัติลูกค้า + สรุปเดือน (9 ต.ค. 2026) ---------- */
+let RES2_READY=null;      // หลังบ้านรองรับเฟส 2 แล้วหรือยัง (ping.res2)
+let RS_FIND=null;         // ผลค้นหาล่าสุด (ใช้เปิดการจองจากหน้าค้นหาได้ ทั้งที่ไม่ได้อยู่ในช่วงวันที่โหลดไว้)
+let RS_ONE_FROM='res';    // เปิดหน้า "การจอง" มาจากหน้าไหน (กลับให้ถูกที่)
+let RS_MONTH='';          // เดือนที่กำลังดูในหน้าสรุป
+let RS_LOOKUP_T=null, RS_LOOKUP_LAST='';
+
+function resShowTile2(){
+  if(RES2_READY!==true) return;
+  var f=document.getElementById('rs-findbtn'); if(f) f.classList.remove('hidden');
+  var t=document.getElementById('ho-resmonth-tile');
+  if(t && ME && ME.role==='owner') t.classList.remove('hidden');   // สรุปเดือนมีชื่อ+เบอร์ลูกค้าประจำ → เจ้าของเท่านั้น
+  syncGroups();
+}
+
+/* --- ค้นหา --- */
+function openResFind(){
+  clearMsg(document.getElementById('rs-findmsg'));
+  document.getElementById('rs-findout').innerHTML='';
+  document.getElementById('rs-q').value='';
+  show('resfind');
+  var q=document.getElementById('rs-q'); if(q) try{ q.focus(); }catch(e){}
+}
+async function resDoFind(){
+  var m=document.getElementById('rs-findmsg'); clearMsg(m);
+  var q=(document.getElementById('rs-q').value||'').trim();
+  if(q.length<3){ msg(m,'พิมพ์อย่างน้อย 3 ตัว (เบอร์ 4 ตัวท้าย หรือชื่อ)'); return; }
+  document.getElementById('rs-findout').innerHTML='<div class="st-tip" style="margin:0 2px">กำลังค้นหา…</div>';
+  var r=await api('resFind',{q:q});
+  if(!r.ok){ document.getElementById('rs-findout').innerHTML=''; msg(m, r.netfail?'เน็ตมีปัญหา — ลองอีกครั้ง':(r.error||'ค้นหาไม่สำเร็จ')); return; }
+  RS_FIND=r;
+  var ppl=r.people||[];
+  if(!ppl.length){ document.getElementById('rs-findout').innerHTML='<div class="st-tip" style="margin:0 2px">ไม่เจอการจองของ "'+esc(q)+'" — อาจเป็นลูกค้าใหม่ หรือจดไว้คนละเบอร์/คนละชื่อ</div>'; return; }
+  document.getElementById('rs-findout').innerHTML=
+    ppl.map(function(p,i){ return resPersonHtml(p,i); }).join('')+
+    (r.more?('<div class="st-tip" style="margin:4px 2px">…และอีก '+r.more+' ราย — พิมพ์ให้เจาะจงกว่านี้</div>'):'');
+}
+function resPersonHtml(p,i){
+  var s=p.stat||{};
+  var h='<div class="card" style="margin-bottom:12px">'+
+    '<div class="rs-h"><span class="nm" style="font-size:17px">'+esc(p.name||'(ไม่มีชื่อ)')+'</span>'+
+      (p.phone?('<span class="px">'+esc(p.phone)+'</span>'):'<span class="px">ไม่มีเบอร์</span>')+'</div>'+
+    '<div class="summary" style="margin-top:10px">'+
+      '<div class="box"><div class="lab">มาแล้ว</div><div class="val" style="color:var(--ok)">'+(+s.arrived||0)+'</div></div>'+
+      '<div class="box"><div class="lab">ไม่มา</div><div class="val" style="color:#b23b32">'+(+s.noshow||0)+'</div></div>'+
+      '<div class="box"><div class="lab">ครั้งล่าสุด</div><div class="val" style="font-size:15px;padding-top:3px">'+esc(s.last_date?cashDMY(s.last_date):'—')+'</div></div>'+
+    '</div>';
+  var tip=[]; if(+s.pax) tip.push('มักมา '+(+s.pax)+' คน'); if(s.zone) tip.push('ชอบ'+esc(s.zone));
+  if(+s.cancelled) tip.push('ยกเลิก '+(+s.cancelled)+' ครั้ง');
+  if(tip.length) h+='<div class="rs-sub" style="margin-top:9px">'+tip.join(' · ')+'</div>';
+  if(p.phone) h+='<a href="tel:'+esc(String(p.phone).replace(/[^0-9+]/g,''))+'" class="btn ghost" style="display:block;text-align:center;margin-top:10px;text-decoration:none">📞 โทรหาลูกค้า</a>';
+  h+='</div>';
+  h+=(p.rows||[]).map(function(x,j){
+    var st=x.status||'booked';
+    return '<button type="button" class="rs-card'+(st==='cancelled'?' cx':'')+'" onclick="resOpenFound('+i+','+j+')">'+
+      '<div class="rs-h"><span class="tm" style="font-size:15px">'+esc(cashDMY(x.date))+' · '+esc(x.time||'')+'</span>'+
+      '<span class="px">'+(+x.pax||0)+' คน</span>'+
+      '<span class="rs-bd '+(RES_ST_CLS[st]||'b')+'">'+(RES_ST_TH[st]||st)+'</span></div></button>';
+  }).join('');
+  return h;
+}
+function resOpenFound(i,j){
+  var p=((RS_FIND&&RS_FIND.people)||[])[i]; if(!p) return;
+  var x=(p.rows||[])[j]; if(!x) return;
+  RS_ONE_FROM='resfind';
+  resOpen(x.res_id, x);
+}
+function resOneBack(){ show(RS_ONE_FROM==='resfind'?'resfind':'res'); }
+
+/* --- ประวัติลูกค้าในฟอร์มจอง: พิมพ์เบอร์ครบแล้วบอกเองว่าเคยมาแล้วไหม --- */
+function rsPhoneLookupLater(){
+  clearTimeout(RS_LOOKUP_T);
+  RS_LOOKUP_T=setTimeout(rsPhoneLookup, 700);
+}
+async function rsPhoneLookup(){
+  var box=document.getElementById('rs-cust'); if(!box) return;
+  if(RES2_READY!==true) return;
+  var raw=(document.getElementById('rs-phone').value||'');
+  var digits=raw.replace(/[^0-9]/g,'');
+  if(digits.length<9){ clearMsg(box); RS_LOOKUP_LAST=''; return; }   // ยังพิมพ์ไม่ครบ = ยังไม่ต้องยิง
+  if(digits===RS_LOOKUP_LAST) return;                                 // เบอร์เดิม ไม่ยิงซ้ำ
+  RS_LOOKUP_LAST=digits;
+  var r=await api('resFind',{q:digits, exact:1});
+  if(!r || !r.ok || !(r.people||[]).length){ clearMsg(box); return; }
+  if((document.getElementById('rs-phone').value||'').replace(/[^0-9]/g,'')!==digits) return;   // พิมพ์ต่อไปแล้ว = ผลเก่า ทิ้ง
+  var p=r.people[0], s=p.stat||{};
+  var bits=['มา '+(+s.arrived||0)+' ครั้ง'];
+  if(+s.noshow) bits.push('ไม่มา '+(+s.noshow)+' ครั้ง');
+  if(s.last_date) bits.push('ครั้งล่าสุด '+cashDMY(s.last_date));
+  if(s.zone) bits.push('ชอบ'+s.zone);
+  var nameEl=document.getElementById('rs-name'), filled=false;
+  if(nameEl && !String(nameEl.value||'').trim() && p.name){ nameEl.value=p.name; rsSync(); filled=true; }
+  msg(box, '👤 เคยมาแล้ว — '+p.name+' · '+bits.join(' · ')+(filled?' (เติมชื่อให้แล้ว แก้ทับได้)':''), 'ok');
+}
+
+/* --- สรุปรายเดือน (เจ้าของ) --- */
+function resYm(d){ return d.slice(0,7); }
+function resYmAdd(ym,n){ var m=/^(\d{4})-(\d{2})$/.exec(String(ym||'')); if(!m) return ym;
+  var d=new Date(+m[1], +m[2]-1+n, 1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function resYmTH(ym){ var m=/^(\d{4})-(\d{2})$/.exec(String(ym||'')); return m?(ATT_MON[+m[2]-1]+' '+(+m[1]+543)):String(ym||''); }
+async function openResMonth(){
+  if(!RS_MONTH) RS_MONTH=resYm(bizDateISO());
+  show('resmonth');
+  await loadResMonth();
+}
+function resMonthGo(n){ RS_MONTH=resYmAdd(RS_MONTH,n); loadResMonth(); }
+async function loadResMonth(){
+  document.getElementById('rs-mlabel').textContent=resYmTH(RS_MONTH);
+  var m=document.getElementById('rs-mmsg'); clearMsg(m);
+  document.getElementById('rs-mout').innerHTML='<div class="st-tip" style="margin:0 2px">กำลังโหลด…</div>';
+  var r=await api('resMonth',{ym:RS_MONTH});
+  if(!r.ok){ document.getElementById('rs-mout').innerHTML=''; msg(m, r.netfail?'เน็ตมีปัญหา — ลองอีกครั้ง':(r.error||'โหลดไม่สำเร็จ')); return; }
+  document.getElementById('rs-mout').innerHTML=resMonthHtml(r);
+}
+function resPctRow(label, n, total){
+  var pct=total? Math.round(n*100/total):0;
+  return '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">'+
+    '<span style="width:86px;font-size:13px">'+esc(label)+'</span>'+
+    '<span style="flex:1;height:8px;background:var(--bg2);border-radius:99px;overflow:hidden"><span style="display:block;height:8px;width:'+pct+'%;background:var(--accent2)"></span></span>'+
+    '<span style="width:58px;text-align:right;font-size:12.5px;color:var(--muted)">'+n+' ('+pct+'%)</span></div>';
+}
+function resMonthHtml(r){
+  var CH={phone:'โทร', line:'LINE', page:'เพจ', walkin:'เดินเข้า', 'ไม่ระบุ':'ไม่ระบุ'};
+  var done=(+r.arrived||0)+(+r.noshow||0);
+  var noshowPct=done? Math.round((+r.noshow)*100/done):0;
+  var h='<div class="card"><div class="summary" style="margin-top:0">'+
+    '<div class="box"><div class="lab">จอง</div><div class="val">'+(+r.total||0)+'</div></div>'+
+    '<div class="box"><div class="lab">รวมคน</div><div class="val">'+(+r.pax||0)+'</div></div>'+
+    '<div class="box"><div class="lab">วันมีจอง</div><div class="val">'+(+r.days||0)+'</div></div></div>'+
+    '<div class="summary" style="margin-top:10px">'+
+    '<div class="box"><div class="lab">มาแล้ว</div><div class="val" style="color:var(--ok)">'+(+r.arrived||0)+'</div></div>'+
+    '<div class="box"><div class="lab">ไม่มา</div><div class="val" style="color:#b23b32">'+(+r.noshow||0)+'</div></div>'+
+    '<div class="box"><div class="lab">ยกเลิก</div><div class="val" style="color:var(--muted)">'+(+r.cancelled||0)+'</div></div></div>';
+  if(done) h+='<div class="rs-sub" style="margin-top:10px">ลูกค้าไม่มา '+noshowPct+'% ของที่ถึงวันแล้ว ('+(+r.noshow||0)+' จาก '+done+')</div>';
+  if(+r.untick>0) h+='<div class="rs-note" style="margin-top:10px">⚠️ ยังไม่ได้ติ๊กว่ามา/ไม่มา '+(+r.untick)+' รายการ — ตัวเลขข้างบนจะยังไม่ครบจนกว่าจะติ๊ก</div>';
+  var tips=[];
+  if(r.peak) tips.push('ช่วงที่จองกันมากสุด <b>'+esc(r.peak)+'</b>');
+  if(r.busiest_day) tips.push('วันที่แน่นสุด <b>'+esc(cashDMY(r.busiest_day))+'</b> ('+(+r.busiest_n||0)+' โต๊ะ)');
+  if(tips.length) h+='<div class="rs-sub" style="margin-top:10px">'+tips.join(' · ')+'</div>';
+  h+='</div>';
+  var chTotal=0; Object.keys(r.channel||{}).forEach(function(k){ chTotal+=r.channel[k]; });
+  if(chTotal){ h+='<div class="card"><b>จองมาทางไหน</b>';
+    Object.keys(r.channel).sort(function(a,b){ return r.channel[b]-r.channel[a]; }).forEach(function(k){ h+=resPctRow(CH[k]||k, r.channel[k], chTotal); });
+    h+='</div>'; }
+  var znTotal=0; Object.keys(r.zone||{}).forEach(function(k){ znTotal+=r.zone[k]; });
+  if(znTotal){ h+='<div class="card"><b>นั่งโซนไหน</b>';
+    Object.keys(r.zone).sort(function(a,b){ return r.zone[b]-r.zone[a]; }).forEach(function(k){ h+=resPctRow(k, r.zone[k], znTotal); });
+    h+='</div>'; }
+  if((r.repeat||[]).length){
+    h+='<div class="card"><b>ลูกค้าที่จองซ้ำ</b><div class="rs-sub" style="margin-top:4px">จองตั้งแต่ 2 ครั้งขึ้นไปในเดือนนี้</div>';
+    r.repeat.forEach(function(c){
+      h+='<div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px">'+
+         '<span style="flex:1;min-width:0">'+esc(c.name||'(ไม่มีชื่อ)')+(c.phone?('<span class="rs-sub"> '+esc(c.phone)+'</span>'):'')+'</span>'+
+         '<b>'+(+c.n||0)+' ครั้ง</b></div>';
+    });
+    h+='</div>';
+  }
+  if(!+r.total) h+='<div class="st-tip" style="margin:0 2px">เดือนนี้ยังไม่มีการจอง</div>';
+  return h;
+}
 /* ---------- boot: auto-login ด้วยโทเค็นเดิม ---------- */
 (async function(){
   if(API_URL.indexOf('PASTE') === 0){   // ยังไม่ตั้ง backend (ส่วนใหญ่คือฝั่ง DEV) → โชว์ป้ายบอก + ไม่พยายามล็อกอิน
