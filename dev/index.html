@@ -858,6 +858,12 @@
           <span class="nm">สรุปชั่วโมง <span class="key">เจ้าของ</span></span>
           <span class="st">รายเดือน · รายคน</span>
         </button>
+        <!-- ตารางงาน+วันหยุด — โผล่เมื่อหลังบ้านรองรับ (ping.sch) ; ทุกคนดูได้ · นกถ่ายรูปเข้ามา · ขอเปลี่ยนแล้วเจ้าของอนุมัติ -->
+        <button type="button" class="t2 wide hidden" id="ho-sch-tile" onclick="openSch()">
+          <span class="ic">📅</span>
+          <span class="nm">ตารางงาน</span>
+          <span class="st" id="st-sch">กะ · วันหยุด · ขอเปลี่ยน</span>
+        </button>
         <button type="button" class="t2 wide hidden" id="ho-admin-tile" onclick="openAdmin()">
           <span class="ic">👤</span>
           <span class="nm">ทะเบียนพนักงาน <span class="key">เจ้าของ</span></span>
@@ -1695,6 +1701,174 @@
 <input type="file" id="recv-file-multi" accept="image/*" multiple style="display:none" onchange="onRecvPhotoFile(this)">
 
 <!-- ดูรูปบัตรเต็มจอ -->
+  <!-- ============ ตารางงาน + วันหยุด (รอบ 1 — 10 ต.ค. 2026) ============
+       โผล่เมื่อหลังบ้านรองรับ (ping.sch) ; นกถ่ายรูปกระดาษ → AI อ่าน → ตรวจ → ส่งให้เจ้าของอนุมัติ ; พนักงานขอเปลี่ยนในแอป → เจ้าของอนุมัติ -->
+  <style id="sch-css">
+    .sch-tabs{display:flex;gap:3px;background:rgba(255,255,255,.14);border-radius:999px;padding:3px;margin:0 0 10px}
+    .sch-tabs button{flex:1;border:0;background:transparent;color:#fff;font:inherit;font-size:12.5px;font-weight:700;padding:8px 2px;border-radius:999px;cursor:pointer}
+    .sch-tabs button.on{background:#fff;color:#0a4191;font-weight:800}
+    .sch-nav{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px;color:#fff;font-weight:800;font-size:14px}
+    .sch-nav button{width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;font:inherit;font-size:18px;cursor:pointer}
+    .sch-acts{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+    .sch-acts button{flex:1 1 auto;min-width:0;font:inherit;font-size:12.5px;font-weight:800;border-radius:999px;padding:9px 11px;cursor:pointer;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.55);color:#fff;white-space:nowrap}
+    .sch-acts button .n{display:inline-block;min-width:18px;padding:0 5px;border-radius:999px;background:#e0533d;color:#fff;font-size:11px;margin-left:4px}
+    .scc{width:34px;height:32px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font:inherit;font-size:12.5px;font-weight:800;border:1px solid #dbe5f2;background:#f7f9fd;color:#6b7b91;padding:0;cursor:pointer;vertical-align:middle}
+    .scc.T{background:#dbe9fb;color:#0d4a9c;border-color:#bcd7f6}
+    .scc.K{background:#dff0e6;color:#156b3c;border-color:#b2ddc4}
+    .scc.B{background:#0a4191;color:#fff;border-color:#0a4191}
+    .scc.H{background:#eef1f6;color:#5f7088;border-color:#d3dae4}
+    .scc.X{background:#fff1d6;color:#8a5a00;border-color:#ecd49a}
+    .scc.tr{border-style:dashed}
+    .scc.me{box-shadow:0 0 0 2px #2f6ad8 inset}
+    .schrow{display:flex;gap:3px;align-items:center;margin-bottom:3px}
+    .schrow .nm{width:68px;flex:0 0 68px;min-width:0;font-size:12.5px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .schrow .nm small{display:block;font-size:9.5px;color:var(--muted);font-weight:600}
+    .schrow .scc{flex:1;min-width:0;width:auto}
+    .schhead{display:flex;gap:3px;align-items:flex-end;margin-bottom:4px}
+    .schhead .nm{width:68px;flex:0 0 68px}
+    .schhead .d{flex:1;min-width:0;text-align:center;font-size:10px;font-weight:700;color:var(--muted);line-height:1.2}
+    .schhead .d b{display:block;font-size:13px;color:var(--text)}
+    .schhead .d.we{background:var(--bg2);border-radius:7px 7px 0 0;padding-top:2px}
+    .schhead .d.sel b{color:var(--accent)}
+    .schgrp{font-size:10.5px;font-weight:800;color:var(--muted);padding:5px 0 3px 2px}
+    .schleg{display:flex;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--text);margin-top:8px}
+    .schleg .scc{width:22px;height:22px;font-size:11px;cursor:default}
+    .schwarn{font-size:12px;background:#fff6e5;color:#8a5a00;border:1px solid #f0d9a8;border-radius:9px;padding:6px 9px;margin-top:8px;line-height:1.5}
+    .schok{font-size:12px;background:rgba(31,157,87,.14);color:#177a4a;border:1px solid rgba(31,157,87,.42);border-radius:9px;padding:6px 9px;margin-top:8px}
+    .schcal{display:flex;gap:3px;margin-bottom:3px}
+    .schcal .c{flex:1;min-width:0;min-height:58px;border-radius:8px;padding:3px 3px;border:1px solid #e4ebf5;background:#fff}
+    .schcal .c.q{background:#f6f8fc}
+    .schcal .c.e{border-color:transparent;background:transparent}
+    .schcal .c.w{border-color:#e6a9a2;background:#fdeceb}
+    .schcal .c.sel{border-color:var(--accent)}
+    .schcal .c .n{font-size:11px;font-weight:800;color:var(--text)}
+    .schcal .c .n.q{color:#8d9bae}
+    .schcal .c div.x{font-size:9.5px;font-weight:700;color:#3c4d64;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .schcal .c div.x.sp{color:#8a5a00}
+    .schcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:10px;color:var(--text)}
+    .schcard .ttl{font-size:15px;font-weight:800}
+    .schcard .sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .schchip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 12px 6px 7px;font-size:14px;font-weight:800;color:var(--text);background:var(--bg2);border:1px solid var(--line);margin:4px 4px 0 0}
+    .schchip .tm{width:20px;height:20px;border-radius:999px;color:#fff;font-size:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+    .schchip.tr{border-style:dashed}
+    .sch-grid-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px}
+    .sch-grid{border-collapse:separate;border-spacing:3px}
+    .sch-grid th{font-size:10px;font-weight:700;color:var(--muted);text-align:center;line-height:1.15;min-width:34px}
+    .sch-grid th b{display:block;font-size:12px;color:var(--text)}
+    .sch-grid th.we b{color:#8d9bae}
+    .sch-grid th .fl{display:block;width:7px;height:7px;border-radius:999px;margin:2px auto 0;background:transparent}
+    .sch-grid th .fl.bad{background:#d8453f}
+    .sch-grid th .fl.warn{background:#c98200}
+    .sch-grid th.nmh,.sch-grid td.nmc{position:sticky;left:0;background:var(--card);z-index:1;text-align:left;font-size:12.5px;font-weight:800;color:var(--text);padding:0 6px 0 2px;white-space:nowrap}
+    .sch-grid td.nmc small{display:block;font-size:9.5px;color:var(--muted);font-weight:600}
+    .schiss{font-size:12px;line-height:1.55;margin-top:8px}
+    .schiss .d{font-weight:800;color:#b23b32}
+    .schreq{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent2);border-radius:13px;padding:10px 12px;margin-bottom:9px;color:var(--text)}
+    .schreq.p{border-left-color:#c98200}
+    .schreq.a{border-left-color:#1f9d57}
+    .schreq.r{border-left-color:#b23b32;opacity:.8}
+    .schreq .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+    .schreq .t{font-size:14px;font-weight:800}
+    .schreq .st{font-size:11.5px;font-weight:800;white-space:nowrap}
+    .schreq .st.p{color:#8a5a00} .schreq .st.a{color:#177a4a} .schreq .st.r{color:#b23b32}
+    .schreq .m{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.5}
+    .schreq .acts{display:flex;gap:8px;margin-top:9px}
+    .schreq .acts button{flex:1;font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:9px;cursor:pointer}
+    .schreq .acts .ok{background:linear-gradient(135deg,#1c62d6,#3a82ec);color:#fff;border:0}
+    .schreq .acts .no{background:#fff;color:#b23b32;border:1px solid #f1c4bf}
+    .schimg{width:100%;border-radius:12px;border:1px solid var(--line);display:block;margin-bottom:10px}
+    .sch-photo-btn{display:block;width:100%;font:inherit;font-size:15px;font-weight:800;border-radius:12px;padding:14px;border:2px dashed rgba(255,255,255,.6);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;margin-bottom:12px}
+    .schseg{display:flex;gap:4px;margin:6px 0 10px}
+    .schseg button{flex:1;font:inherit;font-size:12.5px;font-weight:700;border-radius:10px;padding:9px 4px;border:1px solid var(--line);background:var(--bg2);color:var(--text);cursor:pointer}
+    .schseg button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800}
+  </style>
+
+  <!-- หน้า 1: ตารางงาน (ทุกคนดูได้) -->
+  <section id="screen-sch" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">📅 ตารางงาน</div></div>
+    <div class="sch-tabs" id="sch-tabs"></div>
+    <div class="sch-nav">
+      <button type="button" aria-label="ก่อนหน้า" onclick="schNav(-1)">‹</button>
+      <div id="sch-navlabel">—</div>
+      <button type="button" aria-label="ถัดไป" onclick="schNav(1)">›</button>
+    </div>
+    <div class="sch-acts" id="sch-acts"></div>
+    <div class="msg" id="sch-msg"></div>
+    <div id="sch-body"></div>
+  </section>
+
+  <!-- หน้า 2: ถ่ายรูปกระดาษ → ร่างทั้งเดือน → ตรวจ → ส่งอนุมัติ (หรือเจ้าของแก้ตรง ๆ โหมด edit) -->
+  <section id="screen-schimport" class="hidden">
+    <button class="backbtn" onclick="show('sch')">‹ กลับตารางงาน</button>
+    <div class="topbar" style="padding-top:0"><div class="who" id="schi-title">📷 ถ่ายรูปตารางงาน</div></div>
+    <div class="card" style="padding:14px 16px">
+      <label for="schi-month" style="margin-top:0">เดือน</label>
+      <input id="schi-month" type="month">
+      <div id="schi-photo-wrap">
+        <input id="schi-file" type="file" accept="image/*" class="hidden" onchange="schiOnFile(this)">
+        <button type="button" class="btn" id="schi-photo-btn" onclick="document.getElementById('schi-file').click()" style="margin-top:12px">📷 ถ่ายรูป / เลือกรูปกระดาษ</button>
+        <div class="st-tip" style="margin-top:8px">ถ่ายให้เห็นทั้งแผ่น ตรงกล้อง แสงพอ — ระบบจะอ่านชื่อแล้วเทียบกับรายชื่อพนักงานจริง วันไหนอ่านไม่ลงตัวจะขึ้นจุดสีให้ตรวจ</div>
+      </div>
+      <div class="msg" id="schi-msg"></div>
+    </div>
+    <img id="schi-img" class="schimg hidden" alt="รูปตารางที่ถ่าย">
+    <div id="schi-grid"></div>
+    <div id="schi-issues"></div>
+    <div id="schi-submit" class="hidden" style="margin-top:12px">
+      <button type="button" class="btn" id="schi-submit-btn" onclick="schiSubmit()">ส่งให้เจ้าของอนุมัติ</button>
+      <div class="st-tip" style="margin-top:8px" id="schi-submit-tip">แตะช่องไหนก็เปลี่ยนได้ (เที่ยง → กลาง → บ่าย → หยุด → พิเศษ → ว่าง) · ตารางจะเปลี่ยนจริงเมื่อเจ้าของกดอนุมัติ</div>
+    </div>
+  </section>
+
+  <!-- หน้า 3: ขอเปลี่ยน (ทุกคน) + คำขอของฉัน -->
+  <section id="screen-schreq" class="hidden">
+    <button class="backbtn" onclick="show('sch')">‹ กลับตารางงาน</button>
+    <div class="topbar" style="padding-top:0"><div class="who">📝 ขอเปลี่ยนตาราง</div></div>
+    <div class="card" style="padding:14px 16px">
+      <div class="schseg" id="schr-type">
+        <button type="button" data-t="moveoff" class="on" onclick="schrType('moveoff')">ย้ายวันหยุด</button>
+        <button type="button" data-t="swap" onclick="schrType('swap')">สลับกะ</button>
+        <button type="button" data-t="change" onclick="schrType('change')">เปลี่ยนกะ</button>
+        <button type="button" data-t="special" onclick="schrType('special')">วันหยุดพิเศษ</button>
+      </div>
+      <div id="schr-f-moveoff">
+        <label for="schr-from">วันหยุดเดิม</label><input id="schr-from" type="date">
+        <label for="schr-to">ย้ายไปหยุดวันที่</label><input id="schr-to" type="date">
+        <label for="schr-work">วันหยุดเดิมจะมาทำกะไหนแทน</label>
+        <select id="schr-work"><option value="T">กะเที่ยง</option><option value="K">กะกลาง</option><option value="B" selected>กะบ่าย</option></select>
+      </div>
+      <div id="schr-f-swap" class="hidden">
+        <label for="schr-sdate">วันที่</label><input id="schr-sdate" type="date">
+        <label for="schr-with">สลับกับ</label><select id="schr-with"></select>
+        <div class="st-tip" style="margin-top:6px" id="schr-swap-info"></div>
+      </div>
+      <div id="schr-f-change" class="hidden">
+        <label for="schr-cdate">วันที่</label><input id="schr-cdate" type="date">
+        <label for="schr-code">ขอเปลี่ยนเป็น</label>
+        <select id="schr-code"><option value="T">กะเที่ยง</option><option value="K">กะกลาง</option><option value="B">กะบ่าย</option><option value="H">หยุด</option></select>
+      </div>
+      <div id="schr-f-special" class="hidden">
+        <label for="schr-xdate">วันที่ขอหยุดพิเศษ</label><input id="schr-xdate" type="date">
+        <div class="st-tip" style="margin-top:6px" id="schr-special-info">วันหยุดพิเศษ = เดือนละ 1 วัน สำหรับพนักงานที่พ้นทดลองงานแล้ว สะสมไม่ได้</div>
+      </div>
+      <label for="schr-note">เหตุผล / หมายเหตุ (ไม่บังคับ)</label>
+      <input id="schr-note" type="text" maxlength="300" placeholder="เช่น มีธุระที่บ้าน">
+      <div class="msg" id="schr-msg"></div>
+      <button type="button" class="btn" id="schr-btn" onclick="schrSubmit()" style="margin-top:14px">ส่งคำขอ</button>
+    </div>
+    <div class="sect-title">คำขอของฉัน</div>
+    <div id="schr-list"></div>
+  </section>
+
+  <!-- หน้า 4: คำขอรออนุมัติ (เจ้าของ) -->
+  <section id="screen-schappr" class="hidden">
+    <button class="backbtn" onclick="show('sch')">‹ กลับตารางงาน</button>
+    <div class="topbar" style="padding-top:0"><div class="who">✅ อนุมัติคำขอตาราง</div></div>
+    <div class="msg" id="scha-msg"></div>
+    <div id="scha-list"></div>
+  </section>
+
 <div id="lightbox" class="overlay hidden" onclick="closeLightbox()">
   <span class="lb-close">×</span>
   <img id="lightbox-img" alt="รูปบัตร">
@@ -1719,7 +1893,7 @@ const ENV = {
     stock: 'PASTE_DEV_STOCK_URL'
   }
 };
-const APP_VER = 7;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v7 = เช็คอุปกรณ์ประจำเดือน ; v6 = เตือนลืมบันทึกทำแพค)
+const APP_VER = 8;      // เลขรุ่นของ "ตัวเว็บ" ที่ต้องใช้คู่กับหลังบ้าน — บั๊มพร้อมกับ APP_VER ฝั่ง Code.gs เมื่อเพิ่มฟีเจอร์ที่ยังไม่มีธง ping เฉพาะของตัวเอง (v8 = ตารางงาน+วันหยุด รอบ 1 ; v7 = เช็คอุปกรณ์ประจำเดือน)
 let BACKEND_VER = null; // เลขรุ่นของหลังบ้านที่ ping ตอบมา (null = ยังไม่รู้ / เน็ตมีปัญหา) — เตือน "เว็บใหม่กว่าหลังบ้าน" เท่านั้น ฟีเจอร์แต่ละตัวยังกันด้วยธงของตัวเองเหมือนเดิม
 const IS_DEV = /dev/i.test(location.hostname + location.pathname) || location.search.indexOf('dev') >= 0;
 const API_URL  = (IS_DEV ? ENV.dev : ENV.prod).api;
@@ -2110,7 +2284,7 @@ function show(id){
   try{ attLeave(id); }catch(e){}   // ลงเวลา: ออกจากหน้าจอที่ใช้กล้อง/ตำแหน่ง = ปิดกล้อง + หยุดดูตำแหน่งทันที
   ['login','register','home','me','stock','stockcat','clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet',
    'atthist','attday','attrev','attmonth','attman','attset','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr',
-   'res','resnew','resinfo','resone','resfind','resmonth','help'].forEach(s=>{
+   'res','resnew','resinfo','resone','resfind','resmonth','help','sch','schimport','schreq','schappr'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -2201,10 +2375,10 @@ function tileBdg(id, n){
 // เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
 async function showRecvTileIfReady(){
   const tile=document.getElementById('ho-recv-tile');
-  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); resShowTile(); resShowTile2(); return; }
+  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); resShowTile(); resShowTile2(); schShowTile(); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); RES_READY = (r.res===true); RES2_READY = (r.res2===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); RES_READY = (r.res===true); RES2_READY = (r.res2===true); SCH_READY = (r.sch===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
@@ -2213,6 +2387,7 @@ async function showRecvTileIfReady(){
   attShowTile();
   resShowTile();
   resShowTile2();
+  schShowTile();
   syncGroups();
 }
 function showPackTile(){
@@ -6789,5 +6964,441 @@ if(IS_DEV){ var _devb=document.createElement('div'); _devb.textContent='⚙ ท�
   _devb.style.cssText='position:fixed;left:10px;bottom:10px;z-index:200;background:#e3b23c;color:#3a2a00;font-weight:800;font-size:12px;padding:6px 12px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.35)';
   document.body.appendChild(_devb); }
 </script>
+<script>
+/* ===================== ตารางงาน + วันหยุด — รอบ 1 (10 ต.ค. 2026) =====================
+   หลังบ้าน: schGet / schSave / schBaseSave / schOcr / schReqSave / schReqList / schReqDecide (ธง ping.sch)
+   กติกาจากเจ้าของ: นกถ่ายรูปกระดาษเดือนละครั้ง → ส่งอนุมัติ ; ใครอยากเปลี่ยน → ขอในแอป → เจ้าของอนุมัติทุกครั้ง
+   ตารางในแอป = ของจริง (กระดาษใช้แค่ตั้งต้น) ; ทุกคนเห็นทั้งร้าน */
+let SCH_READY=null, SCH=null, SCH_TAB='week', SCH_ANCHOR='', SCH_REQS=null, SCH_LOADING=false;
+const SCH_CODE={T:{t:'ท',n:'กะเที่ยง'},K:{t:'ก',n:'กะกลาง'},B:{t:'บ',n:'กะบ่าย'},H:{t:'ห',n:'หยุด'},X:{t:'พ',n:'วันหยุดพิเศษ'}};
+const SCH_CYCLE=['T','K','B','H','X',''];
+const SCH_DOW=['อา','จ','อ','พ','พฤ','ศ','ส'];
+const SCH_DOWF=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+const SCH_MON=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const SCH_MONF=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const SCH_TEAM={service:'Service',kitchen:'ครัว'};
+
+function schD(iso){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||''); return m? new Date(+m[1],+m[2]-1,+m[3]) : new Date(); }
+function schIso(d){ const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function schAdd(iso,n){ const d=schD(iso); d.setDate(d.getDate()+n); return schIso(d); }
+function schDow(iso){ return schD(iso).getDay(); }
+function schDmy(iso){ const d=schD(iso); return d.getDate()+' '+SCH_MON[d.getMonth()]; }
+function schDmyF(iso){ const d=schD(iso); return SCH_DOWF[d.getDay()]+' '+d.getDate()+' '+SCH_MONF[d.getMonth()]; }
+function schYm(iso){ return String(iso||'').substring(0,7); }
+function schMonthLabel(ym){ const m=/^(\d{4})-(\d{2})$/.exec(ym); return m? (SCH_MONF[+m[2]-1]+' '+m[1]) : ym; }
+function schMonthDates(ym){ const m=/^(\d{4})-(\d{2})$/.exec(ym); if(!m) return []; const y=+m[1],mo=+m[2]; const n=new Date(y,mo,0).getDate(); const out=[]; for(let d=1;d<=n;d++) out.push(ym+'-'+String(d).padStart(2,'0')); return out; }
+function schRange(iso){ const ym=schYm(iso), ds=schMonthDates(ym); const from=schAdd(ds[0],-schDow(ds[0])); const last=ds[ds.length-1]; const to=schAdd(last,6-schDow(last)); return {from,to,ym}; }
+function schWeekOf(iso){ const sun=schAdd(iso,-schDow(iso)); const out=[]; for(let i=0;i<7;i++) out.push(schAdd(sun,i)); return out; }
+function schShiftTime(code,team){ if(code==='T') return team==='kitchen'?'11:00–22:00':'11:00–21:00'; if(code==='K') return '12:00–22:00'; if(code==='B') return '15:00–24:00'; return ''; }
+function schCanImport(){ return !!(ME && (ME.is_admin || ME.sch_import)); }
+function schIsOwner(){ return !!(ME && ME.role==='owner'); }
+function schStaffOf(id){ return (SCH && SCH.staff || []).find(s=>s.emp_id===id) || null; }
+function schNick(id){ const s=schStaffOf(id); return s? s.nickname : id; }
+function schCellHtml(code, s, opts){
+  opts=opts||{};
+  const c=SCH_CODE[code]; const cls='scc '+(code||'')+(s&&!s.counts?' tr':'')+(opts.me?' me':'');
+  const attrs=opts.onclick? ' onclick="'+opts.onclick+'"' : ''; const title=c? c.n : 'ยังไม่ลง';
+  return '<button type="button" class="'+cls+'" title="'+title+'"'+attrs+(opts.disabled?' disabled':'')+'>'+(c? c.t : '·')+'</button>';
+}
+function schWarnText(w){
+  const tm=SCH_TEAM[w.team]||w.team||'';
+  if(w.kind==='short') return tm+' '+(SCH_CODE[w.shift]?SCH_CODE[w.shift].n:w.shift)+' ขาด '+(w.need-w.have)+' คน';
+  if(w.kind==='offmax') return tm+' หยุดพร้อมกัน '+w.n+' คน (ได้ '+w.max+')';
+  if(w.kind==='offday') return tm+' หยุดวัน'+SCH_DOWF[w.dow]+' (วันที่ห้ามหยุด)';
+  if(w.kind==='midteam') return 'ครัวลงกะกลาง (กะกลางมีเฉพาะ Service)';
+  if(w.kind==='unset') return 'ยังลงไม่ครบ '+w.n+' คน';
+  return w.kind;
+}
+function schDayWarns(d){ return (d && d.saved && d.warn) ? d.warn.filter(w=>w.kind!=='unset' || d.unset>0) : []; }
+
+/* ---------- ปุ่มหน้าหลัก ---------- */
+function schShowTile(){
+  if(SCH_READY!==true) return;
+  const t=document.getElementById('ho-sch-tile'); if(!t) return;
+  t.classList.remove('hidden'); syncGroups();
+  schTileStatus();
+}
+async function schTileStatus(){
+  if(!ME) return;
+  try{
+    const biz=bizDateISO();
+    const r=await api('schGet',{from:biz,to:biz});
+    if(!r || !r.ok || !r.days || !r.days[0]) return;
+    const d=r.days[0]; const code=d.plan && d.plan[ME.emp_id];
+    const s=(r.staff||[]).find(x=>x.emp_id===ME.emp_id);
+    if(!d.saved) tileSt('st-sch','ยังไม่มีตารางวันนี้ · แตะดู');
+    else if(!code) tileSt('st-sch', ME.is_admin ? ('วันนี้ '+(d.off && (d.off.service+d.off.kitchen))+' คนหยุด') : 'วันนี้ไม่มีชื่อคุณในตาราง','warn');
+    else if(code==='H'||code==='X') tileSt('st-sch','วันนี้คุณหยุด'+(code==='X'?' (พิเศษ)':''),'ok');
+    else tileSt('st-sch','วันนี้ '+SCH_CODE[code].n+' '+schShiftTime(code, s&&s.team),'ok');
+  }catch(e){}
+}
+
+/* ---------- หน้าหลักของตาราง ---------- */
+function openSch(){
+  SCH_ANCHOR=bizDateISO();
+  SCH_TAB=(ME && ME.is_admin)?'week':'me';
+  clearMsg(document.getElementById('sch-msg'));
+  show('sch'); schRenderTabs(); schRenderActs(); schLoad(); schLoadReqs();
+}
+function schRenderTabs(){
+  const tabs=[['me','ของฉัน'],['day','วันนี้'],['week','สัปดาห์'],['month','เดือน']];
+  document.getElementById('sch-tabs').innerHTML=tabs.map(t=>'<button type="button" class="'+(SCH_TAB===t[0]?'on':'')+'" onclick="schTab(\''+t[0]+'\')">'+t[1]+'</button>').join('');
+}
+function schTab(t){ SCH_TAB=t; schRenderTabs(); schRender(); }
+function schRenderActs(){
+  const el=document.getElementById('sch-acts'); if(!el) return;
+  const pend=(SCH_REQS && SCH_REQS.pending)||0;
+  const b=[];
+  if(schCanImport()) b.push('<button type="button" onclick="openSchImport()">📷 ถ่ายรูปตาราง</button>');
+  if(ME && ME.is_admin) b.push('<button type="button" onclick="openSchEdit()">✏️ แก้ตาราง</button>');
+  b.push('<button type="button" onclick="openSchReq()">📝 ขอเปลี่ยน</button>');
+  if(schIsOwner()) b.push('<button type="button" onclick="openSchAppr()">✅ อนุมัติ'+(pend?'<span class="n">'+pend+'</span>':'')+'</button>');
+  el.innerHTML=b.join('');
+}
+async function schLoad(force){
+  const r=schRange(SCH_ANCHOR);
+  if(!force && SCH && SCH.from===r.from && SCH.to===r.to){ schRender(); return; }
+  SCH_LOADING=true; schRender();
+  const res=await api('schGet',{from:r.from,to:r.to});
+  SCH_LOADING=false;
+  if(!res || !res.ok){ msg(document.getElementById('sch-msg'), (res&&res.error)||'โหลดตารางไม่ได้', 'err'); schRender(); return; }
+  clearMsg(document.getElementById('sch-msg'));
+  res.map={}; (res.days||[]).forEach(d=>{ res.map[d.date]=d; });
+  SCH=res; schRender(); schRenderActs();
+}
+async function schLoadReqs(){
+  const r=await api('schReqList',{});
+  if(r && r.ok){ SCH_REQS=r; schRenderActs(); if(SCH_TAB==='me') schRender(); }
+}
+function schNav(dir){
+  if(SCH_TAB==='day') SCH_ANCHOR=schAdd(SCH_ANCHOR,dir);
+  else if(SCH_TAB==='month'){ const d=schD(SCH_ANCHOR); d.setDate(1); d.setMonth(d.getMonth()+dir); SCH_ANCHOR=schIso(d); }
+  else SCH_ANCHOR=schAdd(SCH_ANCHOR,7*dir);
+  schLoad();
+}
+function schPlan(date){ const d=SCH && SCH.map && SCH.map[date]; return d? d : {date:date,plan:{},saved:false,warn:[],have:null,off:{service:0,kitchen:0},unset:0}; }
+function schStaffGroups(){ const st=(SCH&&SCH.staff)||[]; return [['SERVICE',st.filter(s=>s.team==='service')],['ครัว',st.filter(s=>s.team==='kitchen')]]; }
+function schRender(){
+  const body=document.getElementById('sch-body'), lab=document.getElementById('sch-navlabel');
+  if(!body) return;
+  if(SCH_TAB==='month') lab.textContent=schMonthLabel(schYm(SCH_ANCHOR));
+  else if(SCH_TAB==='day') lab.textContent=schDmyF(SCH_ANCHOR);
+  else { const w=schWeekOf(SCH_ANCHOR); lab.textContent=schDmy(w[0])+' – '+schDmy(w[6])+' '+schD(w[6]).getFullYear(); }
+  if(!SCH){ body.innerHTML='<div class="schcard"><div class="sub">'+(SCH_LOADING?'กำลังโหลดตาราง…':'ยังไม่มีข้อมูล')+'</div></div>'; return; }
+  if(SCH_TAB==='week') body.innerHTML=schWeekHtml();
+  else if(SCH_TAB==='day') body.innerHTML=schDayHtml();
+  else if(SCH_TAB==='month') body.innerHTML=schMonthHtml();
+  else body.innerHTML=schMeHtml();
+}
+function schLegendHtml(){
+  return '<div class="schleg">'+['T','K','B','H','X'].map(c=>'<span><span class="scc '+c+'">'+SCH_CODE[c].t+'</span> '+SCH_CODE[c].n+'</span>').join('')+'<span><span class="scc tr">·</span> ยังไม่นับเป็นตัวยืน</span></div>';
+}
+function schWeekHtml(){
+  const days=schWeekOf(SCH_ANCHOR); const me=ME&&ME.emp_id;
+  let h='<div class="schcard"><div class="schhead"><div class="nm"></div>'+days.map(d=>{ const dw=schDow(d); return '<div class="d'+(dw===5||dw===6?' we':'')+(d===bizDateISO()?' sel':'')+'">'+SCH_DOW[dw]+'<b>'+schD(d).getDate()+'</b></div>'; }).join('')+'</div>';
+  schStaffGroups().forEach(g=>{
+    if(!g[1].length) return;
+    h+='<div class="schgrp">'+g[0]+'</div>';
+    g[1].forEach(s=>{
+      h+='<div class="schrow"><div class="nm">'+esc(s.nickname)+'<small>'+(s.counts?(s.emp_type==='probation'?'ทดลองงาน':'ประจำ'):'ยังไม่นับ')+'</small></div>'+days.map(d=>schCellHtml(schPlan(d).plan[s.emp_id], s, {me:s.emp_id===me})).join('')+'</div>';
+    });
+  });
+  h+='<div class="schrow" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line)"><div class="nm" style="font-size:11px;color:var(--muted)">หยุดวันละ</div>'+days.map(d=>{ const p=schPlan(d); let n=0; Object.keys(p.plan).forEach(k=>{ if(p.plan[k]==='H'||p.plan[k]==='X') n++; }); return '<div style="flex:1;min-width:0;text-align:center;font-size:12.5px;font-weight:800;color:'+(n?'var(--text)':'#9aa7b8')+'">'+(p.saved?n:'–')+'</div>'; }).join('')+'</div>';
+  h+=schLegendHtml()+'</div>';
+  const warns=[]; days.forEach(d=>{ const p=schPlan(d); if(!p.saved) return; schDayWarns(p).forEach(w=>warns.push(SCH_DOW[schDow(d)]+' '+schD(d).getDate()+': '+schWarnText(w))); });
+  const unsaved=days.filter(d=>!schPlan(d).saved).length;
+  if(unsaved===7) h+='<div class="schwarn">สัปดาห์นี้ยังไม่มีตาราง'+(schCanImport()?' — ถ่ายรูปกระดาษเข้ามาได้เลย':'')+'</div>';
+  else if(warns.length) h+='<div class="schwarn">⚠️ '+warns.map(esc).join('<br>')+'</div>';
+  else h+='<div class="schok">✓ ทุกกะครบคน'+(unsaved?' (ยังไม่มีตาราง '+unsaved+' วัน)':'')+'</div>';
+  return h;
+}
+function schDayHtml(){
+  const p=schPlan(SCH_ANCHOR); const st=(SCH.staff||[]);
+  if(!p.saved) return '<div class="schcard"><div class="ttl">ยังไม่มีตารางของวันนี้</div><div class="sub">'+(schCanImport()?'ถ่ายรูปกระดาษตารางเข้ามาได้ที่ปุ่ม 📷':'รอหัวหน้าลงตาราง')+'</div></div>';
+  const chip=s=>'<span class="schchip'+(s.counts?'':' tr')+'"><span class="tm" style="background:'+(s.team==='service'?'#0a4191':'#156b3c')+'">'+(s.team==='service'?'S':'ค')+'</span>'+esc(s.nickname)+(s.counts?'':' <small style="color:var(--muted)">ฝึก</small>')+'</span>';
+  let h='';
+  [['T','#4a8ee0','พัก 2 ชั่วโมงช่วงบ่าย — สลับกันเอง'],['K','#3fa36a','พัก 2 ชั่วโมงช่วงบ่าย · เฉพาะ Service'],['B','#0a4191','Service พัก 1 ชั่วโมง · ครัวไม่พัก']].forEach(z=>{
+    const who=st.filter(s=>p.plan[s.emp_id]===z[0]);
+    if(!who.length && z[0]==='K') return;
+    h+='<div class="schcard" style="border-left:5px solid '+z[1]+'"><div class="ttl">'+SCH_CODE[z[0]].n+' <span style="font-size:12.5px;color:var(--accent);font-weight:700">'+(z[0]==='T'?'11:00–21:00 · ครัวถึง 22:00':schShiftTime(z[0]))+'</span></div><div class="sub">'+z[2]+'</div><div>'+(who.length?who.map(chip).join(''):'<span class="sub">— ไม่มีใคร —</span>')+'</div></div>';
+  });
+  const off=st.filter(s=>p.plan[s.emp_id]==='H'||p.plan[s.emp_id]==='X');
+  h+='<div class="schcard" style="border-left:5px solid #9aa7b8"><div class="ttl">หยุดวันนี้</div><div>'+(off.length?off.map(s=>chip(s)+(p.plan[s.emp_id]==='X'?'<small style="color:#8a5a00"> พิเศษ</small>':'')).join(''):'<span class="sub">— ไม่มีใครหยุด —</span>')+'</div></div>';
+  const ws=schDayWarns(p); if(ws.length) h+='<div class="schwarn">⚠️ '+ws.map(w=>esc(schWarnText(w))).join('<br>')+'</div>';
+  if(p.note) h+='<div class="schcard"><div class="sub">📝 '+esc(p.note)+'</div></div>';
+  return h;
+}
+function schMonthHtml(){
+  const ym=schYm(SCH_ANCHOR), ds=schMonthDates(ym); const today=bizDateISO();
+  let h='<div class="schcard" id="sch-month-card"><div class="ttl" style="margin-bottom:6px">'+schMonthLabel(ym)+' <span class="sub" style="display:inline">· ชื่อในช่อง = คนที่หยุด</span></div>';
+  h+='<div class="schcal">'+SCH_DOW.map((d,i)=>'<div style="flex:1;min-width:0;text-align:center;font-size:10.5px;font-weight:800;color:'+(i>=5?'#8d9bae':'var(--text)')+'">'+d+'</div>').join('')+'</div>';
+  let cells=[]; for(let i=0;i<schDow(ds[0]);i++) cells.push(null); ds.forEach(d=>cells.push(d)); while(cells.length%7) cells.push(null);
+  const tally={};
+  for(let r=0;r<cells.length;r+=7){
+    h+='<div class="schcal">';
+    for(let i=r;i<r+7;i++){
+      const d=cells[i];
+      if(!d){ h+='<div class="c e"></div>'; continue; }
+      const p=schPlan(d), dw=schDow(d), ws=schDayWarns(p);
+      const names=(SCH.staff||[]).filter(s=>p.plan[s.emp_id]==='H'||p.plan[s.emp_id]==='X');
+      names.forEach(s=>{ tally[s.nickname]=(tally[s.nickname]||0)+1; });
+      h+='<div class="c'+((dw===5||dw===6)?' q':'')+(ws.length?' w':'')+(d===today?' sel':'')+'"><div class="n'+((dw===5||dw===6)?' q':'')+'">'+schD(d).getDate()+(p.saved?'':'<span style="color:#c3ccd9"> ·</span>')+'</div>'+names.map(s=>'<div class="x'+(p.plan[s.emp_id]==='X'?' sp':'')+'">'+esc(s.nickname)+'</div>').join('')+'</div>';
+    }
+    h+='</div>';
+  }
+  const saved=ds.filter(d=>schPlan(d).saved).length;
+  h+='<div class="sub" style="margin-top:6px">'+(saved?('มีตาราง '+saved+'/'+ds.length+' วัน · ช่องสีแดง = กะขาดคน/ผิดกฎ · '):'ยังไม่มีตารางเดือนนี้ · ')+'ชื่อสีส้ม = วันหยุดพิเศษ</div>';
+  const tk=Object.keys(tally);
+  if(tk.length) h+='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">'+tk.map(k=>'<span style="font-size:11.5px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:3px 9px">'+esc(k)+' <b>'+tally[k]+'</b></span>').join('')+'</div>';
+  h+='</div>';
+  if(saved) h+='<button type="button" class="btn ghost onblue" onclick="schSaveImage()">💾 บันทึกเป็นรูป</button><div class="st-tip" style="margin-top:6px;color:rgba(255,255,255,.85)">รูปเซฟลงมือถือหรือส่งเข้าไลน์ได้ — กดค้างที่รูปเพื่อบันทึก</div>';
+  return h;
+}
+function schMeHtml(){
+  if(!ME) return '';
+  const me=ME.emp_id, s=schStaffOf(me);
+  if(!s) return '<div class="schcard"><div class="ttl">คุณไม่อยู่ในตารางงาน</div><div class="sub">ตารางมีเฉพาะพนักงานทีม Service/ครัว</div></div>';
+  const days=schWeekOf(SCH_ANCHOR); const today=bizDateISO();
+  let h='';
+  let next=null; for(let i=0;i<14;i++){ const d=schAdd(today,i); const p=schPlan(d); if(!p.saved) continue; const c=p.plan[me]; if(c && c!=='H' && c!=='X'){ next={d,c}; break; } }
+  const todayP=schPlan(today), tc=todayP.plan[me];
+  if(todayP.saved && tc) h+='<div class="schcard" style="border-left:5px solid '+(tc==='H'||tc==='X'?'#9aa7b8':(tc==='T'?'#4a8ee0':tc==='K'?'#3fa36a':'#0a4191'))+'"><div class="sub">วันนี้ · '+schDmyF(today)+'</div><div class="ttl" style="font-size:22px">'+(tc==='H'?'หยุด':tc==='X'?'วันหยุดพิเศษ':SCH_CODE[tc].n)+'</div>'+(tc!=='H'&&tc!=='X'?'<div style="font-size:15px;font-weight:800;color:var(--accent)">'+schShiftTime(tc,s.team)+'</div>':'')+'</div>';
+  else h+='<div class="schcard"><div class="sub">วันนี้ · '+schDmyF(today)+'</div><div class="ttl">ยังไม่มีตารางของวันนี้</div></div>';
+  if(next && next.d!==today) h+='<div class="schcard"><div class="sub">กะถัดไป</div><div class="ttl">'+schDmyF(next.d)+' · '+SCH_CODE[next.c].n+' '+schShiftTime(next.c,s.team)+'</div></div>';
+  h+='<div class="schcard"><div class="sub" style="margin-bottom:6px">สัปดาห์นี้</div><div style="display:flex;gap:4px">'+days.map(d=>{ const p=schPlan(d), c=p.plan[me]; return '<div style="flex:1;min-width:0;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--muted)">'+SCH_DOW[schDow(d)]+'</div><div style="font-size:10.5px;color:#8d9bae;margin-bottom:3px">'+schD(d).getDate()+'</div>'+schCellHtml(p.saved?c:'', s, {disabled:true})+'</div>'; }).join('')+'</div></div>';
+  const ym=schYm(SCH_ANCHOR); let offN=0, spN=0; schMonthDates(ym).forEach(d=>{ const c=schPlan(d).plan[me]; if(c==='H') offN++; if(c==='X') spN++; });
+  const canSpecial=(s.emp_type==='permanent');
+  h+='<div class="schcard"><div class="ttl" style="font-size:13.5px">วันหยุดเดือน'+SCH_MONF[schD(SCH_ANCHOR).getMonth()]+'</div><div class="sub">หยุดประจำสัปดาห์ '+offN+' วัน'+(canSpecial?(' · วันหยุดพิเศษ '+(spN?'ใช้แล้ว':'เหลือ 1 วัน')):' · วันหยุดพิเศษ: หลังพ้นทดลองงาน')+'</div></div>';
+  const mine=(SCH_REQS&&SCH_REQS.rows||[]).filter(r=>r.status==='pending');
+  if(mine.length) h+='<div class="schcard" style="border-left:5px solid #c98200"><div class="ttl" style="font-size:13.5px">คำขอรออนุมัติ '+mine.length+' รายการ</div><div class="sub">'+mine.map(r=>esc(schReqDesc(r,true))).join('<br>')+'</div></div>';
+  h+='<button type="button" class="btn" onclick="openSchReq()">📝 ขอย้ายวันหยุด / สลับกะ</button>';
+  return h;
+}
+async function schSaveImage(){
+  const card=document.getElementById('sch-month-card'); if(!card) return;
+  try{
+    const canvas=await html2canvas(card,{scale:2,backgroundColor:'#ffffff',logging:false});
+    const url=canvas.toDataURL('image/jpeg',0.92);
+    openLightbox(url);
+    try{ const a=document.createElement('a'); a.href=url; a.download='ตารางงาน_'+schYm(SCH_ANCHOR)+'.jpg'; document.body.appendChild(a); a.click(); a.remove(); }catch(e){}
+  }catch(e){ msg(document.getElementById('sch-msg'),'สร้างรูปไม่สำเร็จ: '+e.message,'err'); }
+}
+
+/* ---------- ถ่ายรูป / แก้ตาราง (ตารางตรวจเดือน) ---------- */
+let SCHI={mode:'import',month:'',days:{},issues:{},busy:false,src:''};
+function schiMonthDefault(){ const d=schD(bizDateISO()); if(d.getDate()>=20) d.setMonth(d.getMonth()+1); return schIso(d).substring(0,7); }
+function openSchImport(){
+  SCHI={mode:'import',month:schiMonthDefault(),days:{},issues:{},busy:false,src:''};
+  document.getElementById('schi-title').textContent='📷 ถ่ายรูปตารางงาน';
+  document.getElementById('schi-month').value=SCHI.month;
+  document.getElementById('schi-photo-wrap').classList.remove('hidden');
+  document.getElementById('schi-img').classList.add('hidden');
+  document.getElementById('schi-file').value='';
+  document.getElementById('schi-grid').innerHTML=''; document.getElementById('schi-issues').innerHTML='';
+  document.getElementById('schi-submit').classList.add('hidden');
+  clearMsg(document.getElementById('schi-msg'));
+  show('schimport');
+}
+function openSchEdit(){
+  if(!SCH) return;
+  const ym=schYm(SCH_ANCHOR);
+  SCHI={mode:'edit',month:ym,days:{},issues:{},busy:false,src:''};
+  schMonthDates(ym).forEach(d=>{ const p=schPlan(d); SCHI.days[d]=Object.assign({},p.plan); });
+  document.getElementById('schi-title').textContent='✏️ แก้ตาราง '+schMonthLabel(ym);
+  document.getElementById('schi-month').value=ym;
+  document.getElementById('schi-photo-wrap').classList.add('hidden');
+  document.getElementById('schi-img').classList.add('hidden');
+  clearMsg(document.getElementById('schi-msg'));
+  schiRender();
+  document.getElementById('schi-submit-btn').textContent='บันทึกตาราง';
+  document.getElementById('schi-submit-tip').textContent='แตะช่องเพื่อเปลี่ยน (เที่ยง → กลาง → บ่าย → หยุด → พิเศษ → ว่าง) · บันทึกแล้วมีผลทันที';
+  document.getElementById('schi-submit').classList.remove('hidden');
+  show('schimport');
+}
+function schShrink(file,max){
+  return new Promise(res=>{
+    const img=new Image(); const url=URL.createObjectURL(file);
+    img.onload=()=>{ let w=img.width,h=img.height; const sc=Math.min(1,max/Math.max(w,h)); w=Math.round(w*sc); h=Math.round(h*sc); const c=document.createElement('canvas'); c.width=w; c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg',0.88)); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); res(null); };
+    img.src=url;
+  });
+}
+async function schiOnFile(inp){
+  const f=inp.files && inp.files[0]; if(!f) return;
+  const m=document.getElementById('schi-msg');
+  SCHI.month=document.getElementById('schi-month').value||SCHI.month;
+  if(!/^\d{4}-\d{2}$/.test(SCHI.month)){ msg(m,'เลือกเดือนก่อน','err'); return; }
+  msg(m,'กำลังเตรียมรูป…','warn');
+  const data=await schShrink(f,2000);
+  if(!data){ msg(m,'อ่านไฟล์รูปไม่ได้ ลองเลือกใหม่','err'); return; }
+  const img=document.getElementById('schi-img'); img.src=data; img.classList.remove('hidden'); SCHI.src=data;
+  msg(m,'🤖 AI กำลังอ่านตาราง (ประมาณ 20–60 วินาที)…','warn');
+  const btn=document.getElementById('schi-photo-btn'); btn.disabled=true;
+  const r=await api('schOcr',{imageBase64:data.split(',')[1],mime:'image/jpeg',month:SCHI.month});
+  btn.disabled=false;
+  if(!r || !r.ok){ msg(m,(r&&r.error)||'อ่านรูปไม่สำเร็จ','err'); return; }
+  SCHI.days={}; SCHI.issues={};
+  schMonthDates(SCHI.month).forEach(d=>{ SCHI.days[d]={}; });
+  (r.days||[]).forEach(d=>{ SCHI.days[d.date]=Object.assign({},d.plan||{}); if(d.issues&&d.issues.length) SCHI.issues[d.date]=d.issues; });
+  if(r.staff && !SCH){ SCH={staff:r.staff,map:{},days:[]}; }
+  else if(r.staff && SCH){ SCH.staff=r.staff; }
+  const unk=(r.unknown||[]).filter(x=>x);
+  const flagged=Object.keys(SCHI.issues).length;
+  msg(m,'อ่านได้ '+(r.days||[]).length+' วัน · '+(flagged?('มี '+flagged+' วันที่ต้องตรวจ (จุดสีบนหัวตาราง)'):'ทุกวันลงตัว')+(unk.length?(' · ชื่อที่ไม่มีในร้าน: '+unk.join(', ')):''), flagged?'warn':'ok');
+  schiRender();
+  document.getElementById('schi-submit-btn').textContent= schIsOwner()?'บันทึกตารางเดือนนี้':'ส่งให้เจ้าของอนุมัติ';
+  document.getElementById('schi-submit-tip').textContent= schIsOwner()?'แตะช่องเพื่อแก้ก่อนบันทึก · บันทึกแล้วมีผลทันที':'แตะช่องเพื่อแก้ก่อนส่ง · ตารางจะเปลี่ยนจริงเมื่อเจ้าของกดอนุมัติ';
+  document.getElementById('schi-submit').classList.remove('hidden');
+}
+function schiIssueText(i){
+  if(i.kind==='missing') return 'ไม่เจอชื่อ: '+i.names.join(', ');
+  if(i.kind==='dup') return i.name+' อยู่ 2 ที่';
+  if(i.kind==='unknown') return 'ชื่อที่ไม่รู้จัก: '+i.names.join(', ');
+  if(i.kind==='unreadable') return 'อ่านไม่ออก '+i.n+' ชื่อ';
+  if(i.kind==='empty') return 'ช่องว่าง';
+  return i.kind;
+}
+function schiRender(){
+  const ds=schMonthDates(SCHI.month), st=(SCH&&SCH.staff)||[];
+  const flag=d=>{ const is=SCHI.issues[d]; if(!is||!is.length) return 'fl'; return is.some(i=>i.kind==='missing'||i.kind==='dup'||i.kind==='empty')?'fl bad':'fl warn'; };
+  let h='<div class="sch-grid-wrap"><table class="sch-grid"><thead><tr><th class="nmh">ชื่อ</th>'+ds.map(d=>{ const dw=schDow(d); return '<th class="'+((dw===5||dw===6)?'we':'')+'">'+SCH_DOW[dw]+'<b>'+schD(d).getDate()+'</b><span class="'+flag(d)+'"></span></th>'; }).join('')+'</tr></thead><tbody>';
+  schStaffGroups().forEach(g=>{
+    g[1].forEach(s=>{
+      h+='<tr><td class="nmc">'+esc(s.nickname)+'<small>'+(s.team==='service'?'Service':'ครัว')+(s.counts?'':' · ยังไม่นับ')+'</small></td>'+ds.map(d=>'<td>'+schCellHtml((SCHI.days[d]||{})[s.emp_id], s, {onclick:'schiCycle(\''+d+'\',\''+s.emp_id+'\',this)'})+'</td>').join('')+'</tr>';
+    });
+  });
+  h+='</tbody></table></div><div class="st-tip" style="margin-top:6px;color:rgba(255,255,255,.85)">เลื่อนตารางไปทางขวาเพื่อดูวันถัดไป · แตะช่องเพื่อเปลี่ยน</div>';
+  document.getElementById('schi-grid').innerHTML=h;
+  const keys=Object.keys(SCHI.issues).sort();
+  document.getElementById('schi-issues').innerHTML= keys.length? '<div class="schcard"><div class="ttl" style="font-size:13.5px">วันที่ต้องตรวจ ('+keys.length+')</div><div class="schiss">'+keys.map(d=>'<div><span class="d">'+schDmy(d)+'</span> — '+esc(SCHI.issues[d].map(schiIssueText).join(' · '))+'</div>').join('')+'</div></div>' : '';
+}
+function schiCycle(d,emp,btn){
+  const cur=(SCHI.days[d]||{})[emp]||''; const i=SCH_CYCLE.indexOf(cur); const nxt=SCH_CYCLE[(i+1)%SCH_CYCLE.length];
+  if(!SCHI.days[d]) SCHI.days[d]={};
+  if(nxt) SCHI.days[d][emp]=nxt; else delete SCHI.days[d][emp];
+  const s=schStaffOf(emp); const c=SCH_CODE[nxt];
+  btn.className='scc '+(nxt||'')+(s&&!s.counts?' tr':''); btn.textContent=c?c.t:'·'; btn.title=c?c.n:'ยังไม่ลง';
+}
+async function schiSubmit(){
+  const m=document.getElementById('schi-msg'), btn=document.getElementById('schi-submit-btn');
+  const days=Object.keys(SCHI.days).sort().map(d=>({date:d,plan:SCHI.days[d]}));
+  if(!days.length){ msg(m,'ยังไม่มีข้อมูล','err'); return; }
+  const filled=days.filter(d=>Object.keys(d.plan).length).length;
+  if(!filled){ msg(m,'ยังไม่ได้ลงใครเลยสักวัน','err'); return; }
+  const flagged=Object.keys(SCHI.issues).length;
+  if(SCHI.mode==='import' && flagged && !confirm('ยังมี '+flagged+' วันที่ระบบชี้ว่าอ่านไม่ลงตัว — ตรวจแล้วใช่ไหม? กดตกลงเพื่อส่งต่อ')) return;
+  btn.disabled=true;
+  let r;
+  if(SCHI.mode==='edit' || schIsOwner()) r=await api('schSave',{days:days});
+  else r=await api('schReqSave',{type:'month',payload:{month:SCHI.month,days:days},note:'จากรูปกระดาษ '+schMonthLabel(SCHI.month),client_id:'M-'+SCHI.month+'-'+Date.now()});
+  btn.disabled=false;
+  if(!r || !r.ok){ msg(m,(r&&r.error)||'บันทึกไม่สำเร็จ','err'); return; }
+  SCH=null;
+  if(SCHI.mode==='edit' || schIsOwner()){ msg(m,'บันทึกตารางแล้ว ('+(r.saved||days.length)+' วัน)','ok'); setTimeout(()=>{ SCH_ANCHOR=SCHI.month+'-01'; SCH_TAB='month'; show('sch'); schRenderTabs(); schLoad(true); },600); }
+  else { msg(m,'ส่งให้เจ้าของอนุมัติแล้ว — ตารางจะเปลี่ยนเมื่อเจ้าของกดอนุมัติ','ok'); setTimeout(()=>{ show('sch'); schLoadReqs(); schLoad(true); },900); }
+}
+
+/* ---------- ขอเปลี่ยน (พนักงานทุกคน) ---------- */
+let SCHR_TYPE='moveoff';
+function openSchReq(){
+  SCHR_TYPE='moveoff'; schrType('moveoff');
+  const tm=schAdd(bizDateISO(),1);
+  ['schr-from','schr-to','schr-sdate','schr-cdate','schr-xdate'].forEach(id=>{ const el=document.getElementById(id); if(el && !el.value) el.value=tm; });
+  const sel=document.getElementById('schr-with'); sel.innerHTML='';
+  ((SCH&&SCH.staff)||[]).filter(s=>ME && s.emp_id!==ME.emp_id).forEach(s=>{ const o=document.createElement('option'); o.value=s.emp_id; o.textContent=s.nickname+' ('+(s.team==='service'?'Service':'ครัว')+')'; sel.appendChild(o); });
+  document.getElementById('schr-note').value='';
+  clearMsg(document.getElementById('schr-msg'));
+  show('schreq'); schrRenderMine();
+  if(!SCH_REQS) schLoadReqs().then(schrRenderMine);
+}
+function schrType(t){
+  SCHR_TYPE=t;
+  document.querySelectorAll('#schr-type button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  ['moveoff','swap','change','special'].forEach(k=>document.getElementById('schr-f-'+k).classList.toggle('hidden',k!==t));
+}
+async function schrSubmit(){
+  const m=document.getElementById('schr-msg'), btn=document.getElementById('schr-btn');
+  let payload={};
+  if(SCHR_TYPE==='moveoff') payload={from:document.getElementById('schr-from').value,to:document.getElementById('schr-to').value,work_code:document.getElementById('schr-work').value};
+  else if(SCHR_TYPE==='swap') payload={date:document.getElementById('schr-sdate').value,with_emp_id:document.getElementById('schr-with').value};
+  else if(SCHR_TYPE==='change') payload={date:document.getElementById('schr-cdate').value,code:document.getElementById('schr-code').value};
+  else payload={date:document.getElementById('schr-xdate').value};
+  const dates=[payload.from,payload.to,payload.date].filter(x=>x);
+  if(!dates.length || dates.some(d=>!/^\d{4}-\d{2}-\d{2}$/.test(d))){ msg(m,'เลือกวันที่ให้ครบ','err'); return; }
+  if(SCHR_TYPE==='swap' && !payload.with_emp_id){ msg(m,'เลือกเพื่อนที่จะสลับด้วย','err'); return; }
+  btn.disabled=true;
+  const r=await api('schReqSave',{type:SCHR_TYPE,payload:payload,note:document.getElementById('schr-note').value,client_id:'R-'+Date.now()});
+  btn.disabled=false;
+  if(!r || !r.ok){ msg(m,(r&&r.error)||'ส่งคำขอไม่สำเร็จ','err'); return; }
+  msg(m,'ส่งคำขอแล้ว รอเจ้าของอนุมัติ','ok');
+  document.getElementById('schr-note').value='';
+  await schLoadReqs(); schrRenderMine();
+}
+function schReqDesc(r,short){
+  const p=r.payload||{}, nm=(r.names&&r.names.emp_id)||r.by||'', wn=(r.names&&r.names.with_emp_id)||'';
+  if(r.type==='month') return (short?'':nm+' ส่ง')+'ตารางเดือน'+schMonthLabel(p.month||'')+(p.days_n?(' ('+p.days_n+' วัน)'):'');
+  if(r.type==='change') return (short?'':nm+' ')+'ขอเปลี่ยน '+schDmy(p.date)+' เป็น '+(SCH_CODE[p.code]?SCH_CODE[p.code].n:p.code);
+  if(r.type==='moveoff') return (short?'':nm+' ')+'ขอย้ายวันหยุด '+schDmy(p.from)+' → '+schDmy(p.to)+' (วันเดิมทำ'+(SCH_CODE[p.work_code]?SCH_CODE[p.work_code].n:'')+')';
+  if(r.type==='swap') return (short?'':nm+' ')+'ขอสลับกะกับ '+wn+' วันที่ '+schDmy(p.date);
+  if(r.type==='special') return (short?'':nm+' ')+'ขอวันหยุดพิเศษ '+schDmy(p.date);
+  return r.type;
+}
+function schReqCard(r,forOwner){
+  const stc=r.status==='pending'?'p':(r.status==='approved'?'a':'r');
+  const stt=r.status==='pending'?'รออนุมัติ':(r.status==='approved'?'อนุมัติแล้ว':'ไม่อนุมัติ');
+  let h='<div class="schreq '+stc+'"><div class="h"><div class="t">'+esc(schReqDesc(r,false))+'</div><div class="st '+stc+'">'+stt+'</div></div>';
+  const meta=[]; if(r.note) meta.push('📝 '+esc(r.note)); meta.push('ส่งเมื่อ '+esc(String(r.created_at||'').substring(0,16)));
+  if(r.status!=='pending') meta.push((r.status==='approved'?'อนุมัติ':'ไม่อนุมัติ')+'โดย '+esc(r.decided_by||'')+' '+esc(String(r.decided_at||'').substring(0,16))+(r.reason?' · เหตุผล: '+esc(r.reason):''));
+  h+='<div class="m">'+meta.join('<br>')+'</div>';
+  if(forOwner && r.status==='pending'){
+    if(r.impact && r.impact.days){ h+='<div class="m" style="margin-top:6px">'+r.impact.days.map(d=>{ const ws=d.warn||[]; return '<b>'+schDmy(d.date)+'</b>: '+(ws.length?('<span style="color:#b23b32">⚠️ '+esc(ws.map(schWarnText).join(' · '))+'</span>'):'<span style="color:#177a4a">✓ ไม่กระทบกะไหน</span>'); }).join('<br>')+'</div>'; }
+    else if(r.impact && r.impact.error) h+='<div class="m" style="color:#b23b32">⚠️ '+esc(r.impact.error)+'</div>';
+    if(r.type==='month' && r.payload && r.payload.days) h+='<div class="m">ตารางทั้งเดือน '+r.payload.days.length+' วัน <a href="#" onclick="schaPreviewMonth(\''+r.req_id+'\');return false" style="color:var(--accent);font-weight:700">ดูตาราง</a></div><div id="scha-prev-'+r.req_id+'"></div>';
+    h+='<div class="acts"><button type="button" class="no" onclick="schaDecide(\''+r.req_id+'\',\'reject\')">ไม่อนุมัติ</button><button type="button" class="ok" onclick="schaDecide(\''+r.req_id+'\',\'approve\')">อนุมัติ</button></div>';
+  }
+  return h+'</div>';
+}
+function schrRenderMine(){
+  const el=document.getElementById('schr-list'); if(!el) return;
+  const rows=(SCH_REQS&&SCH_REQS.rows)||[];
+  el.innerHTML= rows.length? rows.map(r=>schReqCard(r,false)).join('') : '<div class="st-tip" style="color:rgba(255,255,255,.85)">ยังไม่มีคำขอ</div>';
+}
+
+/* ---------- อนุมัติ (เจ้าของ) ---------- */
+async function openSchAppr(){
+  show('schappr'); clearMsg(document.getElementById('scha-msg'));
+  document.getElementById('scha-list').innerHTML='<div class="st-tip" style="color:rgba(255,255,255,.85)">กำลังโหลด…</div>';
+  await schLoadReqs(); schaRender();
+}
+function schaRender(){
+  const el=document.getElementById('scha-list'); if(!el) return;
+  const rows=(SCH_REQS&&SCH_REQS.rows)||[];
+  const pend=rows.filter(r=>r.status==='pending'), done=rows.filter(r=>r.status!=='pending');
+  let h='<div class="sect-title" style="margin-top:4px">รออนุมัติ ('+pend.length+')</div>';
+  h+= pend.length? pend.map(r=>schReqCard(r,true)).join('') : '<div class="st-tip" style="color:rgba(255,255,255,.85)">ไม่มีคำขอค้าง</div>';
+  if(done.length) h+='<div class="sect-title">ตัดสินแล้ว (90 วันล่าสุด)</div>'+done.slice(0,30).map(r=>schReqCard(r,true)).join('');
+  el.innerHTML=h;
+}
+function schaPreviewMonth(id){
+  const r=((SCH_REQS&&SCH_REQS.rows)||[]).find(x=>x.req_id===id); const el=document.getElementById('scha-prev-'+id);
+  if(!r || !el || !r.payload || !r.payload.days) return;
+  const st=(SCH&&SCH.staff)||[]; const ds=r.payload.days.slice().sort((a,b)=>a.date<b.date?-1:1);
+  let h='<div class="sch-grid-wrap" style="margin-top:6px"><table class="sch-grid"><thead><tr><th class="nmh">ชื่อ</th>'+ds.map(d=>'<th class="'+((schDow(d.date)>=5)?'we':'')+'">'+SCH_DOW[schDow(d.date)]+'<b>'+schD(d.date).getDate()+'</b></th>').join('')+'</tr></thead><tbody>';
+  st.forEach(s=>{ h+='<tr><td class="nmc">'+esc(s.nickname)+'</td>'+ds.map(d=>'<td>'+schCellHtml((d.plan||{})[s.emp_id], s, {disabled:true})+'</td>').join('')+'</tr>'; });
+  el.innerHTML=h+'</tbody></table></div>';
+}
+async function schaDecide(id,act){
+  let reason='';
+  if(act==='reject'){ reason=prompt('เหตุผลที่ไม่อนุมัติ (พนักงานจะเห็นข้อความนี้)',''); if(reason===null) return; }
+  else if(!confirm('อนุมัติคำขอนี้? ตารางจะเปลี่ยนทันที')) return;
+  const m=document.getElementById('scha-msg');
+  const r=await api('schReqDecide',{req_id:id,act:act,reason:reason});
+  if(!r || !r.ok){ msg(m,(r&&r.error)||'ทำรายการไม่สำเร็จ','err'); return; }
+  msg(m, act==='approve'?'อนุมัติแล้ว — ตารางอัปเดตแล้ว':'ไม่อนุมัติแล้ว','ok');
+  SCH=null;
+  await schLoadReqs(); schaRender();
+}
+</script>
+
 </body>
 </html>
