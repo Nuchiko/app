@@ -1381,8 +1381,9 @@
       <div id="rs-datetxt" style="font-size:12.5px;font-weight:700;color:var(--accent2);margin-top:6px"></div>
 
       <label for="rs-time" style="margin-top:16px">กี่โมง</label>
-      <input id="rs-time" type="time" onchange="rsSync()">
-      <div style="font-size:11.5px;color:var(--muted);margin-top:6px">แตะรูปนาฬิกาท้ายช่องเพื่อเลือกเวลา</div>
+      <!-- step=600 = เลื่อนนาทีทีละ 10 (00 10 20 30 40 50) ตามที่เจ้าของสั่ง 9 ต.ค. 2026 -->
+      <input id="rs-time" type="time" step="600" onchange="rsSync()">
+      <div style="font-size:11.5px;color:var(--muted);margin-top:6px">แตะรูปนาฬิกาเพื่อเลือกเวลา · นาทีทีละ 10</div>
 
       <label for="rs-pax" style="margin-top:16px">กี่คน</label>
       <select id="rs-pax" onchange="rsSync()"></select>
@@ -6402,12 +6403,26 @@ function rsTag(k){
   (RS_FORM||(RS_FORM=rsBlank())).tags=l.join(',');
   rsSync();
 }
+// นาทีให้ลงตัวทีละ 10 — เครื่องที่พิมพ์เวลาเองได้ (เช่นคอม) อาจได้ 19:07 → ปัดให้ใกล้สุด แล้วบอกให้รู้ ไม่แก้เงียบ ๆ
+const RES_MIN_STEP=10;
+function rsSnapTime(){
+  var el=document.getElementById('rs-time'), v=(el&&el.value)||'';
+  var mm=/^(\d{1,2}):(\d{2})$/.exec(v); if(!mm) return '';
+  var min=+mm[2]; if(min%RES_MIN_STEP===0) return '';
+  var h=+mm[1], snapped=Math.round(min/RES_MIN_STEP)*RES_MIN_STEP;
+  if(snapped>=60){ snapped=0; h=(h+1)%24; }
+  var nv=String(h).padStart(2,'0')+':'+String(snapped).padStart(2,'0');
+  el.value=nv; rsSync();
+  return nv;
+}
 function rsStep2(){
   var m=document.getElementById('rs-f1msg'); clearMsg(m);
   rsSync();
+  var snap=rsSnapTime();
   var f=RS_FORM;
   if(!f.date){ msg(m,'กรุณาเลือกวันที่จอง'); return; }
   if(!f.time){ msg(m,'กรุณาระบุเวลาที่จอง'); return; }
+  if(snap){ msg(m,'ปรับเวลาเป็น '+snap+' (นาทีเลือกได้ทีละ 10) — ถ้าไม่ใช่ แก้แล้วกดถัดไปอีกครั้ง','warn'); return; }
   var px=parseInt(f.pax,10);
   if(!(px>0)){ msg(m,'กรุณาระบุจำนวนคน'); return; }
   if(px>RES_MAX_PAX){ msg(m,'จองได้สูงสุด '+RES_MAX_PAX+' คน — ถ้ามากกว่านี้ให้แยกเป็นหลายรายการ'); return; }
