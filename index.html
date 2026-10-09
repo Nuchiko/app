@@ -320,6 +320,41 @@
   .rec .in{color:#9fe3b8} .rec .out{color:#f0a99b} .rec .d{color:var(--muted);font-size:13px}
   .geo{font-size:12px;color:var(--muted);text-align:center;margin-top:12px}
 
+  /* ---- โต๊ะจอง ---- */
+  .rs-strip{display:flex;gap:5px;margin:0 0 12px}
+  .rs-day{flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;
+    padding:7px 2px;text-align:center;font:inherit;cursor:pointer}
+  .rs-day .dw{display:block;font-size:10.5px;font-weight:700;color:var(--muted)}
+  .rs-day .dd{display:block;font-size:16px;font-weight:800;line-height:1.2}
+  .rs-day .dn{display:block;font-size:10px;font-weight:700;color:var(--accent2)}
+  .rs-day.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+  .rs-day.sel .dw,.rs-day.sel .dn{color:rgba(255,255,255,.85)}
+  .rs-qb{display:grid;gap:6px;margin:6px 0 8px}
+  .rs-qb button{padding:10px 0;font:inherit;font-size:14px;font-weight:700;border-radius:11px;border:1px solid var(--line);
+    background:var(--bg2);color:var(--text);cursor:pointer}
+  .rs-qb button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800}
+  .rs-card{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent2);
+    border-radius:14px;padding:10px 12px;margin-bottom:8px;font:inherit;color:var(--text);cursor:pointer}
+  .rs-card.cx{border-left-color:var(--line);opacity:.62}
+  .rs-card.cx .rs-h{text-decoration:line-through}
+  .rs-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .rs-h .tm{font-size:19px;font-weight:800;letter-spacing:.5px}
+  .rs-h .nm{font-size:15px;font-weight:700}
+  .rs-h .px{font-size:13px;color:var(--muted)}
+  .rs-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .rs-bd{margin-left:auto;font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .rs-bd.b{background:#eaf1fb;color:#0a4191;border:1px solid #d3e0f3}
+  .rs-bd.a{background:rgba(31,157,87,.14);color:#177a4a;border:1px solid rgba(31,157,87,.42)}
+  .rs-bd.n{background:#fdeceb;color:#b23b32;border:1px solid #f1c4bf}
+  .rs-bd.c{background:#eef2f8;color:#5f7088;border:1px solid var(--line)}
+  .rs-note{font-size:12.5px;background:#fff6e5;color:#8a5a00;border:1px solid #f0d9a8;border-radius:8px;padding:4px 8px;margin-top:6px}
+  .rs-act{display:flex;gap:10px;margin-top:12px}
+  .rs-act .btn{margin-top:0}
+  /* ปุ่มโปร่งที่วางบน "พื้นน้ำเงิน" (ไม่ได้อยู่ในการ์ดขาว) ต้องเป็นตัวหนังสือขาว
+     — ไม่งั้น .btn.ghost ให้ color:var(--text) = น้ำเงินเข้ม แล้วจมหายไปกับพื้น (บั๊กเดิมของปุ่มลงทะเบียน §9.6.2) */
+  .btn.ghost.onblue{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.6);color:#fff}
+  .btn.ghost.onblue.warn{background:rgba(224,83,61,.26);border-color:rgba(255,255,255,.55)}
+
   /* ============= ธีมน้ำเงินเข้ม–ขาว (พื้นน้ำเงินตามโลโก้ #0a4191 การ์ดขาว) ============= */
   :root{
     --bg:#0a4191; --bg2:#eef3fb; --card:#ffffff; --line:#dbe5f2;
@@ -824,6 +859,21 @@
       </div>
     </div>
 
+    <!-- เรื่องที่ 1.5: โต๊ะจอง — โผล่เมื่อหลังบ้านรองรับ (ping.res) เท่านั้น ; ครัวเห็นปุ่มด้วย (ดูได้ ไม่เห็นชื่อ/เบอร์) -->
+    <div class="grp hidden" id="grp-guest">
+      <div class="gh"><div class="gt">📅 โต๊ะจอง</div><div class="gs">ลูกค้าจองโต๊ะ · ใครมาแล้ว</div></div>
+      <div class="tiles">
+        <button type="button" class="bigt hidden" id="ho-res-tile" onclick="openRes()">
+          <span style="font-size:28px;line-height:1">📅</span>
+          <span style="flex:1;min-width:0">
+            <span class="bt" style="display:block">โต๊ะจอง</span>
+            <span class="bs" id="ho-res-sub">จดลูกค้าจองโต๊ะ · ชื่อ เบอร์ กี่คน</span>
+          </span>
+          <span class="go" id="ho-res-go">เปิด</span>
+        </button>
+      </div>
+    </div>
+
     <!-- เรื่องที่ 2: ของในร้าน -->
     <div class="grp" id="grp-stuff">
       <div class="gh"><div class="gt">📦 ของในร้าน</div><div class="gs">นับ · รับเข้า · แพค</div></div>
@@ -1287,6 +1337,83 @@
     <div id="rv-history"></div>
   </section>
 
+  <!-- ============ โต๊ะจอง (เฟส 1: จด–ดู–แก้–ยกเลิก–ติ๊กมาแล้ว) ============ -->
+  <!-- หน้า 1: รายการจองของวัน -->
+  <section id="screen-res" class="hidden">
+    <button class="backbtn" onclick="show('home')">‹ กลับหน้าหลัก</button>
+    <div class="topbar" style="padding-top:0"><div class="who">📅 โต๊ะจอง</div></div>
+    <div class="rs-strip" id="rs-strip"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin:0 2px 12px">
+      <label for="rs-pick" style="margin:0;font-size:12.5px;white-space:nowrap">วันอื่น</label>
+      <input id="rs-pick" type="date" onchange="resPick(this.value,1)" style="padding:9px 12px;font-size:15px">
+    </div>
+    <div class="summary" id="rs-sum" style="margin-top:0"></div>
+    <div class="msg" id="rs-listmsg"></div>
+    <div id="rs-kitchen" class="st-tip hidden" style="margin:10px 2px 0">🔒 ครัวดูได้ — ไม่แสดงชื่อและเบอร์ลูกค้า</div>
+    <div id="rs-draftbar" class="hidden" style="margin-top:10px"></div>
+    <button class="btn hidden" id="rs-newbtn" onclick="resOpenNew()">+ จองใหม่</button>
+    <div class="sect-title">รายการจองของวันนี้</div>
+    <div id="rs-list"></div>
+  </section>
+
+  <!-- หน้า 2: จองใหม่ ① วัน–เวลา–จำนวนคน -->
+  <section id="screen-resnew" class="hidden">
+    <button class="backbtn" onclick="show('res')">‹ กลับ</button>
+    <div class="topbar" style="padding-top:0"><div class="who" id="rs-f1title">จองใหม่</div></div>
+    <div class="page-label" style="margin:-6px 2px 10px;font-size:13px">แตะปุ่มด่วนได้เลย ไม่ต้องพิมพ์</div>
+    <div class="card">
+      <label for="rs-date">จองวันไหน</label>
+      <div class="rs-qb" id="rs-qdate" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+      <input id="rs-date" type="date" onchange="rsSync()">
+      <div id="rs-datetxt" style="font-size:12.5px;font-weight:700;color:var(--accent2);margin-top:6px"></div>
+
+      <label for="rs-time" style="margin-top:16px">กี่โมง</label>
+      <div class="rs-qb" id="rs-qtime" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+      <input id="rs-time" type="time" onchange="rsSync()">
+
+      <label for="rs-pax" style="margin-top:16px">กี่คน</label>
+      <div class="rs-qb" id="rs-qpax" style="grid-template-columns:repeat(6,minmax(0,1fr))"></div>
+      <input id="rs-pax" type="number" inputmode="numeric" min="1" max="99" placeholder="จำนวนคน" oninput="rsSync()">
+      <div class="msg" id="rs-f1msg"></div>
+    </div>
+    <button class="btn" onclick="rsStep2()">ถัดไป — ใส่ชื่อ/เบอร์ ›</button>
+  </section>
+
+  <!-- หน้า 3: จองใหม่ ② ชื่อ–เบอร์–โซน–ช่องทาง–หมายเหตุ -->
+  <section id="screen-resinfo" class="hidden">
+    <button class="backbtn" onclick="show('resnew')">‹ กลับ</button>
+    <div class="topbar" style="padding-top:0"><div class="who" id="rs-f2title">จองใหม่</div></div>
+    <div class="page-label" id="rs-f2sub" style="margin:-6px 2px 10px;font-size:13px">—</div>
+    <div class="card">
+      <label for="rs-phone">เบอร์โทร <span style="font-weight:400">· เว้นได้ถ้าลูกค้าไม่ให้</span></label>
+      <input id="rs-phone" type="tel" inputmode="tel" placeholder="เช่น 089-555-1212" oninput="rsSync()">
+
+      <label for="rs-name" style="margin-top:15px">ชื่อที่จอง</label>
+      <input id="rs-name" type="text" placeholder="เช่น คุณโอ๊ต" oninput="rsSync()">
+
+      <label style="margin-top:15px">นั่งโซนไหน</label>
+      <div class="rs-qb" id="rs-qzone" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+      <div style="font-size:11.5px;color:var(--muted)">ลูกค้าไม่ระบุก็เว้นว่างได้ — จัดโต๊ะตอนมาถึง</div>
+
+      <label style="margin-top:15px">จองมาทางไหน</label>
+      <div class="rs-qb" id="rs-qchan" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div>
+
+      <label for="rs-note" style="margin-top:15px">หมายเหตุ</label>
+      <div class="rs-qb" id="rs-qtag" style="grid-template-columns:repeat(2,minmax(0,1fr))"></div>
+      <input id="rs-note" type="text" placeholder="เช่น ขอจุดเทียนตอนปิดบิล" oninput="rsSync()">
+    </div>
+    <button class="btn" id="rs-send" onclick="sendRes()">บันทึกการจอง</button>
+    <div class="msg" id="rs-f2msg"></div>
+    <div class="footnote" style="text-align:center;margin-top:9px">บันทึกแล้วคนอื่นเห็นทันที · แก้ทีหลังได้</div>
+  </section>
+
+  <!-- หน้า 4: เปิดรายการจอง — ติ๊กมาแล้ว/ไม่มา · แก้ · ยกเลิก -->
+  <section id="screen-resone" class="hidden">
+    <button class="backbtn" onclick="show('res')">‹ กลับ</button>
+    <div id="rs-one"></div>
+    <div class="msg" id="rs-onemsg"></div>
+  </section>
+
   <!-- ============ ทำแพค (ตัดแต่ง/แพควัตถุดิบ) ============ -->
   <!-- หน้า 1: เลือกของที่จะทำแพค (เจ้าของสั่ง 4 ก.ย. 2026 — เลือกแล้วให้เปิดหน้าใหม่กรอกเฉพาะตัวนั้น) -->
   <section id="screen-pack" class="hidden">
@@ -1665,6 +1792,7 @@ async function offSend(it){
   if(it.kind==='recv')  return await api('recvSave', it.payload);
   if(it.kind==='pack')  return await api('packSave', it.payload);
   if(it.kind==='eq')    return await api('eqSave', it.payload);
+  if(it.kind==='res')   return await api('resSave', it.payload);
   if(it.kind==='stock') return await offStockPost(it.payload);
   return {ok:false, error:'ไม่รู้จักชนิดข้อมูล'};
 }
@@ -1780,7 +1908,8 @@ function offBarHtml(ts, restoreFn, dropFn){
 }
 // เฝ้าฟอร์มทั้ง 3 หน้า: พิมพ์อะไรก็เก็บร่างให้เอง (หน่วง 0.7 วิ กันเขียนถี่เกิน)
 function offWatch(){
-  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock], ['screen-packform', offDraftSavePack], ['screen-eqform', offDraftSaveEq]].forEach(function(p){
+  [['screen-cash', offDraftSaveCash], ['screen-recv', offDraftSaveRecv], ['screen-stockcat', offDraftSaveStock], ['screen-packform', offDraftSavePack], ['screen-eqform', offDraftSaveEq],
+   ['screen-resnew', offDraftSaveRes], ['screen-resinfo', offDraftSaveRes]].forEach(function(p){
     var el=document.getElementById(p[0]); if(!el || el.dataset.offw) return;
     el.dataset.offw='1';
     var t=null, h=function(){ clearTimeout(t); t=setTimeout(function(){ try{ p[1](); }catch(e){} }, 700); };
@@ -1940,7 +2069,8 @@ function offDropPackDraft(){ offDraftClear('pack'); OFF_HIDE['pack']=1; offPackB
 function show(id){
   try{ attLeave(id); }catch(e){}   // ลงเวลา: ออกจากหน้าจอที่ใช้กล้อง/ตำแหน่ง = ปิดกล้อง + หยุดดูตำแหน่งทันที
   ['login','register','home','me','stock','stockcat','clock','attconsent','attcam','attconfirm','attdone','attfar','attnogps','attnonet',
-   'atthist','attday','attrev','attmonth','attman','attset','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr','help'].forEach(s=>{
+   'atthist','attday','attrev','attmonth','attman','attset','admin','cash','recv','pack','packform','eqhub','eqlist','eqform','eqappr',
+   'res','resnew','resinfo','resone','help'].forEach(s=>{
     const el=document.getElementById('screen-'+s); if(el) el.classList.add('hidden');   // บางหน้าจอถูกตัดออกในแอปจริง (เวลาเข้างาน)
   });
   const cur=document.getElementById('screen-'+id) || document.getElementById('screen-home');  // หน้าที่ถูกตัดออก → กลับหน้าหลัก ไม่ค้างจอเปล่า
@@ -2006,7 +2136,7 @@ function enterHome(){
 function openMe(){ show('me'); }
 // กลุ่มไหนไม่มีปุ่มที่คนนี้เห็นเลย = ซ่อนทั้งกลุ่ม (กันหัวข้อลอยไม่มีอะไรอยู่ข้างใน)
 function syncGroups(){
-  ['grp-time','grp-stuff','grp-money','grp-equip'].forEach(function(id){
+  ['grp-time','grp-guest','grp-stuff','grp-money','grp-equip'].forEach(function(id){
     var g=document.getElementById(id); if(!g) return;
     var vis=Array.prototype.filter.call(g.querySelectorAll('.t2,.bigt'), function(t){ return !t.classList.contains('hidden'); });
     g.classList.toggle('hidden', vis.length===0);
@@ -2027,16 +2157,17 @@ function tileBdg(id, n){
 // เช็คผ่าน ping (เบา ไม่แตะชีท) : เวอร์ชันเก่าไม่มี recv → ซ่อน ; ถ้าเน็ต/เซิร์ฟเวอร์มีปัญหา → ปล่อย null ไว้เช็คใหม่รอบหน้า (ไม่ latch ผิด)
 async function showRecvTileIfReady(){
   const tile=document.getElementById('ho-recv-tile');
-  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); return; }
+  if(RECV_READY===true){ tile.classList.remove('hidden'); showPackTile(); eqShowTile(); attShowTile(); resShowTile(); return; }
   if(RECV_READY===false) return;
   const r=await api('ping',{});
-  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); }
+  if(r && r.ok){ RECV_READY = (r.recv===true); OCR_READY = (r.ocr===true); TODAY_READY = (r.today===true); PACK_READY = (r.pack===true); EQUIP_READY = (r.equip===true); ATT_READY = (r.att===true); RES_READY = (r.res===true); }
   else { RECV_READY = null; BACKEND_VER = null; updateVerBadge(); return; }
   BACKEND_VER = (typeof r.ver === 'number') ? r.ver : null; updateVerBadge();
   if(RECV_READY) tile.classList.remove('hidden');
   showPackTile();
   eqShowTile();
   attShowTile();
+  resShowTile();
   syncGroups();
 }
 function showPackTile(){
@@ -2117,6 +2248,13 @@ function renderToday(){
   if(rc.count) tileSt('st-recv', rc.count+' ครั้ง'+(rc.by&&rc.by.length?(' · '+rc.by.join(', ')):''), 'ok');
   else tileSt('st-recv','ยังไม่มีวันนี้','');
   tick(!!rc.count);
+  // 📅 โต๊ะจอง — ตัวเลขล้วน (หลังบ้านส่งมาให้ทุกคน รวมครัว) ; ไม่นับเข้า "ส่งแล้ว/ค้าง" เพราะบางคืนไม่มีใครจองเลยก็ปกติ
+  var rz=r.res||null, rsub=document.getElementById('ho-res-sub');
+  if(rz && rsub){
+    rsub.textContent = (+rz.count>0)
+      ? ('คืนนี้ '+(+rz.count)+' โต๊ะ · '+(+rz.pax||0)+' คน'+((+rz.arrived>0)?(' · มาแล้ว '+(+rz.arrived)):'')+(rz.next?(' · ถัดไป '+rz.next):''))
+      : 'คืนนี้ยังไม่มีการจอง';
+  }
   if(r.cash){
     var cs=r.cash.saved;
     tileSt('st-cash', cs?([r.cash.by,r.cash.time].filter(function(x){return x;}).join(' ')||'กรอกแล้ว'):'ยังไม่กรอกวันนี้', cs?'ok':'warn');
@@ -2158,6 +2296,10 @@ function renderToday(){
     warns.push('<span onclick="openPack()" style="cursor:pointer">🧊 วันนี้รับ <b>'+esc(x.n)+'</b> เข้ามา'+(x.time?(' ('+esc(x.time)+')'):'')+
       ' แต่ยังไม่มีบันทึกว่าได้กี่แพค/ตัว — แกะเสร็จแล้ว <u>แตะที่นี่เพื่อไปบันทึก</u></span>');
   });
+  // 📅 การจองของวันก่อน ๆ ที่ยังไม่ติ๊กว่ามาหรือไม่มา (ตัวเลข "ไม่มา" จะเพี้ยนถ้าไม่ติ๊ก)
+  if(rz && +rz.untick>0 && RES_READY===true){
+    warns.push('<span onclick="openRes()" style="cursor:pointer">📅 มีการจอง '+(+rz.untick)+' รายการของวันก่อน ๆ ที่ยังไม่ได้ติ๊กว่ามาหรือไม่มา <u>แตะเพื่อไปติ๊ก</u></span>');
+  }
   var w=document.getElementById('ho-today-warn');
   if(warns.length){ w.className='msg show warn'; w.innerHTML=warns.join('<br>'); }
   else clearMsg(w);
@@ -5708,6 +5850,15 @@ async function eqApproveAll(){
    ➕ เพิ่มคลิปใหม่ = วางไฟล์ .gif ใน ManaApp/help/ แล้วเพิ่ม 1 บล็อกใน HELP_TOPICS (ไม่ต้องแก้อย่างอื่น) */
 const HELP_BASE = /\/dev\/$/.test(location.pathname.replace(/[^/]*$/,'')) ? '../help/' : 'help/';
 const HELP_TOPICS = [
+  { id:'res', ico:'📅', name:'โต๊ะจอง', sub:'รับสายแล้วจดการจอง', steps:[
+      'หน้าหลัก → แตะ <b>📅 โต๊ะจอง</b> → เห็นรายการจองของคืนนี้ทันที (แถบวันด้านบนแตะสลับวันได้ 7 วัน)',
+      'รับสายแล้วกด <b>+ จองใหม่</b> → หน้าแรกเลือก <b>วัน · เวลา · จำนวนคน</b> (แตะปุ่มด่วนได้เลย ไม่ต้องพิมพ์)',
+      'หน้าถัดไปใส่ <b>เบอร์โทร</b> และ <b>ชื่อ</b> → เลือก <b>โซน</b> (ชั้น 1 / ชั้น 2 / เคาน์เตอร์ / Outdoor — ลูกค้าไม่ระบุก็เว้นว่างได้) → <b>จองมาทางไหน</b> → หมายเหตุ (แตะป้าย 🎂 วันเกิด ได้)',
+      'กด <b>บันทึกการจอง</b> — คนอื่นเห็นทันที',
+      '<b>ลูกค้ามาถึง</b> → แตะการจองนั้นในรายการ → กด <b>✓ มาแล้ว</b> (ถ้าไม่มาเลย กด <b>✕ ไม่มา</b>)',
+      'ลูกค้าโทรเลื่อน/ยกเลิก → แตะการจอง → <b>🕐 เลื่อนเวลา</b> หรือ <b>🗑 ยกเลิกการจอง</b> (ยกเลิกแล้วยังเห็นในรายการ ขีดฆ่าไว้ กู้คืนได้)'
+    ], tip:'💡 เบอร์โทรเว้นได้ถ้าลูกค้าไม่ให้ แต่ระบบจะเตือนครั้งหนึ่ง (ไม่มีเบอร์ = ติดต่อกลับไม่ได้ถ้าต้องเลื่อน) · เบอร์เดิมจองวันเดิมซ้ำ ระบบจะถามก่อนว่าจองเพิ่มอีกโต๊ะหรือเป็นรายการเดิม · <b>ติ๊ก “มาแล้ว/ไม่มา” ให้ครบทุกคืน</b> ไม่งั้นตัวเลขลูกค้าไม่มาจะเพี้ยน · วันที่ผ่านไปแล้วแก้/ยกเลิกได้เฉพาะเจ้าของร้าน (ติ๊กสถานะยังทำได้) · ครัวเปิดดูได้แต่ไม่เห็นชื่อ-เบอร์ลูกค้า' },
+
   { id:'stock', ico:'📦', name:'Stock ปลาดิบ', sub:'กรอกสต็อกประจำวัน', clip:'stock-fish.gif', steps:[
       'หน้าหลัก → แตะ <b>Stock</b> → เลือกหมวด <b>🐟 ปลาดิบ</b>',
       'ช่อง <b>ของเดิม</b> ระบบเติมให้เองจากยอดเหลือครั้งก่อน — ถ้านับจริงไม่ตรง <b>แก้ทับได้เลย</b> (ยึดของที่นับจริง)',
@@ -6030,6 +6181,349 @@ function fmtPhone(p){
 /* ---------- ลงเวลา: ไทล์ ⏰ โผล่ตามธง ping.att (attShowTile ใน showRecvTileIfReady) ----------
    หลังบ้านรุ่นเก่า (ยังไม่มีลงเวลา v2) ไม่ส่งธงนี้ → ไทล์ซ่อนอยู่เอง ไม่ต้องตัดหน้าจอทิ้งแบบเดิม */
 
+
+/* ============ โต๊ะจอง (เฟส 1 — 9 ต.ค. 2026) ============
+   เจ้าของสั่ง: "ให้พนักงานกรอกว่าแต่ละวันมีใครจองโต๊ะกี่ที่ กี่โมง ชื่ออะไร เบอร์โทรอะไร"
+   คำตัดสิน (CLAUDE.md §22): เบอร์เว้นได้แต่เตือน · ครัวดูได้ไม่เห็นชื่อ/เบอร์ (หลังบ้านไม่ส่งมาให้เลย)
+                             ไม่กำหนดรอบโต๊ะ · ไม่มีมัดจำ · ยังไม่เช็คโต๊ะ/ที่นั่งว่าง (บันทึกข้อมูลพอ)
+   เป้าหมายของฟอร์ม: รับสายแล้วจดจบใน 20–30 วินาที → ปุ่มด่วนทุกช่อง ไม่ต้องพิมพ์ถ้าไม่จำเป็น */
+let RES_READY=null;      // หลังบ้านรองรับแล้วหรือยัง (ping.res) — รุ่นเก่าไม่มีธงนี้ = ซ่อนปุ่ม
+let RS_DATE='';          // วันที่ที่เลือกดูอยู่
+let RS_DATA=null;        // ผล resList ล่าสุด (ครอบช่วง 7 วันของแถบวัน)
+let RS_FORM=null;        // ค่าที่กรอกในฟอร์ม (เก็บรวมไว้ที่เดียว ใช้ทั้ง 2 หน้า)
+let RS_EDIT_ID=null;     // กำลังแก้รายการไหน (null = จองใหม่)
+let RS_CLIENT_ID='';     // คีย์กันบันทึกซ้ำของการกรอกครั้งนี้
+let RS_ONE=null;         // รายการที่เปิดดูอยู่ในหน้า "เปิดการจอง"
+const RES_ZONES=['ชั้น 1','ชั้น 2','เคาน์เตอร์','Outdoor'];   // 4 โซนตามที่เจ้าของบอก (9 ต.ค. 2026)
+const RES_CHANS=[['phone','โทร'],['line','LINE'],['page','เพจ'],['walkin','เดินเข้า']];
+const RES_TAGS=[['birthday','🎂 วันเกิด'],['allergy','🥜 แพ้อาหาร'],['kids','👶 มีเด็ก'],['quiet','🔇 ขอที่เงียบ']];
+const RES_TIMES=['17:00','18:00','18:30','19:00','19:30','20:00'];   // ร้านเปิดเที่ยง–เที่ยงคืน ช่วงที่จองกันจริงคือหัวค่ำ
+const RES_PAXES=[2,3,4,6,8,10];
+const RES_DOW=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+const RES_ST_TH={booked:'จองไว้', arrived:'มาแล้ว', noshow:'ไม่มา', cancelled:'ยกเลิก'};
+const RES_ST_CLS={booked:'b', arrived:'a', noshow:'n', cancelled:'c'};
+
+function resShowTile(){
+  if(RES_READY!==true) return;              // หลังบ้านยังไม่มีเมนูโต๊ะจอง → ซ่อนไว้ (อัปเว็บก่อน deploy GAS ได้)
+  var t=document.getElementById('ho-res-tile'); if(t) t.classList.remove('hidden');
+  syncGroups();
+}
+function resD(iso,n){ var d=attParseISO(iso); if(!d) return iso; d.setDate(d.getDate()+n); return attISO(d); }
+function resDowTH(iso){ var d=attParseISO(iso); return d?RES_DOW[d.getDay()]:''; }
+function resDayTH(iso){ var d=attParseISO(iso); return d?(RES_DOW[d.getDay()]+' '+d.getDate()+' '+ATT_MON[d.getMonth()]):iso; }
+function resCanEditDate(iso){ return (ME&&ME.role==='owner') ? true : (String(iso||'') >= bizDateISO()); }
+function resRows(iso){ return ((RS_DATA&&RS_DATA.rows)||[]).filter(function(x){ return x.date===iso; }); }
+function resLive(iso){ return resRows(iso).filter(function(x){ return x.status!=='cancelled'; }); }
+
+async function openRes(){
+  if(!RS_DATE) RS_DATE=bizDateISO();
+  clearMsg(document.getElementById('rs-listmsg'));
+  offWatch(); resDraftBar();
+  show('res');
+  await resLoad();
+}
+// โหลดทีเดียวครอบ 7 วันของแถบวัน (เมื่อวาน…+5) → สลับวันในแถบไม่ต้องยิงใหม่
+async function resLoad(keepMsg){
+  var from=resD(RS_DATE,-1), to=resD(RS_DATE,5);
+  var r=await api('resList', {from:from, to:to});
+  if(!r || !r.ok){
+    var m=document.getElementById('rs-listmsg');
+    msg(m, (r&&r.netfail)?'เน็ตมีปัญหา — ยังโหลดรายการจองไม่ได้':((r&&r.error)||'โหลดรายการไม่สำเร็จ'));
+    return;
+  }
+  RS_DATA=r;
+  if(!keepMsg) clearMsg(document.getElementById('rs-listmsg'));
+  resRender();
+}
+function resPick(iso, refetch){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(String(iso||''))) return;
+  RS_DATE=iso;
+  if(refetch || !RS_DATA || iso<RS_DATA.from || iso>RS_DATA.to) resLoad(1);
+  else resRender();
+}
+function resRender(){
+  var canEdit=!!(RS_DATA&&RS_DATA.can_edit);
+  document.getElementById('rs-kitchen').classList.toggle('hidden', canEdit);
+  document.getElementById('rs-newbtn').classList.toggle('hidden', !canEdit);
+  document.getElementById('rs-pick').value=RS_DATE;
+  // แถบวัน 7 วัน (เมื่อวาน…+5) — ตัวเลขใต้วันคือจำนวนการจองที่ยังไม่ยกเลิก
+  var html='';
+  for(var i=-1;i<=5;i++){
+    var d=resD(RS_DATE,i), n=resLive(d).length;
+    html+='<button type="button" class="rs-day'+(d===RS_DATE?' sel':'')+'" onclick="resPick(\''+d+'\')">'+
+      '<span class="dw">'+resDowTH(d)+'</span><span class="dd">'+(attParseISO(d)?attParseISO(d).getDate():'')+'</span>'+
+      '<span class="dn">'+(n?(n+' โต๊ะ'):'—')+'</span></button>';
+  }
+  document.getElementById('rs-strip').innerHTML=html;
+  // สรุปของวันที่เลือก
+  var live=resLive(RS_DATE);
+  var pax=live.reduce(function(s,x){ return s+(+x.pax||0); },0);
+  var arrived=live.filter(function(x){ return x.status==='arrived'; }).length;
+  document.getElementById('rs-sum').innerHTML=
+    '<div class="box"><div class="lab">จองไว้</div><div class="val">'+live.length+' โต๊ะ</div></div>'+
+    '<div class="box"><div class="lab">รวม</div><div class="val">'+pax+' คน</div></div>'+
+    '<div class="box"><div class="lab">มาแล้ว</div><div class="val" style="color:var(--ok)">'+arrived+'</div></div>';
+  // รายการ
+  var rows=resRows(RS_DATE);
+  document.querySelector('#screen-res .sect-title').textContent='รายการจอง '+resDayTH(RS_DATE);
+  document.getElementById('rs-list').innerHTML = rows.length
+    ? rows.map(function(x){ return resCardHtml(x, canEdit); }).join('')
+    : '<div class="st-tip" style="margin:0 2px">ยังไม่มีการจองของวันนี้'+(canEdit?' — กด "+ จองใหม่" เพื่อเพิ่ม':'')+'</div>';
+}
+function resCardHtml(x, canEdit){
+  var st=x.status||'booked';
+  var sub=[];
+  if(canEdit) sub.push(x.phone?('📞 '+x.phone):'ไม่มีเบอร์');
+  var ch=RES_CHANS.filter(function(c){ return c[0]===x.channel; })[0];
+  if(ch) sub.push(ch[1]);
+  sub.push(x.zone||'ยังไม่ระบุโซน');
+  var tags=String(x.tags||'').split(',').map(function(s){return s.trim();}).filter(function(s){return s;});
+  var tagTxt=tags.map(function(k){ var t=RES_TAGS.filter(function(z){return z[0]===k;})[0]; return t?t[1]:k; }).join(' · ');
+  var noteTxt=[tagTxt, x.note].filter(function(s){return s;}).join(' · ');
+  return '<'+(canEdit?'button type="button" class="rs-card'+(st==='cancelled'?' cx':'')+'" onclick="resOpen(\''+esc(x.res_id)+'\')"':
+                      'div class="rs-card'+(st==='cancelled'?' cx':'')+'" style="cursor:default"')+'>'+
+    '<div class="rs-h"><span class="tm">'+esc(x.time||'--:--')+'</span>'+
+      (canEdit&&x.name?('<span class="nm">'+esc(x.name)+'</span>'):'')+
+      '<span class="px">'+(+x.pax||0)+' คน</span>'+
+      '<span class="rs-bd '+(RES_ST_CLS[st]||'b')+'">'+(RES_ST_TH[st]||st)+'</span></div>'+
+    '<div class="rs-sub">'+esc(sub.join(' · '))+'</div>'+
+    (noteTxt?('<div class="rs-note">'+esc(noteTxt)+'</div>'):'')+
+    (st==='cancelled'&&x.cancel_reason?('<div class="rs-sub">เหตุผล: '+esc(x.cancel_reason)+'</div>'):'')+
+    '</'+(canEdit?'button':'div')+'>';
+}
+
+/* ---------- ฟอร์มจอง: 2 ขั้น (วัน–เวลา–คน → ชื่อ–เบอร์–โซน) ---------- */
+function rsBlank(){ return {date:RS_DATE||bizDateISO(), time:'', pax:'', name:'', phone:'', zone:'', channel:'', note:'', tags:''}; }
+function resOpenNew(){
+  RS_EDIT_ID=null; RS_CLIENT_ID=uuid(); RS_FORM=rsBlank();
+  OFF_HIDE['res']=0;
+  rsFill(); show('resnew');
+}
+function rsFill(){
+  var f=RS_FORM||rsBlank();
+  document.getElementById('rs-date').value=f.date||'';
+  document.getElementById('rs-time').value=f.time||'';
+  document.getElementById('rs-pax').value=f.pax||'';
+  document.getElementById('rs-phone').value=f.phone||'';
+  document.getElementById('rs-name').value=f.name||'';
+  document.getElementById('rs-note').value=f.note||'';
+  var tt=RS_EDIT_ID?'แก้การจอง':'จองใหม่';
+  document.getElementById('rs-f1title').textContent=tt;
+  document.getElementById('rs-f2title').textContent=tt;
+  document.getElementById('rs-send').textContent=RS_EDIT_ID?'💾 บันทึกการแก้ไข':'บันทึกการจอง';
+  clearMsg(document.getElementById('rs-f1msg')); clearMsg(document.getElementById('rs-f2msg'));
+  rsSync();
+}
+// อ่านค่าจากช่องกรอก → RS_FORM แล้ววาดปุ่มด่วนให้ตรงกับค่าปัจจุบัน
+function rsSync(){
+  var f=RS_FORM||(RS_FORM=rsBlank());
+  f.date=document.getElementById('rs-date').value||'';
+  f.time=document.getElementById('rs-time').value||'';
+  f.pax=document.getElementById('rs-pax').value||'';
+  f.phone=document.getElementById('rs-phone').value||'';
+  f.name=document.getElementById('rs-name').value||'';
+  f.note=document.getElementById('rs-note').value||'';
+  document.getElementById('rs-datetxt').textContent = f.date ? ('= '+resDayTH(f.date)+(f.date<bizDateISO()?' (ย้อนหลัง)':'')) : '';
+  var today=bizDateISO(), tom=resD(today,1), sat=rsNextSat();
+  document.getElementById('rs-qdate').innerHTML=
+    rsBtn('คืนนี้', f.date===today, "rsSet('date','"+today+"')")+
+    rsBtn('พรุ่งนี้', f.date===tom, "rsSet('date','"+tom+"')")+
+    rsBtn('เสาร์นี้', f.date===sat, "rsSet('date','"+sat+"')");
+  document.getElementById('rs-qtime').innerHTML=RES_TIMES.map(function(t){ return rsBtn(t, f.time===t, "rsSet('time','"+t+"')"); }).join('');
+  document.getElementById('rs-qpax').innerHTML=RES_PAXES.map(function(n){ return rsBtn(String(n), String(f.pax)===String(n), "rsSet('pax','"+n+"')"); }).join('');
+  document.getElementById('rs-qzone').innerHTML=RES_ZONES.map(function(z){ return rsBtn(z, f.zone===z, "rsSet('zone','"+z+"')"); }).join('');
+  document.getElementById('rs-qchan').innerHTML=RES_CHANS.map(function(c){ return rsBtn(c[1], f.channel===c[0], "rsSet('channel','"+c[0]+"')"); }).join('');
+  var tags=rsTagList();
+  document.getElementById('rs-qtag').innerHTML=RES_TAGS.map(function(t){ return rsBtn(t[1], tags.indexOf(t[0])>=0, "rsTag('"+t[0]+"')"); }).join('');
+  document.getElementById('rs-f2sub').textContent=[f.date?resDayTH(f.date):'', f.time, (f.pax?(f.pax+' คน'):'')].filter(function(s){return s;}).join(' · ')||'—';
+}
+function rsBtn(label, on, call){ return '<button type="button" class="'+(on?'on':'')+'" onclick="'+call+'">'+esc(label)+'</button>'; }
+function rsNextSat(){ var d=attParseISO(bizDateISO()); if(!d) return bizDateISO(); d.setDate(d.getDate()+((6-d.getDay())+7)%7); return attISO(d); }
+function rsTagList(){ return String((RS_FORM&&RS_FORM.tags)||'').split(',').map(function(s){return s.trim();}).filter(function(s){return s;}); }
+// ปุ่มด่วน: แตะซ้ำที่ตัวที่เลือกอยู่ = ยกเลิกการเลือก (ยกเว้นวันที่/เวลา/จำนวนคน ที่ต้องมีค่า)
+function rsSet(k,v){
+  var f=RS_FORM||(RS_FORM=rsBlank());
+  if((k==='zone'||k==='channel') && f[k]===v) v='';
+  f[k]=String(v);
+  if(k==='date'||k==='time'||k==='pax'){ var el=document.getElementById('rs-'+k); if(el) el.value=f[k]; }
+  rsSync();
+}
+function rsTag(k){
+  var l=rsTagList(), i=l.indexOf(k);
+  if(i>=0) l.splice(i,1); else l.push(k);
+  (RS_FORM||(RS_FORM=rsBlank())).tags=l.join(',');
+  rsSync();
+}
+function rsStep2(){
+  var m=document.getElementById('rs-f1msg'); clearMsg(m);
+  rsSync();
+  var f=RS_FORM;
+  if(!f.date){ msg(m,'กรุณาเลือกวันที่จอง'); return; }
+  if(!f.time){ msg(m,'กรุณาระบุเวลาที่จอง'); return; }
+  if(!(parseInt(f.pax,10)>0)){ msg(m,'กรุณาระบุจำนวนคน'); return; }
+  show('resinfo'); rsSync();
+}
+async function sendRes(){
+  var m=document.getElementById('rs-f2msg'); clearMsg(m);
+  rsSync();
+  var f=RS_FORM;
+  if(!f.date || !f.time || !(parseInt(f.pax,10)>0)){ msg(m,'ข้อมูลวัน/เวลา/จำนวนคนไม่ครบ'); show('resnew'); return; }
+  if(!String(f.name||'').trim()){ msg(m,'กรุณาใส่ชื่อผู้จอง'); return; }
+  // เบอร์เว้นได้ แต่เตือนครั้งเดียวก่อนบันทึก (เจ้าของสั่ง: เว้นได้ แต่เตือน)
+  if(!String(f.phone||'').trim() && !confirm('⚠️ ยังไม่ได้ใส่เบอร์โทร\n\nถ้าลูกค้าไม่มาหรือต้องเลื่อน จะติดต่อกลับไม่ได้\n\nถ้าลูกค้าไม่ให้เบอร์จริง ๆ กด OK เพื่อบันทึก')) return;
+  if(!RS_CLIENT_ID) RS_CLIENT_ID=uuid();
+  var payload={date:f.date, time:f.time, pax:parseInt(f.pax,10), name:f.name, phone:f.phone,
+               zone:f.zone, channel:f.channel, note:f.note, tags:f.tags, client_id:RS_CLIENT_ID};
+  if(RS_EDIT_ID) payload.res_id=RS_EDIT_ID;
+  var btn=document.getElementById('rs-send'), label=btn.textContent;
+  busy(btn,true);
+  var r=await api('resSave', payload);
+  // เน็ตหลุด = เก็บไว้ในเครื่อง แล้วส่งให้เองเมื่อเน็ตกลับมา (เฟส 3)
+  //   ⚠️ ต่างจากเมนูอื่น: การจองเป็นข้อมูลที่คนอื่นต้องเห็นทันที → บอกตรง ๆ ว่าคนอื่นยังไม่เห็น
+  if(!r.ok && r.netfail){
+    busy(btn,false,label);
+    var kept=offAdd('res', 'res:'+(RS_EDIT_ID||RS_CLIENT_ID),
+      'โต๊ะจอง '+cashDMY(f.date)+' '+f.time+' · '+(f.name||''), payload);
+    offDraftClear('res');
+    if(kept){
+      msg(m,'📤 เน็ตมีปัญหา — เก็บการจองนี้ไว้ให้แล้ว จะส่งเองเมื่อเน็ตกลับมา\n⚠️ ระหว่างนี้คนอื่นยังไม่เห็นการจองนี้ ถ้ารีบให้บอกในกลุ่ม LINE ก่อน','warn');
+      RS_EDIT_ID=null; RS_CLIENT_ID=uuid(); RS_FORM=rsBlank(); rsFill();
+    } else {
+      msg(m,'❌ เน็ตมีปัญหา และเครื่องเก็บข้อมูลไว้ไม่ได้ (พื้นที่เต็ม) — อย่าเพิ่งปิดแอป ลองกดบันทึกใหม่เมื่อเน็ตกลับมา');
+    }
+    return;
+  }
+  // หลังบ้านเจอว่าน่าจะจองซ้ำ (เบอร์เดิม วันเดิม) → ถามยืนยัน (เตือน ไม่บล็อก)
+  if(r.dup && r.dups && r.dups.length){
+    busy(btn,false,label);
+    var lines=r.dups.slice(0,3).map(function(x){ return '• '+x.time+' · '+(x.name||'')+' · '+x.pax+' คน'+(x.by?(' (จดโดย '+x.by+')'):''); }).join('\n');
+    if(!confirm('⚠️ เบอร์นี้จองวันที่ '+cashDMY(f.date)+' ไว้แล้ว\n\n'+lines+'\n\nถ้าลูกค้าจองเพิ่มอีกโต๊ะจริง กด OK เพื่อบันทึก\nถ้าเป็นรายการเดิม กด Cancel')){
+      msg(m,'ยกเลิกการบันทึก — รายการเดิมอยู่ในรายการจองของวันนั้นแล้ว');
+      return;
+    }
+    busy(btn,true);
+    r=await api('resSave', Object.assign({}, payload, {dup_ok:1}));
+  }
+  busy(btn,false,label);
+  if(!r.ok){ msg(m, r.error||'บันทึกไม่สำเร็จ'); return; }
+  var wasEdit=!!RS_EDIT_ID;
+  offDraftClear('res');
+  RS_EDIT_ID=null; RS_CLIENT_ID=uuid();
+  RS_DATE=f.date;
+  var done='✅ '+(wasEdit?'แก้การจองแล้ว':'บันทึกการจองแล้ว')+' · '+resDayTH(f.date)+' '+f.time+' · '+f.pax+' คน';
+  RS_FORM=rsBlank();
+  show('res');
+  msg(document.getElementById('rs-listmsg'), done, 'ok');
+  await resLoad(1);
+  todayRefresh();
+}
+
+/* ---------- เปิดรายการจอง: ติ๊กมาแล้ว/ไม่มา · แก้ · ยกเลิก ---------- */
+function resOpen(id){
+  var x=((RS_DATA&&RS_DATA.rows)||[]).filter(function(r){ return r.res_id===id; })[0];
+  if(!x) return;
+  RS_ONE=x;
+  clearMsg(document.getElementById('rs-onemsg'));
+  var st=x.status||'booked', editable=resCanEditDate(x.date), cancelled=(st==='cancelled');
+  var tags=String(x.tags||'').split(',').map(function(s){return s.trim();}).filter(function(s){return s;})
+    .map(function(k){ var t=RES_TAGS.filter(function(z){return z[0]===k;})[0]; return t?t[1]:k; }).join(' · ');
+  var ch=RES_CHANS.filter(function(c){ return c[0]===x.channel; })[0];
+  var h='<div class="card">'+
+    '<div class="rs-h"><span class="tm" style="font-size:26px">'+esc(x.time||'--:--')+'</span>'+
+      '<span class="nm" style="font-size:18px">'+esc(x.name||'(ไม่มีชื่อ)')+'</span>'+
+      '<span class="rs-bd '+(RES_ST_CLS[st]||'b')+'">'+(RES_ST_TH[st]||st)+'</span></div>'+
+    '<div class="rs-sub" style="font-size:13.5px">'+esc(resDayTH(x.date)+' · '+(+x.pax||0)+' คน'+(ch?(' · '+ch[1]):'')+' · '+(x.zone||'ยังไม่ระบุโซน'))+'</div>';
+  if(x.phone) h+='<a href="tel:'+esc(String(x.phone).replace(/[^0-9+]/g,''))+'" class="btn ghost" style="display:block;text-align:center;margin-top:12px;text-decoration:none">📞 '+esc(x.phone)+' — กดเพื่อโทร</a>';
+  else h+='<div class="rs-sub" style="margin-top:10px">ไม่มีเบอร์โทร</div>';
+  if(tags||x.note) h+='<div class="rs-note" style="margin-top:10px">'+esc([tags,x.note].filter(function(s){return s;}).join(' · '))+'</div>';
+  if(cancelled && x.cancel_reason) h+='<div class="rs-sub" style="margin-top:8px">เหตุผลที่ยกเลิก: '+esc(x.cancel_reason)+'</div>';
+  h+='<div class="rs-sub" style="margin-top:10px">'+esc(['จดโดย '+(x.by||'—')+(x.at?(' '+x.at):''),
+        x.edited_by?('✏️ แก้โดย '+x.edited_by+(x.edited_at?(' '+attHM(x.edited_at)):'')):'',
+        x.status_by?('ติ๊กสถานะโดย '+x.status_by):''].filter(function(s){return s;}).join(' · '))+'</div></div>';
+  if(!cancelled){
+    h+='<div class="sect-title">ลูกค้ามาถึงแล้วหรือยัง</div><div class="rs-act">'+
+       '<button class="btn" style="background:linear-gradient(135deg,#1a8f52,#1f9d57)" onclick="resTick(\'arrived\')">✓ มาแล้ว</button>'+
+       '<button class="btn ghost onblue warn" onclick="resTick(\'noshow\')">✕ ไม่มา</button></div>';
+    if(st!=='booked') h+='<button class="btn ghost onblue sm" style="margin-top:10px" onclick="resTick(\'booked\')">↩︎ ติ๊กผิด — กลับเป็น "จองไว้"</button>';
+  } else {
+    h+='<button class="btn ghost onblue" onclick="resTick(\'booked\')" style="margin-top:14px">↩︎ กู้คืนการจองนี้ (กลับเป็น "จองไว้")</button>';
+  }
+  if(editable && !cancelled){
+    h+='<div class="sect-title">แก้ไข</div>'+
+       '<button class="btn ghost onblue" onclick="resEdit(\'time\')">🕐 เลื่อนเวลา / เปลี่ยนจำนวนคน</button>'+
+       '<button class="btn ghost onblue" onclick="resEdit(\'info\')" style="margin-top:9px">✏️ แก้ชื่อ / เบอร์ / โซน / หมายเหตุ</button>'+
+       '<button class="btn ghost onblue warn" style="margin-top:9px" onclick="resCancelAsk()">🗑 ยกเลิกการจอง</button>';
+  } else if(!editable){
+    h+='<div class="editbar" style="margin-top:14px">🔒 วันที่ผ่านไปแล้ว — แก้ไข/ยกเลิกได้เฉพาะเจ้าของร้าน (ติ๊กมาแล้ว/ไม่มา ยังทำได้)</div>';
+  }
+  document.getElementById('rs-one').innerHTML=h;
+  show('resone');
+}
+async function resTick(st){
+  if(!RS_ONE) return;
+  var m=document.getElementById('rs-onemsg'); clearMsg(m);
+  var r=await api('resSetStatus', {res_id:RS_ONE.res_id, st:st});
+  if(!r.ok){ msg(m, (r.netfail?'เน็ตมีปัญหา — ลองอีกครั้ง':(r.error||'บันทึกไม่สำเร็จ'))); return; }
+  var txt=(st==='arrived'?'✅ ติ๊กว่า "มาแล้ว" แล้ว':(st==='noshow'?'บันทึกว่า "ไม่มา" แล้ว':'กลับเป็น "จองไว้" แล้ว'));
+  show('res');
+  msg(document.getElementById('rs-listmsg'), txt+' · '+(RS_ONE.time||'')+' '+(RS_ONE.name||''), 'ok');
+  await resLoad(1);
+  todayRefresh();
+}
+async function resCancelAsk(){
+  if(!RS_ONE) return;
+  var x=RS_ONE;
+  if(!confirm('ยกเลิกการจองนี้?\n\n'+resDayTH(x.date)+' '+(x.time||'')+' · '+(x.name||'')+' · '+(+x.pax||0)+' คน\n\nรายการจะยังอยู่ในรายการ (ขีดฆ่าไว้) กู้คืนได้')) return;
+  var reason=prompt('เหตุผลที่ยกเลิก (ไม่ใส่ก็ได้)','ลูกค้าโทรยกเลิก');
+  if(reason===null) return;
+  var m=document.getElementById('rs-onemsg'); clearMsg(m);
+  var r=await api('resCancel', {res_id:x.res_id, reason:reason});
+  if(!r.ok){ msg(m, (r.netfail?'เน็ตมีปัญหา — ลองอีกครั้ง':(r.error||'ยกเลิกไม่สำเร็จ'))); return; }
+  show('res');
+  msg(document.getElementById('rs-listmsg'), 'ยกเลิกการจองแล้ว · '+(x.time||'')+' '+(x.name||''), 'ok');
+  await resLoad(1);
+  todayRefresh();
+}
+// แก้ = โหลดค่าเดิมขึ้นฟอร์มเดิม (ส่งครบทุกช่องตอนบันทึก — หลังบ้านเขียนทับทั้งรายการ)
+function resEdit(part){
+  if(!RS_ONE) return;
+  var x=RS_ONE;
+  RS_EDIT_ID=x.res_id; RS_CLIENT_ID='';
+  RS_FORM={date:x.date, time:x.time, pax:String(+x.pax||''), name:x.name||'', phone:x.phone||'',
+           zone:x.zone||'', channel:x.channel||'', note:x.note||'', tags:x.tags||''};
+  OFF_HIDE['res']=1;        // กำลังแก้ของเก่า ไม่ใช่ร่างใหม่
+  rsFill();
+  show(part==='info'?'resinfo':'resnew');
+  rsSync();
+}
+
+/* ---------- ร่างในเครื่อง (เฟส 3) ---------- */
+function offResHas(f){ return !!(f && (String(f.name||'').trim() || String(f.phone||'').trim() || String(f.time||'').trim() || String(f.pax||'').trim() || String(f.note||'').trim())); }
+function offDraftSaveRes(){
+  if(RS_EDIT_ID) return;                      // กำลังแก้รายการเก่า ไม่ใช่ร่างใหม่
+  try{ rsSync(); }catch(e){}
+  if(!offResHas(RS_FORM)){ offDraftClear('res'); return; }
+  offDraftSet('res', {form:RS_FORM, client_id:RS_CLIENT_ID});
+}
+function resDraftBar(){
+  var el=document.getElementById('rs-draftbar'); if(!el) return;
+  var it=(!RS_EDIT_ID && !OFF_HIDE['res']) ? offDraftGet('res') : null;
+  var f=it&&it.data&&it.data.form;
+  if(!offResHas(f)){ el.className='hidden'; el.innerHTML=''; return; }
+  el.className='editbar';
+  el.innerHTML=offBarHtml(it.ts, 'offRestoreRes', 'offDropResDraft')+
+    '<div style="margin-top:4px;opacity:.75">'+esc([f.date?cashDMY(f.date):'', f.time, (f.pax?(f.pax+' คน'):''), f.name].filter(function(s){return s;}).join(' · '))+'</div>';
+}
+function offRestoreRes(){
+  var it=offDraftGet('res'); if(!it) return;
+  var d=it.data||{};
+  RS_EDIT_ID=null;
+  RS_FORM=Object.assign(rsBlank(), d.form||{});
+  RS_CLIENT_ID=d.client_id||uuid();
+  OFF_HIDE['res']=1; resDraftBar();
+  rsFill(); show('resnew');
+}
+function offDropResDraft(){ offDraftClear('res'); OFF_HIDE['res']=1; resDraftBar(); }
 /* ---------- boot: auto-login ด้วยโทเค็นเดิม ---------- */
 (async function(){
   if(API_URL.indexOf('PASTE') === 0){   // ยังไม่ตั้ง backend (ส่วนใหญ่คือฝั่ง DEV) → โชว์ป้ายบอก + ไม่พยายามล็อกอิน
