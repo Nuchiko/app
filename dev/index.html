@@ -7294,6 +7294,7 @@ async function schiSubmit(){
   btn.disabled=false;
   if(!r || !r.ok){ msg(m,(r&&r.error)||'บันทึกไม่สำเร็จ','err'); return; }
   SCH=null;
+  schTileStatus();
   if(SCHI.mode==='edit' || schIsOwner()){ msg(m,'บันทึกตารางแล้ว ('+(r.saved||days.length)+' วัน)','ok'); setTimeout(()=>{ SCH_ANCHOR=SCHI.month+'-01'; SCH_TAB='month'; show('sch'); schRenderTabs(); schLoad(true); },600); }
   else { msg(m,'ส่งให้เจ้าของอนุมัติแล้ว — ตารางจะเปลี่ยนเมื่อเจ้าของกดอนุมัติ','ok'); setTimeout(()=>{ show('sch'); schLoadReqs(); schLoad(true); },900); }
 }
@@ -7395,7 +7396,7 @@ async function schaDecide(id,act){
   const r=await api('schReqDecide',{req_id:id,act:act,reason:reason});
   if(!r || !r.ok){ msg(m,(r&&r.error)||'ทำรายการไม่สำเร็จ','err'); return; }
   msg(m, act==='approve'?'อนุมัติแล้ว — ตารางอัปเดตแล้ว':'ไม่อนุมัติแล้ว','ok');
-  SCH=null;
+  SCH=null; schTileStatus();
   await schLoadReqs(); schaRender();
 }
 </script>
