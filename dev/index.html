@@ -2159,11 +2159,11 @@ function enterHome(){
   // ปุ่มของเจ้าของ — อยู่ในกลุ่มเรื่องเดียวกับงานพนักงาน ไม่แยกเป็นกลุ่ม "ผู้ดูแล"
   var isOwner = !!(ME && ME.role==='owner');
   document.getElementById('ho-admin-tile').classList.toggle('hidden', !ME.is_admin);
-  document.getElementById('ho-cash-tile').classList.toggle('hidden', !(ME.is_admin || ME.team === 'service'));
+  document.getElementById('ho-cash-tile').classList.toggle('hidden', !meCanCash());
   document.getElementById('me-owner-cap').classList.toggle('hidden', !isOwner);
   document.getElementById('me-owner-box').classList.toggle('hidden', !isOwner);
   // ทีม Service ใช้เมนูเงินสดเป็นงานหลัก → เลื่อนกลุ่ม "เงิน" ขึ้นก่อน "ของในร้าน"
-  if(!ME.is_admin && ME.team==='service'){
+  if(!ME.is_admin && meCanCash()){
     var gm=document.getElementById('grp-money'), gs=document.getElementById('grp-stuff');
     if(gm && gs && gm.parentNode) gm.parentNode.insertBefore(gm, gs);
   }
@@ -2173,6 +2173,10 @@ function enterHome(){
   show("home");
 }
 function openMe(){ show('me'); }
+// เห็นเมนูเงินสดไหม = ผู้ดูแล หรือทีม Service ที่ไม่ใช่ "ทดลองงาน" (เจ้าของสั่ง 9 ต.ค. 2026)
+// หลังบ้านกันซ้ำที่ _canCash อยู่แล้ว — ตัวนี้แค่ไม่โชว์ปุ่มให้กดเก้อ
+// ⚠️ โต๊ะจองไม่ใช้ตัวนี้ — ทดลองงานยังรับจองได้ตามคำสั่งเจ้าของ
+function meCanCash(){ return !!(ME && (ME.is_admin || (ME.team==='service' && ME.emp_type!=='probation'))); }
 // กลุ่มไหนไม่มีปุ่มที่คนนี้เห็นเลย = ซ่อนทั้งกลุ่ม (กันหัวข้อลอยไม่มีอะไรอยู่ข้างใน)
 function syncGroups(){
   ['grp-time','grp-guest','grp-stuff','grp-money','grp-equip'].forEach(function(id){
@@ -4446,7 +4450,7 @@ const CASH_DAYS_OWNER=30, CASH_DAYS_STAFF=10;
 function cashDaysBack(){ return cashIsOwner()?CASH_DAYS_OWNER:CASH_DAYS_STAFF; }
 
 async function openCash(){
-  if(!(ME && (ME.is_admin || ME.team==='service'))){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น'); return; }
+  if(!meCanCash()){ alert('เมนูนี้สำหรับทีม Service และผู้ดูแลเท่านั้น (พนักงานทดลองงานยังใช้ไม่ได้)'); return; }
   document.getElementById('cash-datelabel').textContent=thaiDateNow();
   var di=document.getElementById('cash-date'); if(!di.value) di.value=cashBizDate();
   CASH_DATE_CUR=''; CASH_MODE='new'; OFF_HIDE={}; offWatch();
@@ -6006,7 +6010,7 @@ const HELP_TOPICS = [
 
 function openHelp(){
   // เรนเดอร์ใหม่ทุกครั้ง — สิทธิ์ของคนที่ล็อกอินอยู่อาจเปลี่ยน (เข้าออกคนละบัญชี)
-  const canCash = !!(ME && (ME.is_admin || ME.team === 'service'));
+  const canCash = meCanCash();
   document.getElementById('hp-list').innerHTML =
     HELP_TOPICS.filter(t => (!t.cashOnly || canCash) && (!t.attOnly || ATT_READY===true)).map(helpCard).join('');
   show('help');
