@@ -1616,6 +1616,13 @@
       </div>
     </div>
 
+    <!-- ตารางงาน: 2 สวิตช์นี้บันทึกได้เฉพาะตอน "แก้ไข" (หลังบ้าน updateEmployee รับ ; addEmployee ไม่รับ) -->
+    <div id="m-sch-wrap" class="hidden">
+      <div class="reg-sec">ตารางงาน</div>
+      <label class="chk"><input type="checkbox" id="m-counts"><span class="t">นับเป็นตัวยืนของกะ<small>ติ๊กออกถ้ายังฝึกงาน — ระบบจะไม่นับเป็นกำลังคนของกะ และไม่กินโควตาวันหยุดของทีม</small></span></label>
+      <label class="chk"><input type="checkbox" id="m-schimport"><span class="t">อัปเดตตารางงาน (ถ่ายรูปกระดาษ)<small>ให้คนนี้ถ่ายรูปตารางส่งเข้าระบบได้ — ตารางจะเปลี่ยนจริงเมื่อเจ้าของอนุมัติ</small></span></label>
+    </div>
+
     <div class="reg-sec">บัตรประจำตัว &amp; ข้อมูลส่วนตัว</div>
     <div class="row2">
       <div>
@@ -1781,6 +1788,10 @@
     .schseg{display:flex;gap:4px;margin:6px 0 10px}
     .schseg button{flex:1;font:inherit;font-size:12.5px;font-weight:700;border-radius:10px;padding:9px 4px;border:1px solid var(--line);background:var(--bg2);color:var(--text);cursor:pointer}
     .schseg button.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:800}
+    .chk{display:flex;gap:10px;align-items:flex-start;padding:9px 0;cursor:pointer}
+    .chk input{width:20px;height:20px;margin:1px 0 0;flex:0 0 20px;accent-color:var(--accent)}
+    .chk .t{font-size:14px;color:var(--text);line-height:1.35}
+    .chk .t small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:400}
   </style>
 
   <!-- หน้า 1: ตารางงาน (ทุกคนดูได้) -->
@@ -6288,6 +6299,7 @@ function renderEmployees(){
           <div class="nm">${esc(nm)}</div>
           <div class="meta">📱 ${esc(fmtPhone(e.phone))}</div>
           <div class="meta">${TEAM_TH[e.team]||'—'} · ${EMPTYPE_TH[e.emp_type]||'—'}${e.position?(' · '+esc(e.position)):''}${e.has_id_doc?' · 📇 มีรูปบัตร':''}</div>
+          ${(e.counts_staff===false)?'<div class="meta">🧍 ยังไม่นับเป็นตัวยืนของกะ</div>':''}${e.sch_import?'<div class="meta">📷 อัปเดตตารางงานได้</div>':''}
           <div class="meta">${lastLoginText(e.last_login)}</div>
           <div class="meta"><span class="dot ${e.active?'on':'off'}"></span>${e.active?'ใช้งาน':'⏳ รออนุมัติ'}</div>
         </div>
@@ -6315,6 +6327,10 @@ function openEmpModal(id){
   document.getElementById('m-emptype').value = e ? (e.emp_type||'') : '';
   document.getElementById('m-active').value = e ? (e.active?'1':'0') : '1';
   document.getElementById('m-active-wrap').classList.toggle('hidden', !e);
+  // ช่องติ๊กตารางงาน: เฉพาะโหมดแก้ไข (addEmployee ไม่รับ 2 ช่องนี้) และเฉพาะเมื่อหลังบ้านมีระบบตารางงานแล้ว
+  document.getElementById('m-sch-wrap').classList.toggle('hidden', !e || SCH_READY !== true);
+  document.getElementById('m-counts').checked    = e ? (e.counts_staff !== false) : true;
+  document.getElementById('m-schimport').checked = e ? (e.sch_import === true) : false;
   document.getElementById('m-pin').value = '';
   document.getElementById('m-pin-label').textContent = e ? 'รีเซ็ต PIN (เว้นว่าง = ไม่เปลี่ยน)' : 'ตั้ง PIN (6 หลัก)';
   document.getElementById('m-phone').disabled = !!e;  // ไม่ให้แก้เบอร์ตอนแก้ไข (เป็นตัวระบุตัวตน)
@@ -6361,7 +6377,9 @@ async function saveEmp(){
   if(editingId){
     if(pin && !/^\d{6}$/.test(pin)){ busy(btn,false,'บันทึก'); msg(m,'PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
     const active = document.getElementById('m-active').value;
-    const payload = Object.assign({emp_id:editingId, name, nickname:nick, role, team, emp_type, active:active==='1'}, det);
+    const payload = Object.assign({emp_id:editingId, name, nickname:nick, role, team, emp_type, active:active==='1',
+      counts_staff: document.getElementById('m-counts').checked,
+      sch_import:   document.getElementById('m-schimport').checked}, det);
     if(pin) payload.newPin = pin;
     r = await api('updateEmployee', payload);
     if(r.ok && M_ID){   // แอดมินเลือกรูปบัตรใหม่ → อัปแยก
